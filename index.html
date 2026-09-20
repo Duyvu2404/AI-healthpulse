@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI HealthPulse — Nhịp Khỏe Học Đường</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.462.0/dist/umd/lucide.js"></script>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="brand-icon"><i data-lucide="heart-pulse" style="width:16px;height:16px;"></i></span>
+        AI HealthPulse
+      </div>
+      <button class="header-resource" onclick="App.goLibrary()" aria-label="Xem tư liệu tham khảo">
+        <i data-lucide="book-open" style="width:14px;height:14px;"></i>
+        <span>Xem tư liệu tham khảo</span>
+      </button>
+    </div>
+    <div class="steps" id="stepNav"></div>
+    <div class="topbar-actions">
+      <div class="account-menu-wrap">
+        <button class="account-menu-trigger" id="accountMenuBtn" onclick="AccountMenu.toggle()" aria-expanded="false" aria-haspopup="true">
+          <span class="account-menu-trigger-icon"><i data-lucide="log-in" style="width:15px;height:15px;"></i></span>
+          <span id="accountMenuLabel">Đăng nhập</span>
+          <i data-lucide="chevron-down" class="account-menu-chevron" style="width:14px;height:14px;"></i>
+        </button>
+        <div class="account-menu hidden" id="accountMenu">
+          <div class="account-menu-title">Đăng nhập tài khoản</div>
+          <button class="account-option" onclick="AccountMenu.openStudent()">
+            <span class="account-option-icon account-option-student"><i data-lucide="graduation-cap" style="width:17px;height:17px;"></i></span>
+            <span><strong>Học sinh</strong><small>Chatbot và lịch sử trò chuyện</small></span>
+          </button>
+          <button class="account-option" onclick="AccountMenu.openTeacher()">
+            <span class="account-option-icon account-option-teacher"><i data-lucide="shield-check" style="width:17px;height:17px;"></i></span>
+            <span><strong>Giáo viên / BGH</strong><small>Quản trị và tư liệu tham khảo</small></span>
+          </button>
+          <div class="account-menu-session hidden" id="accountMenuSession"></div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm topbar-logout hidden" id="topbarLogoutBtn" onclick="AccountMenu.logout()"><i data-lucide="log-out" style="width:14px;height:14px;"></i> Đăng xuất</button>
+      <button class="icon-btn hidden" id="settingsBtn" onclick="Settings.open()" title="Cài đặt AI"><i data-lucide="settings" style="width:16px;height:16px;"></i></button>
+    </div>
+  </div>
+
+  <!-- ============ 1. TRANG CHỦ / GIỚI THIỆU ============ -->
+  <section class="view active" id="view-landing">
+    <div class="hero">
+      <div class="landing-grid">
+        <div class="landing-info">
+          <div class="hero-eyebrow">Nhịp Khỏe Học Đường</div>
+          <h1>Cậu đang vận động đủ chưa?</h1>
+          <p class="lead">Trò chuyện vài phút với AI để biết mình đang vận động đủ hay thiếu theo đúng chuẩn của Bộ Y tế — rồi nhận ngay một việc cụ thể nên làm trong tuần này.</p>
+
+          <svg class="pulse-hero" viewBox="0 0 800 90" preserveAspectRatio="none">
+            <path d="M0,45 L110,45 L128,12 L146,78 L164,45 L300,45 L318,22 L336,66 L354,45 L490,45 L508,8 L526,80 L544,45 L680,45 L698,20 L716,68 L734,45 L800,45"/>
+          </svg>
+
+          </div>
+
+        <div class="landing-survey">
+          <div class="start-card card">
+            <div class="survey-kicker"><i data-lucide="clipboard-check" style="width:15px;height:15px;"></i> Khảo sát nhanh</div>
+            <label class="field-label" for="schoolSelect">Trường học</label>
+            <select id="schoolSelect">
+              <option value="">Đang tải danh mục trường THCS/THPT…</option>
+            </select>
+            <div class="muted" style="font-size:12px;line-height:1.45;margin-top:7px;">Danh mục được đồng bộ tự động, hiển thị kèm phường/xã và tỉnh/thành để tránh chọn nhầm trường trùng tên.</div>
+            <label class="field-label" for="khoiSelect">Cậu đang học khối mấy?</label>
+            <select id="khoiSelect">
+              <option value="">— Chọn khối —</option>
+              <option value="6">Khối 6</option><option value="7">Khối 7</option><option value="8">Khối 8</option>
+              <option value="9">Khối 9</option><option value="10">Khối 10</option><option value="11">Khối 11</option><option value="12">Khối 12</option>
+            </select>
+            <button class="btn btn-primary" style="margin-top:16px;width:100%;justify-content:center;" onclick="App.startSurvey()"><i data-lucide="message-circle" style="width:16px;height:16px;"></i> Mở Chatbot</button>
+            <div class="err-text" id="startErr"></div>
+          </div>
+          <div class="survey-note"><i data-lucide="lock-keyhole" style="width:15px;height:15px;"></i><span>Đăng nhập bằng biểu tượng tài khoản trên thanh trên để lưu lịch sử trò chuyện riêng.</span></div>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="num">22,2%</div><div class="cap">người trưởng thành Việt Nam thiếu hoạt động thể lực (Bộ Y tế, 2021)</div></div>
+        <div class="stat"><div class="num">60′</div><div class="cap">mức vận động tối thiểu mỗi ngày cho học sinh 5–17 tuổi</div></div>
+        <div class="stat"><div class="num">4</div><div class="cap">mức đánh giá: Không HĐTL · Không đủ · Đủ · Cao</div></div>
+      </div>
+
+      <div class="intro-grid">
+        <div class="intro-card"><div class="intro-tag"><i data-lucide="info" style="width:13px;height:13px;"></i> Giới thiệu</div><p>AI HealthPulse dùng AI để giúp cậu tự đánh giá mức vận động của bản thân qua một cuộc trò chuyện ngắn, tự nhiên — không phải một bảng khảo sát khô khan.</p></div>
+        <div class="intro-card"><div class="intro-tag"><i data-lucide="target" style="width:13px;height:13px;"></i> Mục đích</div><p>Giúp cậu biết mình đang vận động đủ hay thiếu, nhận ngay một hành động cụ thể nên thử trong tuần — và giúp nhà trường thấy bức tranh chung để tổ chức hoạt động đúng lúc.</p></div>
+        <div class="intro-card"><div class="intro-tag"><i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Khuyến cáo vận động</div><p>Theo Bộ Y tế, học sinh 5–17 tuổi nên vận động tối thiểu <strong>60 phút/ngày</strong> (khoảng 420 phút/tuần) ở cường độ vừa đến mạnh.</p></div>
+      </div>
+
+      <section class="future-section" aria-labelledby="futureTitle">
+        <div class="future-head">
+          <div>
+            <div class="future-kicker"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> Định hướng web</div>
+            <h2 id="futureTitle">AI HealthPulse sẽ tiếp tục đồng hành cùng sức khỏe học đường</h2>
+            <p class="future-lead">Các tính năng dưới đây sẽ được phát triển để hỗ trợ học sinh theo dõi sức khỏe toàn diện hơn — từ vận động, dinh dưỡng đến tinh thần.</p>
+          </div>
+          <span class="future-badge">Lộ trình phát triển</span>
+        </div>
+
+        <div class="future-grid">
+          <article class="future-card">
+            <div class="future-icon future-icon-coral"><i data-lucide="utensils" style="width:19px;height:19px;"></i></div>
+            <div><h3>Đo lượng calorie trong bữa ăn</h3><p>Phát triển hệ thống ước tính lượng calorie trong các bữa ăn hằng ngày để học sinh hiểu rõ hơn về thói quen dinh dưỡng.</p></div>
+          </article>
+          <article class="future-card">
+            <div class="future-icon future-icon-amber"><i data-lucide="ruler" style="width:19px;height:19px;"></i></div>
+            <div><h3>Đo chiều cao và BMI</h3><p>Phát triển công cụ đo chiều cao chuẩn xác và đo lường BMI rõ ràng, trực quan, phù hợp với từng lứa tuổi.</p></div>
+          </article>
+          <article class="future-card">
+            <div class="future-icon future-icon-teal"><i data-lucide="message-circle-heart" style="width:19px;height:19px;"></i></div>
+            <div><h3>Góc chăm sóc sức khỏe tinh thần</h3><p>Xây dựng khu vực chia sẻ tâm sự và các hoạt động hỗ trợ tinh thần an toàn, riêng tư, thân thiện với học sinh.</p></div>
+          </article>
+          <article class="future-card">
+            <div class="future-icon future-icon-blue"><i data-lucide="pill" style="width:19px;height:19px;"></i></div>
+            <div><h3>Phân tích thuốc và chế độ ăn</h3><p>Phân tích thông tin thuốc do bác sĩ kê khai và đưa ra gợi ý điều chỉnh chế độ ăn uống tốt hơn cho sức khỏe.</p></div>
+          </article>
+          <article class="future-card">
+            <div class="future-icon future-icon-purple"><i data-lucide="calendar-check-2" style="width:19px;height:19px;"></i></div>
+            <div><h3>Bài tập và thời gian biểu phù hợp</h3><p>Đề xuất các bài tập phù hợp với tình trạng sức khỏe, kèm thời gian biểu luyện tập hợp lý và chính xác hơn.</p></div>
+          </article>
+          <article class="future-card">
+            <div class="future-icon future-icon-green"><i data-lucide="stethoscope" style="width:19px;height:19px;"></i></div>
+            <div><h3>Phân tích và định hướng bệnh nhẹ</h3><p>Đưa ra hướng phân tích ban đầu và định hướng theo dõi một số vấn đề sức khỏe nhẹ, không thay thế tư vấn của nhân viên y tế.</p></div>
+          </article>
+        </div>
+
+        <div class="future-note"><i data-lucide="shield-check" style="width:16px;height:16px;"></i><span>Các tính năng y tế trong tương lai sẽ ưu tiên bảo mật dữ liệu, an toàn cho học sinh và khuyến khích tìm đến nhân viên y tế khi cần.</span></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============ TƯ LIỆU THAM KHẢO (công khai) ============ -->
+  <section class="view" id="view-library">
+    <div class="lib-wrap">
+      <h2 style="font-size:30px;">📚 Tư liệu tham khảo</h2>
+      <p class="muted" style="font-size:14.5px;margin-top:6px;">Tài liệu do nhà trường tuyển chọn và cập nhật.</p>
+      <div class="lib-grid" id="libraryList"></div>
+    </div>
+  </section>
+
+  <!-- ============ ĐĂNG NHẬP QUẢN TRỊ ============ -->
+  <section class="view" id="view-adminAuth">
+    <div class="lib-wrap" style="max-width:420px;">
+      <h2 style="font-size:26px;">Đăng nhập quản trị</h2>
+      <p class="muted" style="font-size:14px;margin-top:6px;">Dành cho giáo viên/BGH quản lý khu vực tư liệu tham khảo.</p>
+      <div class="card" style="margin-top:16px;">
+        <div class="field"><label class="field-label">Tên đăng nhập</label><input type="text" id="adminUsername" /></div>
+        <div class="field"><label class="field-label">Mật khẩu</label><input type="password" id="adminPassword" placeholder="ít nhất 4 ký tự" /></div>
+        <div class="field"><label class="field-label" for="adminSchool">Trường quản lý</label><select id="adminSchool"><option value="">Đang tải danh mục trường THCS/THPT…</option></select><div class="muted" style="font-size:12px;line-height:1.45;margin-top:7px;">Chọn đúng trường kèm phường/xã và tỉnh/thành. Không nhập tên trường thủ công.</div></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" id="adminSubmitBtn" onclick="AdminAuth.submit()">Đăng nhập</button>
+        <div class="err-text" id="adminErr"></div>
+        <div class="auth-note"><i data-lucide="lock-keyhole" style="width:15px;height:15px;"></i><span>Tài khoản quản trị do nhà trường cấp. Trường được lưu cùng tài khoản để admin chỉ xem đúng dữ liệu học sinh của trường đó.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ĐĂNG NHẬP / TẠO TÀI KHOẢN HỌC SINH ============ -->
+  <section class="view" id="view-studentAuth">
+    <div class="auth-shell">
+      <div class="auth-kicker">Cổng học sinh</div>
+      <h2 id="studentAuthTitle" style="font-size:28px;">Đăng nhập học sinh</h2>
+      <p id="studentAuthSubtitle" class="muted" style="font-size:14px;margin-top:7px;">Đăng nhập để bắt đầu khảo sát hoạt động thể lực.</p>
+
+      <div class="auth-tabs" id="studentAuthTabs">
+        <button id="studentTabLogin" class="auth-tab active" onclick="StudentAuth.switchTab('login')">Đăng nhập</button>
+        <button id="studentTabRegister" class="auth-tab" onclick="StudentAuth.switchTab('register')">Tạo tài khoản</button>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div class="field hidden" id="studentNameField"><label class="field-label" for="studentName">Họ và tên</label><input type="text" id="studentName" placeholder="Ví dụ: Nguyễn Ánh Dương" autocomplete="name" /></div>
+        <div class="field" id="studentUsernameField"><label class="field-label" for="studentUsername">Tên đăng nhập</label><input type="text" id="studentUsername" placeholder="3–24 ký tự, không dấu" autocomplete="username" /></div>
+        <div class="field hidden" id="studentGradeField"><label class="field-label" for="studentGrade">Khối lớp</label><select id="studentGrade">
+          <option value="">— Chọn khối —</option>
+          <option value="6">Khối 6</option><option value="7">Khối 7</option><option value="8">Khối 8</option>
+          <option value="9">Khối 9</option><option value="10">Khối 10</option><option value="11">Khối 11</option><option value="12">Khối 12</option>
+        </select></div>
+        <div class="field hidden" id="studentSchoolField"><label class="field-label" for="studentSchool">Trường học</label><select id="studentSchool"><option value="">Đang tải danh mục trường THCS/THPT…</option></select><div class="muted" style="font-size:12px;line-height:1.45;margin-top:7px;">Chọn đúng trường kèm phường/xã và tỉnh/thành. Không nhập tên trường thủ công.</div></div>
+        <div class="field" id="studentPasswordField"><label class="field-label" id="studentPasswordLabel" for="studentPassword">Mật khẩu</label><input type="password" id="studentPassword" placeholder="ít nhất 6 ký tự" autocomplete="new-password" /></div>
+        <div class="field hidden" id="studentConfirmField"><label class="field-label" id="studentPasswordConfirmLabel" for="studentPasswordConfirm">Nhập lại mật khẩu</label><input type="password" id="studentPasswordConfirm" placeholder="Nhập lại mật khẩu" autocomplete="new-password" /></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px;" id="studentSubmitBtn" onclick="StudentAuth.submit()">Đăng nhập</button>
+        <div class="err-text" id="studentErr"></div>
+        <div class="auth-note"><i data-lucide="shield-check" style="width:15px;height:15px;"></i><span>Tài khoản này chỉ dành cho học sinh. Khu vực quản trị có trang đăng nhập riêng và không mở đăng ký tự do.</span></div>
+      </div>
+      <div class="auth-switch" id="studentAuthSwitch">Chưa có tài khoản? <button onclick="StudentAuth.switchTab('register')">Tạo tài khoản học sinh</button></div>
+    </div>
+  </section>
+
+  <!-- ============ QUẢN LÝ TƯ LIỆU (admin) ============ -->
+  <section class="view" id="view-adminHome">
+    <div class="admin-shell">
+      <div class="admin-header">
+        <div class="admin-title"><i data-lucide="shield-check" style="width:26px;height:26px;color:#FF5D5D;"></i> Khu vực quản trị</div>
+        <p class="muted" style="font-size:14px;">Xin chào <span id="adminNameChip"></span> · <span id="adminSchoolChip"></span> — Bảng điều khiển dành cho giáo viên/BGH.</p>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="atab2 active" data-atab="overview" onclick="AdminNav.switchTab('overview')"><i data-lucide="layout-dashboard" style="width:15px;height:15px;"></i> Dashboard</button>
+        <button class="atab2" data-atab="library" onclick="AdminNav.switchTab('library')"><i data-lucide="book-open" style="width:15px;height:15px;"></i> Tư liệu tham khảo</button>
+      </div>
+
+      <!-- ---- Tab: Dashboard ---- -->
+      <div class="admin-panel active" id="ap-overview">
+        <div class="stat-card-row">
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:var(--pulse-dim);"><i data-lucide="activity" style="color:#FF5D5D;width:20px;height:20px;"></i></div>
+            <div class="stat-card-num" id="dashTotal">0</div>
+            <div class="stat-card-lbl">lượt khảo sát học sinh đã ghi nhận</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:var(--amber-dim);"><i data-lucide="alert-triangle" style="color:#8A5A00;width:20px;height:20px;"></i></div>
+            <div class="stat-card-num" id="dashWorstKhoi">—</div>
+            <div class="stat-card-lbl">khối cần ưu tiên tổ chức hoạt động</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:var(--teal-dim);"><i data-lucide="trending-up" style="color:#1D5F51;width:20px;height:20px;"></i></div>
+            <div class="stat-card-num" id="dashTopLevel">—</div>
+            <div class="stat-card-lbl">mức vận động phổ biến nhất</div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-card-head">
+            <h3><i data-lucide="bar-chart-3" style="width:16px;height:16px;"></i> Phân bố mức vận động theo khối</h3>
+            <div class="legend">
+              <span><i class="sw" style="background:var(--pulse)"></i>Không HĐTL</span>
+              <span><i class="sw" style="background:var(--amber)"></i>Không đủ</span>
+              <span><i class="sw" style="background:var(--teal)"></i>Đủ</span>
+              <span><i class="sw" style="background:var(--deep)"></i>Cao</span>
+            </div>
+          </div>
+          <div class="filter-row">
+            <i data-lucide="filter" style="width:15px;height:15px;color:var(--ink-soft);"></i>
+            <label class="field-label" style="margin:0;">Lọc theo khối:</label>
+            <select id="khoiFilter" onchange="Dashboard.applyFilter()">
+              <option value="all">Tất cả các khối</option>
+              <option value="6">Khối 6</option><option value="7">Khối 7</option><option value="8">Khối 8</option>
+              <option value="9">Khối 9</option><option value="10">Khối 10</option><option value="11">Khối 11</option><option value="12">Khối 12</option>
+            </select>
+          </div>
+          <div id="dashBars"></div>
+          <div id="highlightNote" class="highlight-note hidden"></div>
+        </div>
+
+        <div class="panel-card">
+          <h3><i data-lucide="table" style="width:16px;height:16px;"></i> Bảng tỷ lệ theo khối (%)</h3>
+          <div id="pctTable"></div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-card-head">
+            <h3><i data-lucide="users-round" style="width:16px;height:16px;"></i> Kết quả từng học sinh theo tuần</h3>
+            <span class="dashboard-meta" id="studentResultCount"></span>
+          </div>
+          <p class="dashboard-helper">Admin chỉ xem tài khoản học sinh thuộc đúng trường đang quản lý; có thể xem tài khoản, họ tên, khối, số phút vận động quy đổi và kết quả của từng tuần.</p>
+          <div id="studentResultTable"></div>
+        </div>
+      </div>
+
+      <!-- ---- Tab: Tư liệu tham khảo ---- -->
+      <div class="admin-panel" id="ap-library">
+        <div class="panel-card">
+          <h3><i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Thêm tài liệu mới</h3>
+          <div class="field"><label class="field-label">Tiêu đề</label><input type="text" id="refTitle" placeholder="vd: Hướng dẫn dinh dưỡng học đường" /></div>
+          <div class="field"><label class="field-label">Mô tả ngắn</label><input type="text" id="refDesc" placeholder="Tóm tắt ngắn gọn nội dung tài liệu" /></div>
+          <div class="field"><label class="field-label">Đường dẫn (link)</label><input type="text" id="refUrl" placeholder="https://..." /></div>
+          <button class="btn btn-primary" onclick="AdminLibrary.add()"><i data-lucide="plus" style="width:15px;height:15px;"></i> Thêm vào tư liệu</button>
+          <div class="err-text" id="refErr"></div>
+        </div>
+        <div class="panel-card">
+          <h3><i data-lucide="book-open" style="width:16px;height:16px;"></i> Tư liệu đã đăng</h3>
+          <div class="lib-grid" id="adminLibraryList"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. CHATBOT + LỊCH SỬ TRÒ CHUYỆN ============ -->
+  <section class="view" id="view-chat">
+    <div class="chat-layout">
+      <aside class="conversation-panel card">
+        <div class="conversation-panel-head">
+          <div>
+            <div class="chat-kicker">Chatbot</div>
+            <h2>Lịch sử trò chuyện</h2>
+          </div>
+          <span class="conversation-count" id="conversationCount">0</span>
+        </div>
+        <p class="conversation-help" id="conversationAccountHint">Lịch sử được lưu riêng theo tài khoản của cậu.</p>
+        <div class="conversation-list" id="conversationList"></div>
+      </aside>
+
+      <main class="chat-main">
+        <div class="chat-head">
+          <div>
+            <div class="chat-kicker">AI HealthPulse đồng hành</div>
+            <h2 id="chatTitle">Cuộc trò chuyện mới</h2>
+          </div>
+          <div class="chat-head-actions">
+            <button class="icon-btn new-chat-btn" onclick="ChatHistory.newConversation()" title="Cuộc trò chuyện mới" aria-label="Tạo cuộc trò chuyện mới"><i data-lucide="plus" style="width:15px;height:15px;"></i></button>
+            <span class="chat-status" id="chatStatus"><i data-lucide="radio" style="width:12px;height:12px;"></i> Đang lưu</span>
+          </div>
+        </div>
+        <div class="qcount" id="qcount"></div>
+        <div class="chat-log" id="chatLog"></div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Trả lời câu hỏi của cậu..." autocomplete="off" />
+          <button class="send-btn" id="sendBtn" onclick="Hdtl.sendAnswer()" aria-label="Gửi">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 12L21 4L14 21L11 13L3 12Z" fill="white"/></svg>
+          </button>
+        </div>
+        <div class="chat-footnote"><i data-lucide="sparkles" style="width:14px;height:14px;"></i><span>Chatbot sẽ tham khảo lịch sử trò chuyện của tài khoản này để phản hồi phù hợp hơn với cảm xúc và nhu cầu của cậu.</span></div>
+      </main>
+    </div>
+  </section>
+
+  <!-- ============ 4. DASHBOARD: xem trong khu vực quản trị (đăng nhập admin) ============ -->
+
+</div>
+
+<!-- ============ CÀI ĐẶT AI / KẾT NỐI (khi chạy ngoài Claude) ============ -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-card">
+    <div class="modal-head"><h3><i data-lucide="settings" style="width:17px;height:17px;"></i> Cài đặt AI</h3>
+      <button class="icon-btn" onclick="Settings.close()"><i data-lucide="x" style="width:15px;height:15px;"></i></button>
+    </div>
+    <div id="settingsBody" style="font-size:13.5px;color:var(--ink-soft);margin-top:14px;"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============ Kết nối Google Sheets (chỉ dùng khi chạy NGOÀI Claude, vd. GitHub Pages) ============ -->
+<!-- Điền URL Web App Apps Script của bạn vào SHEETS_API_URL bên dưới.
+     Cách lấy URL: xem hướng dẫn Apps Script (Code.gs) đi kèm — dán vào Google Sheet của bạn,
+     Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone > Deploy, rồi copy URL. -->
+<script src="Ai-healthpulse-script.js"></script>
+</body>
+</html>

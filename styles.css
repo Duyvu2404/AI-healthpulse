@@ -191,6 +191,20 @@
   .commit-row{margin-top:26px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
   .committed-note{font-size:13.5px;color:var(--teal);font-weight:600;display:none;align-items:center;gap:6px;}
   .committed-note.show{display:flex;}
+  .weekly-summary-row{display:block;width:100%;}
+  .weekly-summary-card{width:min(100%,650px);margin:2px 0 4px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;box-shadow:0 8px 22px rgba(15,44,46,.04);}
+  .weekly-minutes{font-family:'Be Vietnam Pro',sans-serif;font-size:42px;font-weight:800;letter-spacing:-.04em;line-height:1.08;color:var(--ink);margin:2px 0 16px;}
+  .weekly-minutes span{font-size:24px;letter-spacing:-.02em;}
+  .weekly-summary-description{font-size:17px;line-height:1.55;color:var(--ink-soft);margin:0 0 18px;}
+  .weekly-suggestion{background:var(--paper);border-radius:14px;padding:15px 17px;margin-top:4px;}
+  .weekly-suggestion-title{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:16px;}
+  .weekly-suggestion-title i{width:20px;height:20px;color:var(--pulse);}
+  .weekly-suggestion p{font-size:16px;line-height:1.5;color:var(--ink-soft);margin:7px 0 0;}
+  .weekly-summary-feedback{display:flex;align-items:flex-start;gap:8px;margin-top:15px;padding-top:13px;border-top:1px dashed var(--line);font-size:13.5px;line-height:1.55;color:var(--ink-soft);white-space:pre-wrap;}
+  .weekly-summary-feedback i{width:17px;height:17px;flex:none;color:var(--teal);margin-top:2px;}
+  .weekly-summary-try{padding:12px 25px;}
+  .weekly-summary-try:disabled{opacity:1;background:var(--teal);cursor:default;}
+  @media(max-width:639px){.weekly-summary-card{padding:20px 17px 18px;}.weekly-minutes{font-size:35px;}.weekly-minutes span{font-size:20px;}.weekly-summary-description,.weekly-suggestion p{font-size:15px;}}
   .restart-row{margin-top:24px;}
   .restart-row button{background:none;border:none;color:var(--ink-soft);text-decoration:underline;cursor:pointer;font-family:inherit;font-size:13.5px;padding:0;display:flex;align-items:center;gap:6px;}
 
@@ -218,6 +232,26 @@
   table.pct-table th:last-child{border-radius:0 8px 0 0;}
   table.pct-table td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);}
   table.pct-table td:first-child{text-align:left;font-weight:700;}
+  .dashboard-meta{font-size:12px;color:var(--ink-soft);font-weight:600;white-space:nowrap;}
+  .dashboard-helper{font-size:13px;color:var(--ink-soft);margin:-8px 0 16px;line-height:1.5;}
+  .student-results-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:11px;}
+  table.student-results-table{width:100%;min-width:820px;border-collapse:collapse;font-size:12.5px;}
+  table.student-results-table th{text-align:left;color:#fff;background:var(--ink);font-weight:600;font-size:11.5px;padding:10px 11px;white-space:nowrap;}
+  table.student-results-table th:first-child{border-radius:10px 0 0 0;}
+  table.student-results-table th:last-child{border-radius:0 10px 0 0;}
+  table.student-results-table td{padding:11px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap;}
+  table.student-results-table tbody tr:last-child td{border-bottom:0;}
+  table.student-results-table tbody tr:hover{background:var(--paper);}
+  .student-username{font-weight:700;color:var(--ink);}
+  .student-full-name{font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+  .student-minutes{font-weight:700;color:var(--ink);}
+  .student-level-chip{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;}
+  .student-level-chip.lvl-khong{background:var(--pulse-dim);color:#B23A3A;}
+  .student-level-chip.lvl-thieu{background:var(--amber-dim);color:#8A5A00;}
+  .student-level-chip.lvl-du{background:var(--teal-dim);color:#1D5F51;}
+  .student-level-chip.lvl-cao{background:var(--deep);color:#fff;}
+  .student-commit{color:var(--ink-soft);font-size:11.5px;}
+  .student-commit.yes{color:var(--teal);font-weight:700;}
   .admin-section{margin-top:32px;}
   .admin-section h3{font-size:15px;margin-bottom:14px;}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:50;max-width:88vw;text-align:center;}
