@@ -6,7 +6,7 @@ const HP_NAVIGATION_TYPE = (()=>{
   }catch(e){ return 'navigate'; }
 })();
 const HP_IS_RELOAD = HP_NAVIGATION_TYPE === 'reload';
-const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycby3etu9J1o-lY_V5xIXKrD59vYA21Cq4Z0tg-rST3hCI7KDu5HRL5uraFAr-K58X7Aw/exec";
+const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbwreGveg-jznaednYvQsAA3VKzu32vYugHln2r9-cjKNfj1wugGDzXUkqtCojiSL7qi/exec";
   window.__SHEETS_READY = !!SHEETS_API_URL && !SHEETS_API_URL.startsWith("ĐIỀN_");
 
   function sheetsCollection(path){
