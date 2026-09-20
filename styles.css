@@ -72,6 +72,9 @@
   .card{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:26px;}
   .field{margin-top:14px;}
   .field:first-child{margin-top:0;}
+  .school-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;}
+  .manual-school-fields{margin-top:0;}
+  .manual-school-fields .school-entry-note{font-size:12px;line-height:1.45;margin-top:8px;}
   select{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);font-family:'Inter',sans-serif;font-size:15px;background:#fff;color:var(--ink);}
   input[type=text],input[type=password]{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);font-family:'Inter',sans-serif;font-size:15px;background:#fff;color:var(--ink);}
   input[type=text]:focus,input[type=password]:focus,select:focus{outline:none;border-color:var(--ink);}
@@ -312,6 +315,7 @@
     .topbar-actions{width:100%;margin-left:0;}
     .topbar-actions .account-menu-wrap{margin-left:auto;}
     .student-actions{flex-direction:column;}
+    .school-grid{grid-template-columns:1fr;}
   }
 
   @media(max-width:759px){

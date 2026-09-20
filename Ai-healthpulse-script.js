@@ -6,18 +6,23 @@ const HP_NAVIGATION_TYPE = (()=>{
   }catch(e){ return 'navigate'; }
 })();
 const HP_IS_RELOAD = HP_NAVIGATION_TYPE === 'reload';
-const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbwreGveg-jznaednYvQsAA3VKzu32vYugHln2r9-cjKNfj1wugGDzXUkqtCojiSL7qi/exec";
+const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycby3etu9J1o-lY_V5xIXKrD59vYA21Cq4Z0tg-rST3hCI7KDu5HRL5uraFAr-K58X7Aw/exec";
   window.__SHEETS_READY = !!SHEETS_API_URL && !SHEETS_API_URL.startsWith("ĐIỀN_");
 
   function sheetsCollection(path){
     const base = SHEETS_API_URL;
     async function post(body){
       const res = await fetch(base, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(body) });
-      return await res.json();
+      if(!res.ok) throw new Error('Google Sheets HTTP '+res.status);
+      const result = await res.json();
+      if(result && result.error) throw new Error(String(result.error));
+      return result;
     }
     async function listDocs(){
       const res = await fetch(base + '?action=list&collection=' + encodeURIComponent(path));
+      if(!res.ok) throw new Error('Google Sheets HTTP '+res.status);
       const j = await res.json();
+      if(j && j.error) throw new Error(String(j.error));
       return (j.docs || []).map(d=>({ id:String(d.id), data: ()=>d.data }));
     }
     const api = {
@@ -27,7 +32,9 @@ const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbwreGveg-jznaedn
           id,
           async get(){
             const res = await fetch(base + '?action=get&collection=' + encodeURIComponent(path) + '&id=' + encodeURIComponent(id));
+            if(!res.ok) throw new Error('Google Sheets HTTP '+res.status);
             const j = await res.json();
+            if(j && j.error) throw new Error(String(j.error));
             return { id, exists: !!j.exists, data: ()=>j.data };
           },
           async set(data){ await post({ action:'set', collection:path, id, data }); },
@@ -40,6 +47,10 @@ const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbwreGveg-jznaedn
         return api.doc(j.id);
       },
       async get(){
+        const docs = await listDocs();
+        return { docs, empty: docs.length===0 };
+      },
+      async refresh(){
         const docs = await listDocs();
         return { docs, empty: docs.length===0 };
       },
@@ -265,10 +276,13 @@ async function bootAI(){
   }catch(e){}
   await AIBackend.init();
   DB.init();
-  await Promise.all([SchoolDirectory.populate('schoolSelect'), SchoolDirectory.populate('adminSchool')]);
+  setSchoolFields('school', '');
+  setSchoolFields('adminSchool', '');
+  setSchoolFields('studentSchool', '');
   refreshIcons();
   try{ await AdminAuth.tryRestore(); }catch(e){}
   if(!state.admin){ try{ await StudentAuth.tryRestore(); }catch(e){} }
+  CloudSync.start();
   if(HP_IS_RELOAD && getActiveAccount() && hpReadStorage(sessionStorage,'hp_last_view',null)==='view-chat') App.goChat();
 }
 /* =================== Cài đặt AI (khi chạy ngoài Claude) =================== */
@@ -427,7 +441,7 @@ function normaliseIdentity(value){
   return String(value || '').trim().replace(/\s+/g,' ').toLocaleLowerCase('vi-VN');
 }
 
-/* =================== danh mục trường học & phạm vi dữ liệu =================== */
+/* =================== thông tin trường học & phạm vi dữ liệu =================== */
 function stripSchoolDiacritics(value){
   return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D');
 }
@@ -474,80 +488,124 @@ function schoolLabel(data){
 }
 function isCompleteSchool(data){
   const school = normaliseSchool(data);
-  return !!(school.schoolId && school.schoolName && school.schoolLevel && school.wardName && school.provinceName);
+  return !!(school.schoolId && school.schoolName && school.schoolLevel && school.wardName && school.districtName && school.provinceName);
 }
 function schoolMatches(left, right){
   const a = normaliseSchool(left); const b = normaliseSchool(right);
   if(!a.schoolName || !b.schoolName) return false;
   if(a.schoolId && b.schoolId && a.schoolId === b.schoolId) return true;
   if(normaliseIdentity(a.schoolName) !== normaliseIdentity(b.schoolName)) return false;
-  const hasLocation = a.wardName || a.provinceName || b.wardName || b.provinceName;
+  const hasLocation = a.wardName || a.districtName || a.provinceName || b.wardName || b.districtName || b.provinceName;
   if(hasLocation){
-    return !!a.wardName && !!b.wardName && !!a.provinceName && !!b.provinceName &&
+    return !!a.wardName && !!b.wardName && !!a.districtName && !!b.districtName && !!a.provinceName && !!b.provinceName &&
       normaliseIdentity(a.wardName) === normaliseIdentity(b.wardName) &&
+      normaliseIdentity(a.districtName) === normaliseIdentity(b.districtName) &&
       normaliseIdentity(a.provinceName) === normaliseIdentity(b.provinceName);
   }
   return true;
 }
 function schoolValidationMessage(school){
-  if(!school || !school.schoolName) return 'Cậu chọn trường học nhé.';
-  if(!school.schoolId || !school.schoolLevel) return 'Cậu chọn trường THCS/THPT trong danh mục nhé.';
-  if(!school.wardName || !school.provinceName) return 'Danh mục trường này chưa có đủ phường/xã và tỉnh/thành, cậu chọn lại giúp mình nhé.';
+  if(!school || !school.schoolName) return 'Cậu nhập tên trường học nhé.';
+  if(!school.schoolLevel) return 'Cậu chọn cấp học THCS/THPT nhé.';
+  if(!school.wardName) return 'Cậu nhập phường/xã của trường nhé.';
+  if(!school.districtName) return 'Cậu nhập quận/huyện của trường nhé.';
+  if(!school.provinceName) return 'Cậu nhập tỉnh/thành phố của trường nhé.';
+  if(!school.schoolId) return 'Thông tin trường chưa hợp lệ, cậu kiểm tra lại nhé.';
   return '';
 }
-function schoolFromFields(selectId){
-  const select = $(selectId);
-  if(!select) return normaliseSchool('');
-  const listed = SchoolDirectory.schools.find(item=>item.schoolId === select.value);
-  return listed ? normaliseSchool(listed) : normaliseSchool('');
+function schoolFieldPrefix(value){
+  return String(value || '').replace(/Select$/,'');
+}
+function schoolFromFields(prefix){
+  const base = schoolFieldPrefix(prefix);
+  const value = id => $(id) ? $(id).value : '';
+  return normaliseSchool({
+    schoolName:value(base+'Name'),
+    schoolLevel:value(base+'Level'),
+    wardName:value(base+'Ward'),
+    districtName:value(base+'District'),
+    provinceName:value(base+'Province')
+  });
+}
+function setSchoolFields(prefix, data){
+  const base = schoolFieldPrefix(prefix);
+  const school = normaliseSchool(data || '');
+  const set = (id, value) => { const el=$(id); if(el) el.value = value || ''; };
+  set(base+'Name', school.schoolName);
+  set(base+'Level', school.schoolLevel);
+  set(base+'Ward', school.wardName);
+  set(base+'District', school.districtName);
+  set(base+'Province', school.provinceName);
 }
 
 const SchoolDirectory = {
-  schools:[], loaded:false, loading:null, lastUpdatedAt:0, loadError:null,
-  addLocal(data){
-    const school = normaliseSchool(data);
-    if(data && data.active === false) return school;
-    if(!isCompleteSchool(school)) return school;
-    const index = this.schools.findIndex(item=>item.schoolId === school.schoolId);
-    if(index === -1) this.schools.push(school); else this.schools[index] = Object.assign({}, this.schools[index], school);
-    this.schools.sort((a,b)=>schoolLabel(a).localeCompare(schoolLabel(b),'vi'));
-    return school;
+  schools:[], loaded:true, loading:null, lastUpdatedAt:0, loadError:null,
+  async load(){ return this.schools; },
+  async refresh(){ return this.schools; },
+  has(data){ return isCompleteSchool(data); },
+  async populate(prefix, selected){ setSchoolFields(prefix, selected || ''); return this.schools; }
+};
+
+/* =================== Đồng bộ hai chiều với Google Sheets ===================
+ *
+ * Mỗi thao tác set/update từ web đã ghi ngay vào Apps Script/Google Sheet.
+ * Chiều ngược lại được kiểm tra định kỳ: nếu admin sửa JSON trong Sheet,
+ * phiên đăng nhập hiện tại nhận bản mới mà không cần đóng trang. Dashboard
+ * vẫn có polling riêng để cập nhật các bản ghi kết quả.
+ */
+const CloudSync = {
+  accountTimer:null,
+  busy:false,
+  start(){
+    if(DB.mode !== 'sheets') return;
+    if(!this.accountTimer) this.accountTimer = setInterval(()=>this.refreshAccount(), 15000);
   },
-  async load(){
-    if(this.loaded) return this.schools;
-    if(this.loading) return this.loading;
-    this.loading = (async()=>{
-      try{
-        const snap = await DB.collection('schools').get();
-        (snap.docs || []).forEach(doc=>{
-          const data = doc.data() || {};
-          this.lastUpdatedAt = Math.max(this.lastUpdatedAt, Number(data.syncedAt || data.updatedAt || 0));
-          this.addLocal(data);
-        });
-      }catch(e){ this.loadError = e; }
-      this.loaded = true;
-      this.loading = null;
-      return this.schools;
-    })();
-    return this.loading;
-  },
-  has(data){
-    const school = normaliseSchool(data);
-    return !!this.schools.find(item=>schoolMatches(item, school));
-  },
-  async populate(selectId, selected){
-    const select = $(selectId); if(!select) return;
-    const selectedSchool = normaliseSchool(selected);
-    select.innerHTML = '<option value="">Đang tải danh mục trường…</option>';
-    await this.load();
-    const items = this.schools.slice();
-    let html = items.length ? '<option value="">— Chọn trường —</option>' : '<option value="">Danh mục trường đang được cập nhật…</option>';
-    html += items.map(item=>'<option value="'+escapeHtml(item.schoolId)+'">'+escapeHtml(schoolLabel(item))+'</option>').join('');
-    select.innerHTML = html;
-    const selectedItem = items.find(item=>schoolMatches(item, selectedSchool));
-    if(selectedItem) select.value = selectedItem.schoolId;
-    else select.value = '';
-    select.dataset.schoolReady = items.length ? 'true' : 'false';
+  async refreshAccount(){
+    if(this.busy) return;
+    const account = getActiveAccount();
+    if(!account || !account.username) return;
+    this.busy = true;
+    try{
+      const collection = account.role === 'admin' ? 'admins' : 'students';
+      const snap = await DB.collection(collection).doc(account.username).get();
+      if(!snap.exists){
+        toast('Tài khoản này đã bị xóa khỏi Google Sheet. Cậu sẽ được đăng xuất.');
+        if(account.role === 'admin') AdminAuth.logout(); else StudentAuth.logout();
+        return;
+      }
+      const data = snap.data() || {};
+      if(data.status === 'inactive' || data.active === false){
+        toast('Tài khoản này đang bị tạm khóa trên Google Sheet.');
+        if(account.role === 'admin') AdminAuth.logout(); else StudentAuth.logout();
+        return;
+      }
+      const incomingSchool = normaliseSchool(data);
+      const currentSchool = normaliseSchool(account);
+      const changed = String(data.updatedAt || '') !== String(account.updatedAt || '') ||
+        resolveAccountDisplayName(data, '') !== resolveAccountDisplayName(account, '') ||
+        !schoolMatches(incomingSchool, currentSchool) ||
+        String(data.khoi || '') !== String(account.khoi || '') ||
+        String(data.geminiApiKey || '') !== String(account.geminiApiKey || '');
+      if(!changed) return;
+      if(account.role === 'admin'){
+        state.admin = normaliseAdminAccount(data, account.username);
+        AIBackend.useAccountKey(state.admin);
+        const name = resolveAccountDisplayName(state.admin, state.admin.username);
+        if($('adminNameChip')) $('adminNameChip').textContent = name;
+        if($('adminSchoolChip')) $('adminSchoolChip').textContent = schoolLabel(state.admin);
+        setSchoolFields('school', state.admin);
+        setSchoolFields('adminSchool', state.admin);
+        AccountMenu.render();
+        if(Dashboard.started) Dashboard.applyFilter();
+      }else{
+        StudentAuth.setStudent(data, account.username);
+        StudentAuth.renderSession();
+      }
+    }catch(e){
+      // Mạng chập chờn không được làm mất phiên đang dùng; lần kiểm tra sau sẽ thử lại.
+    }finally{
+      this.busy = false;
+    }
   }
 };
 
@@ -563,7 +621,7 @@ const App = {
     state.pendingSurvey = false;
     showView('view-landing');
     const account = getActiveAccount();
-    SchoolDirectory.populate('schoolSelect', account || '');
+    setSchoolFields('school', account || '');
     if(typeof AccountMenu !== 'undefined') AccountMenu.render();
   },
   goChat(){
@@ -573,7 +631,7 @@ const App = {
     if(typeof Settings !== 'undefined') Settings.maybeOpenForAccount();
   },
   goLibrary(){ showView('view-library'); Library.load(); },
-  goAdminAuth(){ if(state.admin){ AdminAuth.onLoggedIn(); } else { showView('view-adminAuth'); AdminAuth.prefillSchool(); } },
+  goAdminAuth(){ if(state.admin){ AdminAuth.onLoggedIn(); } else { showView('view-adminAuth'); AdminAuth.switchTab('login'); AdminAuth.prefillSchool(); } },
   goStudentAuth(mode){
     StudentAuth.switchTab(mode || 'login');
     showView('view-studentAuth');
@@ -582,7 +640,7 @@ const App = {
   },
   startSurvey(){
     const khoi = $('khoiSelect').value;
-    const chosenSchool = schoolFromFields('schoolSelect');
+    const chosenSchool = schoolFromFields('school');
     const accountSchool = getActiveAccount();
     const school = isCompleteSchool(chosenSchool) ? chosenSchool : normaliseSchool(accountSchool || '');
     if(!khoi){ $('startErr').textContent = 'Cậu chọn khối lớp giúp mình nhé.'; return; }
@@ -709,7 +767,44 @@ const Library = {
 
 /* =================== admin: đăng nhập & quản lý tư liệu =================== */
 const AdminAuth = {
+  switchTab(tab){
+    const isRegister = tab === 'register';
+    const isForgot = tab === 'forgot';
+    const fullNameField = $('adminFullNameField');
+    const confirmField = $('adminConfirmField');
+    if(fullNameField) fullNameField.classList.toggle('hidden', !(isRegister || isForgot));
+    if(confirmField) confirmField.classList.toggle('hidden', !(isRegister || isForgot));
+    if($('adminTabLogin')) $('adminTabLogin').classList.toggle('active', !isRegister);
+    if($('adminTabRegister')) $('adminTabRegister').classList.toggle('active', isRegister);
+    if($('adminAuthTitle')) $('adminAuthTitle').textContent = isRegister ? 'Tạo tài khoản quản trị' : (isForgot ? 'Quên tài khoản quản trị' : 'Đăng nhập quản trị');
+    if($('adminAuthSubtitle')) $('adminAuthSubtitle').textContent = isRegister
+      ? 'Tạo tài khoản cho giáo viên/BGH và gắn tài khoản với đúng trường.'
+      : (isForgot ? 'Nhập họ tên và trường để tìm tài khoản, sau đó đặt lại mật khẩu.' : 'Dành cho giáo viên/BGH quản lý khu vực tư liệu tham khảo.');
+    if($('adminSubmitBtn')){
+      $('adminSubmitBtn').dataset.mode = tab;
+      $('adminSubmitBtn').textContent = isRegister ? 'Tạo tài khoản admin' : (isForgot ? 'Khôi phục tài khoản' : 'Đăng nhập');
+    }
+    if($('adminPasswordLabel')) $('adminPasswordLabel').textContent = isForgot ? 'Mật khẩu mới' : 'Mật khẩu';
+    if($('adminPasswordConfirmLabel')) $('adminPasswordConfirmLabel').textContent = isForgot ? 'Nhập lại mật khẩu mới' : 'Nhập lại mật khẩu';
+    if($('adminPassword')){
+      $('adminPassword').setAttribute('autocomplete', isRegister || isForgot ? 'new-password' : 'current-password');
+      $('adminPassword').placeholder = isRegister || isForgot ? 'ít nhất 6 ký tự' : 'mật khẩu của cậu';
+    }
+    if($('adminUsername')) $('adminUsername').placeholder = isForgot ? 'Có thể bỏ trống nếu không nhớ' : '3–32 ký tự, không dấu';
+    if($('adminAuthSwitch')) $('adminAuthSwitch').innerHTML = isRegister
+      ? 'Đã có tài khoản? <button onclick="AdminAuth.switchTab(\'login\')">Đăng nhập</button> · <button onclick="AdminAuth.switchTab(\'forgot\')">Quên tài khoản?</button>'
+      : (isForgot
+        ? '<button onclick="AdminAuth.switchTab(\'login\')">Quay lại đăng nhập</button>'
+        : 'Chưa có tài khoản? <button onclick="AdminAuth.switchTab(\'register\')">Tạo tài khoản admin</button> · <button onclick="AdminAuth.switchTab(\'forgot\')">Quên tài khoản?</button>');
+    if($('adminErr')) $('adminErr').textContent = '';
+    if(isRegister || isForgot) this.prefillSchool();
+    refreshIcons();
+  },
   async submit(){
+    const mode = $('adminSubmitBtn').dataset.mode || 'login';
+    if(mode === 'register') return this.register();
+    if(mode === 'forgot') return this.recover();
+
     const username = $('adminUsername').value.trim().toLowerCase();
     const password = $('adminPassword').value;
     const err = $('adminErr'); err.textContent = '';
@@ -722,6 +817,8 @@ const AdminAuth = {
       if(data.builtin === true && !resolveAccountDisplayName(data, '')){
         err.textContent = 'Tài khoản quản trị mẫu đã được tắt. Hãy dùng tài khoản admin thật.'; return;
       }
+      if(data.status === 'inactive' || data.active === false){ err.textContent = 'Tài khoản quản trị này đang bị tạm khóa.'; return; }
+      if(data.role && data.role !== 'admin'){ err.textContent = 'Tài khoản này không thuộc khu vực quản trị.'; return; }
       if(await sha256(password) !== data.passwordHash){ err.textContent = 'Sai mật khẩu.'; return; }
       const storedSchool = normaliseSchool(data);
       const enteredSchool = schoolFromFields('adminSchool');
@@ -740,6 +837,76 @@ const AdminAuth = {
       try{ await DB.collection('admins').doc(username).update({lastLoginAt:Date.now()}); }catch(e){}
       await AdminAuth.onLoggedIn();
     }catch(e){ err.textContent = 'Có lỗi khi đăng nhập, thử lại nhé.'; }
+  },
+  async register(){
+    const fullName = $('adminFullName').value.trim();
+    const username = $('adminUsername').value.trim().toLowerCase();
+    const password = $('adminPassword').value;
+    const confirm = $('adminPasswordConfirm').value;
+    const school = schoolFromFields('adminSchool');
+    const err = $('adminErr'); err.textContent = '';
+    if(fullName.length < 2){ err.textContent = 'Cậu nhập họ và tên nhé.'; return; }
+    if(!/^[a-z0-9._-]{3,32}$/.test(username)){ err.textContent = 'Tên đăng nhập cần 3–32 ký tự không dấu (chữ, số, ., _ hoặc -).'; return; }
+    if(password.length < 6){ err.textContent = 'Mật khẩu cần ít nhất 6 ký tự.'; return; }
+    if(password !== confirm){ err.textContent = 'Hai lần nhập mật khẩu chưa giống nhau.'; return; }
+    const schoolError = schoolValidationMessage(school);
+    if(schoolError){ err.textContent = schoolError; return; }
+    try{
+      const existing = await DB.collection('admins').doc(username).get();
+      if(existing.exists){ err.textContent = 'Tên đăng nhập admin này đã tồn tại. Cậu chọn tên khác nhé.'; return; }
+      const data = {
+        username, displayName:fullName, fullName, role:'admin', status:'active',
+        schoolId:school.schoolId, schoolName:school.schoolName, schoolLevel:school.schoolLevel,
+        wardName:school.wardName, districtName:school.districtName, provinceName:school.provinceName,
+        provinceCode:school.provinceCode, wardCode:school.wardCode, address:school.address,
+        passwordHash:await sha256(password), geminiApiKey:null, builtin:false,
+        createdAt:Date.now(), lastLoginAt:null
+      };
+      await DB.collection('admins').doc(username).set(data);
+      state.admin = normaliseAdminAccount(data, username);
+      localStorage.setItem('hp_admin_session', username);
+      await this.onLoggedIn();
+    }catch(e){ err.textContent = 'Chưa tạo được tài khoản admin, cậu thử lại nhé.'; }
+  },
+  async recover(){
+    const fullName = $('adminFullName').value.trim();
+    const username = $('adminUsername').value.trim().toLowerCase();
+    const password = $('adminPassword').value;
+    const confirm = $('adminPasswordConfirm').value;
+    const school = schoolFromFields('adminSchool');
+    const err = $('adminErr'); err.textContent = '';
+    if(fullName.length < 2){ err.textContent = 'Cậu nhập họ và tên đã dùng khi tạo tài khoản nhé.'; return; }
+    if(username && !/^[a-z0-9._-]{3,32}$/.test(username)){ err.textContent = 'Tên đăng nhập không hợp lệ.'; return; }
+    if(password.length < 6){ err.textContent = 'Mật khẩu mới cần ít nhất 6 ký tự.'; return; }
+    if(password !== confirm){ err.textContent = 'Hai lần nhập mật khẩu mới chưa giống nhau.'; return; }
+    const schoolError = schoolValidationMessage(school);
+    if(schoolError){ err.textContent = schoolError; return; }
+    try{
+      let candidates = [];
+      if(username){
+        const snap = await DB.collection('admins').doc(username).get();
+        if(snap.exists) candidates = [{id:username, data:snap.data() || {}}];
+      }else{
+        const snap = await DB.collection('admins').get();
+        candidates = (snap.docs || []).map(doc=>({id:doc.id, data:doc.data() || {}}));
+      }
+      candidates = candidates.filter(item=>{
+        const data = item.data;
+        return data.status !== 'inactive' && data.active !== false &&
+          normaliseIdentity(resolveAccountDisplayName(data, '')) === normaliseIdentity(fullName) &&
+          schoolMatches(data, school);
+      });
+      if(!candidates.length){ err.textContent = 'Không tìm thấy tài khoản phù hợp với họ tên và trường đã chọn.'; return; }
+      if(candidates.length > 1){ err.textContent = 'Có nhiều tài khoản trùng thông tin. Cậu nhập thêm tên đăng nhập để khôi phục đúng tài khoản.'; return; }
+      const target = candidates[0];
+      await DB.collection('admins').doc(target.id).update({passwordHash:await sha256(password), passwordUpdatedAt:Date.now(), status:'active'});
+      this.switchTab('login');
+      $('adminUsername').value = String(target.data.username || target.id).toLowerCase();
+      $('adminPassword').value = '';
+      $('adminPasswordConfirm').value = '';
+      $('adminFullName').value = '';
+      toast('Đã khôi phục tài khoản '+$('adminUsername').value+'. Cậu đăng nhập lại nhé.');
+    }catch(e){ err.textContent = 'Chưa khôi phục được tài khoản, cậu thử lại nhé.'; }
   },
   async onLoggedIn(){
     state.admin = normaliseAdminAccount(state.admin, state.admin && state.admin.username);
@@ -777,6 +944,10 @@ const AdminAuth = {
       const snap = await DB.collection('admins').doc(saved).get();
       if(snap.exists){
         const data = snap.data();
+        if(data.status === 'inactive' || data.active === false){
+          localStorage.removeItem('hp_admin_session');
+          return;
+        }
         if(data.builtin === true && !resolveAccountDisplayName(data, '')){
           localStorage.removeItem('hp_admin_session');
           return;
@@ -796,7 +967,7 @@ const AdminAuth = {
     }catch(e){}
   },
   prefillSchool(){
-    SchoolDirectory.populate('adminSchool', state.admin || '');
+    setSchoolFields('adminSchool', state.admin || '');
   }
 };
 
@@ -820,6 +991,8 @@ const StudentAuth = {
       address:school.address,
       role:'student',
       createdAt:data.createdAt || null,
+      updatedAt:data.updatedAt || null,
+      status:data.status || 'active',
       geminiApiKey:data.geminiApiKey || data.apiKey || data.geminiKey || null
     };
     AIBackend.useStudentKey(state.student);
@@ -869,8 +1042,8 @@ const StudentAuth = {
     if(preferred && $('studentGrade')) $('studentGrade').value = preferred;
   },
   prefillSchool(){
-    const preferred = state.pendingSchool || state.student || $('schoolSelect') && schoolFromFields('schoolSelect');
-    SchoolDirectory.populate('studentSchool', preferred || '');
+    const preferred = state.pendingSchool || state.student || schoolFromFields('school');
+    setSchoolFields('studentSchool', preferred || '');
   },
   async submit(){
     const mode = $('studentSubmitBtn').dataset.mode || 'login';
@@ -925,7 +1098,7 @@ const StudentAuth = {
           $('studentPasswordConfirm').value = '';
           $('studentName').value = '';
           $('studentGrade').value = '';
-          $('studentSchool').value = '';
+          setSchoolFields('studentSchool', '');
           toast('Cập nhật mật khẩu thành công. Cậu đăng nhập lại nhé.');
           return;
         }
@@ -973,7 +1146,7 @@ const StudentAuth = {
   renderSession(){
     if(!state.student){ AccountMenu.render(); return; }
     if(state.student.khoi && $('khoiSelect') && !state.pendingKhoi) $('khoiSelect').value = state.student.khoi;
-    SchoolDirectory.populate('schoolSelect', state.student);
+    setSchoolFields('school', state.student);
     AccountMenu.render();
   },
   logout(){

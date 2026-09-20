@@ -68,11 +68,16 @@
         <div class="landing-survey">
           <div class="start-card card">
             <div class="survey-kicker"><i data-lucide="clipboard-check" style="width:15px;height:15px;"></i> Khảo sát nhanh</div>
-            <label class="field-label" for="schoolSelect">Trường học</label>
-            <select id="schoolSelect">
-              <option value="">Đang tải danh mục trường THCS/THPT…</option>
-            </select>
-            <div class="muted" style="font-size:12px;line-height:1.45;margin-top:7px;">Danh mục được đồng bộ tự động, hiển thị kèm phường/xã và tỉnh/thành để tránh chọn nhầm trường trùng tên.</div>
+            <div class="manual-school-fields" id="schoolFields">
+              <div class="field"><label class="field-label" for="schoolName">Tên trường</label><input type="text" id="schoolName" placeholder="Ví dụ: Trường THPT Phan Châu Trinh" autocomplete="organization" /></div>
+              <div class="school-grid">
+                <div class="field"><label class="field-label" for="schoolLevel">Cấp học</label><select id="schoolLevel"><option value="">— Chọn cấp —</option><option value="THCS">THCS</option><option value="THPT">THPT</option><option value="THCS-THPT">THCS–THPT</option></select></div>
+                <div class="field"><label class="field-label" for="schoolWard">Phường/xã</label><input type="text" id="schoolWard" placeholder="Ví dụ: Hải Châu" /></div>
+                <div class="field"><label class="field-label" for="schoolDistrict">Quận/huyện</label><input type="text" id="schoolDistrict" placeholder="Ví dụ: Hải Châu" /></div>
+                <div class="field"><label class="field-label" for="schoolProvince">Tỉnh/thành phố</label><input type="text" id="schoolProvince" placeholder="Ví dụ: Đà Nẵng" /></div>
+              </div>
+              <div class="muted school-entry-note">Nhập đúng địa bàn để phân biệt các trường trùng tên.</div>
+            </div>
             <label class="field-label" for="khoiSelect">Cậu đang học khối mấy?</label>
             <select id="khoiSelect">
               <option value="">— Chọn khối —</option>
@@ -152,16 +157,32 @@
   <!-- ============ ĐĂNG NHẬP QUẢN TRỊ ============ -->
   <section class="view" id="view-adminAuth">
     <div class="lib-wrap" style="max-width:420px;">
-      <h2 style="font-size:26px;">Đăng nhập quản trị</h2>
-      <p class="muted" style="font-size:14px;margin-top:6px;">Dành cho giáo viên/BGH quản lý khu vực tư liệu tham khảo.</p>
-      <div class="card" style="margin-top:16px;">
-        <div class="field"><label class="field-label">Tên đăng nhập</label><input type="text" id="adminUsername" /></div>
-        <div class="field"><label class="field-label">Mật khẩu</label><input type="password" id="adminPassword" placeholder="ít nhất 4 ký tự" /></div>
-        <div class="field"><label class="field-label" for="adminSchool">Trường quản lý</label><select id="adminSchool"><option value="">Đang tải danh mục trường THCS/THPT…</option></select><div class="muted" style="font-size:12px;line-height:1.45;margin-top:7px;">Chọn đúng trường kèm phường/xã và tỉnh/thành. Không nhập tên trường thủ công.</div></div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;" id="adminSubmitBtn" onclick="AdminAuth.submit()">Đăng nhập</button>
-        <div class="err-text" id="adminErr"></div>
-        <div class="auth-note"><i data-lucide="lock-keyhole" style="width:15px;height:15px;"></i><span>Tài khoản quản trị do nhà trường cấp. Trường được lưu cùng tài khoản để admin chỉ xem đúng dữ liệu học sinh của trường đó.</span></div>
+      <h2 style="font-size:26px;" id="adminAuthTitle">Đăng nhập quản trị</h2>
+      <p class="muted" style="font-size:14px;margin-top:6px;" id="adminAuthSubtitle">Dành cho giáo viên/BGH quản lý khu vực tư liệu tham khảo.</p>
+      <div class="auth-tabs" id="adminAuthTabs">
+        <button id="adminTabLogin" class="auth-tab active" onclick="AdminAuth.switchTab('login')">Đăng nhập</button>
+        <button id="adminTabRegister" class="auth-tab" onclick="AdminAuth.switchTab('register')">Tạo tài khoản</button>
       </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="field hidden" id="adminFullNameField"><label class="field-label" for="adminFullName">Họ và tên</label><input type="text" id="adminFullName" placeholder="Ví dụ: Nguyễn Ánh Dương" autocomplete="name" /></div>
+        <div class="field"><label class="field-label" for="adminUsername">Tên đăng nhập</label><input type="text" id="adminUsername" placeholder="3–32 ký tự, không dấu" autocomplete="username" /></div>
+        <div class="field"><label class="field-label" id="adminPasswordLabel" for="adminPassword">Mật khẩu</label><input type="password" id="adminPassword" placeholder="ít nhất 6 ký tự" autocomplete="new-password" /></div>
+        <div class="field hidden" id="adminConfirmField"><label class="field-label" id="adminPasswordConfirmLabel" for="adminPasswordConfirm">Nhập lại mật khẩu</label><input type="password" id="adminPasswordConfirm" placeholder="Nhập lại mật khẩu" autocomplete="new-password" /></div>
+        <div class="manual-school-fields" id="adminSchoolFields">
+          <div class="field"><label class="field-label" for="adminSchoolName">Tên trường quản lý</label><input type="text" id="adminSchoolName" placeholder="Ví dụ: Trường THPT Phan Châu Trinh" autocomplete="organization" /></div>
+          <div class="school-grid">
+            <div class="field"><label class="field-label" for="adminSchoolLevel">Cấp học</label><select id="adminSchoolLevel"><option value="">— Chọn cấp —</option><option value="THCS">THCS</option><option value="THPT">THPT</option><option value="THCS-THPT">THCS–THPT</option></select></div>
+            <div class="field"><label class="field-label" for="adminSchoolWard">Phường/xã</label><input type="text" id="adminSchoolWard" placeholder="Ví dụ: Hải Châu" /></div>
+            <div class="field"><label class="field-label" for="adminSchoolDistrict">Quận/huyện</label><input type="text" id="adminSchoolDistrict" placeholder="Ví dụ: Hải Châu" /></div>
+            <div class="field"><label class="field-label" for="adminSchoolProvince">Tỉnh/thành phố</label><input type="text" id="adminSchoolProvince" placeholder="Ví dụ: Đà Nẵng" /></div>
+          </div>
+          <div class="muted school-entry-note">Nhập đúng trường và địa bàn; thông tin này dùng để giới hạn Dashboard của admin.</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px;" id="adminSubmitBtn" data-mode="login" onclick="AdminAuth.submit()">Đăng nhập</button>
+        <div class="err-text" id="adminErr"></div>
+        <div class="auth-note"><i data-lucide="lock-keyhole" style="width:15px;height:15px;"></i><span>Tài khoản admin được lưu trên Google Sheets cùng trường quản lý. Dashboard chỉ hiển thị dữ liệu học sinh thuộc đúng trường đó.</span></div>
+      </div>
+      <div class="auth-switch" id="adminAuthSwitch">Chưa có tài khoản? <button onclick="AdminAuth.switchTab('register')">Tạo tài khoản admin</button> · <button onclick="AdminAuth.switchTab('forgot')">Quên tài khoản?</button></div>
     </div>
   </section>
 
@@ -185,12 +206,21 @@
           <option value="6">Khối 6</option><option value="7">Khối 7</option><option value="8">Khối 8</option>
           <option value="9">Khối 9</option><option value="10">Khối 10</option><option value="11">Khối 11</option><option value="12">Khối 12</option>
         </select></div>
-        <div class="field hidden" id="studentSchoolField"><label class="field-label" for="studentSchool">Trường học</label><select id="studentSchool"><option value="">Đang tải danh mục trường THCS/THPT…</option></select><div class="muted" style="font-size:12px;line-height:1.45;margin-top:7px;">Chọn đúng trường kèm phường/xã và tỉnh/thành. Không nhập tên trường thủ công.</div></div>
+        <div class="manual-school-fields hidden" id="studentSchoolField">
+          <div class="field"><label class="field-label" for="studentSchoolName">Tên trường</label><input type="text" id="studentSchoolName" placeholder="Ví dụ: Trường THPT Phan Châu Trinh" autocomplete="organization" /></div>
+          <div class="school-grid">
+            <div class="field"><label class="field-label" for="studentSchoolLevel">Cấp học</label><select id="studentSchoolLevel"><option value="">— Chọn cấp —</option><option value="THCS">THCS</option><option value="THPT">THPT</option><option value="THCS-THPT">THCS–THPT</option></select></div>
+            <div class="field"><label class="field-label" for="studentSchoolWard">Phường/xã</label><input type="text" id="studentSchoolWard" placeholder="Ví dụ: Hải Châu" /></div>
+            <div class="field"><label class="field-label" for="studentSchoolDistrict">Quận/huyện</label><input type="text" id="studentSchoolDistrict" placeholder="Ví dụ: Hải Châu" /></div>
+            <div class="field"><label class="field-label" for="studentSchoolProvince">Tỉnh/thành phố</label><input type="text" id="studentSchoolProvince" placeholder="Ví dụ: Đà Nẵng" /></div>
+          </div>
+          <div class="muted school-entry-note">Nhập đúng địa bàn để hệ thống phân loại dữ liệu theo trường.</div>
+        </div>
         <div class="field" id="studentPasswordField"><label class="field-label" id="studentPasswordLabel" for="studentPassword">Mật khẩu</label><input type="password" id="studentPassword" placeholder="ít nhất 6 ký tự" autocomplete="new-password" /></div>
         <div class="field hidden" id="studentConfirmField"><label class="field-label" id="studentPasswordConfirmLabel" for="studentPasswordConfirm">Nhập lại mật khẩu</label><input type="password" id="studentPasswordConfirm" placeholder="Nhập lại mật khẩu" autocomplete="new-password" /></div>
         <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px;" id="studentSubmitBtn" onclick="StudentAuth.submit()">Đăng nhập</button>
         <div class="err-text" id="studentErr"></div>
-        <div class="auth-note"><i data-lucide="shield-check" style="width:15px;height:15px;"></i><span>Tài khoản này chỉ dành cho học sinh. Khu vực quản trị có trang đăng nhập riêng và không mở đăng ký tự do.</span></div>
+        <div class="auth-note"><i data-lucide="shield-check" style="width:15px;height:15px;"></i><span>Tài khoản này chỉ dành cho học sinh. Khu vực quản trị có trang đăng nhập và tạo tài khoản riêng.</span></div>
       </div>
       <div class="auth-switch" id="studentAuthSwitch">Chưa có tài khoản? <button onclick="StudentAuth.switchTab('register')">Tạo tài khoản học sinh</button></div>
     </div>
@@ -340,10 +370,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ============ Kết nối Google Sheets (chỉ dùng khi chạy NGOÀI Claude, vd. GitHub Pages) ============ -->
-<!-- Điền URL Web App Apps Script của bạn vào SHEETS_API_URL bên dưới.
-     Cách lấy URL: xem hướng dẫn Apps Script (Code.gs) đi kèm — dán vào Google Sheet của bạn,
-     Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone > Deploy, rồi copy URL. -->
 <script src="Ai-healthpulse-script.js"></script>
 </body>
 </html>
