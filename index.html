@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>AI HealthPulse — Nhịp Khỏe Học Đường</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -838,6 +838,141 @@ body.fs-open .vr-dock{bottom:auto;top:12px;}
   border-radius:10px;padding:6px 10px;font:700 13px 'Inter',sans-serif;opacity:0;pointer-events:none;transition:opacity .15s;}
 .fn-item:hover span,.fn-item.fn-hover span,.fn-item:focus-visible span{opacity:1;}
 .fn-cam{width:160px !important;}
+
+/* =====================================================================
+   NÂNG CẤP TRỢ NĂNG
+   ===================================================================== */
+/* Thiết bị: chỉ hiện chức năng phù hợp (a11y.js gắn class is-mobile / is-desktop cho body) */
+body.is-mobile .vr-only-desktop{display:none !important;}
+body:not(.is-mobile) .vr-only-mobile{display:none !important;}
+
+/* Viền focus rõ ràng cho MỌI phần tử khi dùng bàn phím */
+:focus-visible{outline:3px solid #FFB300;outline-offset:2px;}
+.vr-menu button:focus-visible,.vr-dock-tools button:focus-visible{outline:3px solid #FFB300;outline-offset:1px;}
+
+/* ---------- Nút Trợ giúp toàn cục: mép phải, ngay trên khung trợ lý ---------- */
+.hp-help-wrap{position:fixed;z-index:61;right:calc(16px + env(safe-area-inset-right, 0px));
+  bottom:calc(16px + var(--vr-help-h, var(--vr-bar-h, 64px)) + 12px + env(safe-area-inset-bottom, 0px));display:flex;align-items:center;gap:4px;}
+.hp-help-wrap.hidden{display:none;}
+.hp-help-fab{position:relative;
+  display:flex;align-items:center;gap:8px;min-width:48px;height:48px;padding:0 6px;border-radius:999px;cursor:pointer;
+  background:#fff;color:var(--ink,#0F2C2E);border:2px solid var(--ink,#0F2C2E);box-shadow:0 8px 22px rgba(15,44,46,.18);
+  font:800 14px 'Be Vietnam Pro','Inter',sans-serif;transition:background .15s, transform .15s;}
+.hp-help-fab.hidden{display:none;}
+.hp-help-q{width:34px;height:34px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--ink,#0F2C2E);color:#fff;font:900 20px/1 'Inter',sans-serif;}
+.hp-help-txt{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .2s ease, padding .2s ease;}
+.hp-help-fab:hover .hp-help-txt,.hp-help-fab:focus-visible .hp-help-txt{max-width:120px;padding-right:8px;}
+.hp-help-fab:hover,.hp-help-fab:focus-visible{background:#FFF4D6;transform:translateY(-1px);}
+.hp-help-fab:focus-visible{outline:4px solid #FFB300;outline-offset:3px;}
+.hp-help-fab::after{content:attr(data-tip);position:absolute;right:0;bottom:calc(100% + 8px);white-space:nowrap;pointer-events:none;
+  background:#111;color:#fff;font:600 12px 'Inter',sans-serif;padding:5px 9px;border-radius:8px;opacity:0;transform:translateY(4px);transition:opacity .15s, transform .15s;}
+.hp-help-fab:hover::after,.hp-help-fab:focus-visible::after{opacity:1;transform:none;}
+body.vr-regular[data-vr-view="view-chat"] .hp-help-wrap{bottom:calc(96px + var(--vr-help-h, var(--vr-bar-h, 64px)) + 12px + env(safe-area-inset-bottom, 0px));}
+body.vr-blind .hp-help-wrap{bottom:calc(12px + var(--vr-help-h, var(--vr-bar-h, 84px)) + 12px + env(safe-area-inset-bottom, 0px));}
+body.vr-blind .hp-help-fab{background:#111;color:#FFD54F;border-color:#FFD54F;}
+body.vr-blind .hp-help-fab .hp-help-q{background:#FFD54F;color:#111;}
+body.fs-open .hp-help-wrap,body.vk-open .hp-help-wrap{display:none;}
+@media(hover:none){ .hp-help-fab::after{display:none;} .hp-help-txt{max-width:120px;padding-right:8px;} }
+
+/* Khung trợ lý: chừa vùng an toàn iPhone */
+.vr-dock{bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
+.vr-dock[data-mode="blind"]{bottom:calc(12px + env(safe-area-inset-bottom, 0px));}
+
+/* ---------- Ký hiệu tay: trạng thái chế độ + chữ hoa/thường ---------- */
+.fs-state{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.fs-mode{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font:800 14px 'Inter',sans-serif;
+  background:#1f3b36;color:#7FE0C9;border:2px solid #7FE0C9;}
+.fs-mode::before{content:'⌨';}
+.fs-mode[data-mode="command"]{background:#3a2a10;color:#FFD54F;border-color:#FFD54F;}
+.fs-mode[data-mode="command"]::before{content:'⚙';}
+.fs-case{padding:4px 10px;border-radius:999px;font:900 14px 'Inter',monospace;background:#fff;color:#111;letter-spacing:.06em;}
+.fs-board[data-mode="command"]{border-top-color:#FFD54F;}
+.fs-actions button[aria-pressed="true"]{border-color:#FFD54F;background:#3a3110;}
+.fs-grid .fs-cmd b{background:#7FE0C9;}
+.fs-actions{grid-template-columns:repeat(2,minmax(96px,1fr));}
+.fs-actions button{min-height:44px;}
+@media(max-width:640px){ .fs-actions{grid-template-columns:repeat(4,1fr);} }
+
+/* ---------- Bàn phím trợ năng (điện thoại) ---------- */
+.vk-board{position:fixed;left:0;right:0;bottom:0;z-index:98;max-height:100vh;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;
+  background:#0f1a1b;color:#fff;border-top:4px solid #7FE0C9;border-radius:18px 18px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.35);
+  padding:12px calc(12px + env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) calc(12px + env(safe-area-inset-left, 0px));
+  font-family:'Be Vietnam Pro','Inter',sans-serif;}
+.vk-board.hidden{display:none;}
+.vk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.vk-head h2{font-size:17px;margin:0;color:#7FE0C9;}
+.vk-case{padding:3px 10px;border-radius:999px;background:#fff;color:#111;font:900 13px 'Inter',monospace;}
+.vk-preview{margin:8px 0 10px;background:#1a2627;border-radius:12px;padding:8px 12px;}
+.vk-field{display:block;font:800 11.5px 'Inter',sans-serif;color:#FFD54F;text-transform:uppercase;letter-spacing:.05em;}
+.vk-preview-label{display:block;font-size:12.5px;color:#b9c9c4;}
+.vk-preview output{display:block;font:800 clamp(20px,6vw,28px) 'Be Vietnam Pro',sans-serif;min-height:1.25em;word-break:break-word;color:#fff;}
+.vk-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px;}
+.vk-keys.hidden{display:none;}
+.vk-key,.vk-ctrl button{min-width:48px;min-height:48px;border-radius:12px;border:2px solid #3a4a4b;background:#1f2d2e;color:#fff;
+  font:800 20px 'Inter',sans-serif;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.vk-key:active,.vk-ctrl button:active{background:#2F8F7D;}
+.vk-key:focus-visible,.vk-ctrl button:focus-visible{outline:4px solid #FFD54F;outline-offset:2px;border-color:#FFD54F;}
+.vk-ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
+.vk-ctrl button{font-size:14.5px;padding:6px 8px;}
+.vk-ctrl .vk-wide{grid-column:span 2;}
+.vk-ctrl .ok{background:#2F8F7D;border-color:#7FE0C9;}
+.vk-ctrl button[aria-pressed="true"]{border-color:#FFD54F;background:#3a3110;}
+.vk-tip{margin:10px 0 0;font-size:12.5px;color:#cfdcd8;line-height:1.45;}
+body.vk-open{overflow:hidden;}
+body.vk-open .vr-dock{display:none !important;}
+@media(orientation:landscape) and (max-height:500px){
+  .vk-keys{grid-template-columns:repeat(13,1fr);gap:6px;}
+  .vk-ctrl{grid-template-columns:repeat(7,1fr);}
+  .vk-ctrl .vk-wide{grid-column:auto;}
+  .vk-tip,.vk-preview-label{display:none;}
+  .vk-key,.vk-ctrl button{min-height:44px;}
+}
+
+/* ---------- Giảm chuyển động ---------- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important;}
+  body.vr-listening .vr-orb::after,body.vr-speaking .vr-orb::after{animation:none !important;}
+}
+
+/* ---------- Khung kéo / thu gọn được ---------- */
+.vr-grip{cursor:grab;touch-action:none;user-select:none;font:900 16px/1 'Inter',sans-serif;letter-spacing:-1px;}
+.is-dragging,.is-dragging .vr-grip{cursor:grabbing !important;}
+.is-dragging{transition:none !important;opacity:.92;box-shadow:0 18px 40px rgba(0,0,0,.28) !important;}
+.vr-dock-tools .vr-grip,.vr-dock-tools .vr-collapse{font:900 17px/1 'Inter',sans-serif;}
+/* khung trợ lý thu gọn: chỉ còn biểu tượng + nút di chuyển + nút mở rộng */
+.vr-dock.is-collapsed{width:auto !important;grid-template-columns:auto auto;gap:6px;padding:6px;}
+.vr-dock.is-collapsed .vr-dock-body,.vr-dock.is-collapsed .vr-menu,
+.vr-dock.is-collapsed .vr-dock-tools > :not(.vr-grip):not(.vr-collapse){display:none !important;}
+.vr-dock[data-mode="blind"].is-collapsed{width:auto !important;}
+.vr-dock[data-mode="blind"] .vr-dock-tools button{color:#FFD54F;}
+/* nút trợ giúp: nút nhỏ di chuyển / thu gọn hiện khi rê chuột hoặc focus */
+.hp-mini,.fn-mini{width:30px;height:30px;border-radius:50%;border:1px solid rgba(15,44,46,.25);background:#fff;color:var(--ink,#0F2C2E);
+  font:900 14px/1 'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+.hp-help-tools{display:flex;flex-direction:column;gap:3px;opacity:0;transition:opacity .15s;}
+.hp-help-wrap:hover .hp-help-tools,.hp-help-wrap:focus-within .hp-help-tools,.hp-help-wrap.is-collapsed .hp-help-tools{opacity:1;}
+@media(hover:none){ .hp-help-tools{opacity:1;} }
+.hp-help-wrap.is-collapsed .hp-help-fab{min-width:30px;height:30px;padding:0;border-width:1px;}
+.hp-help-wrap.is-collapsed .hp-help-q{width:26px;height:26px;font-size:15px;}
+.hp-help-wrap.is-collapsed .hp-help-txt{display:none;}
+.hp-help-wrap.is-collapsed .hp-help-tools{flex-direction:row;}
+body.vr-blind .hp-mini{background:#111;color:#FFD54F;border-color:#FFD54F;}
+/* khung webcam: thu gọn chỉ còn thanh trạng thái — video vẫn chạy (ẩn rất nhỏ) để tiếp tục nhận diện tay */
+.fn-mini{width:26px;height:26px;background:transparent;color:#FFD54F;border-color:#FFB300;font-size:13px;flex:none;}
+.fn-cam.is-collapsed{width:auto !important;min-width:200px;}
+.fn-cam.is-collapsed video,.fn-cam.is-collapsed .fn-skel{position:absolute !important;width:2px !important;height:2px !important;opacity:0;pointer-events:none;}
+.fn-cam.is-collapsed .fn-cam-tip{display:none;}
+.fn-cam-bar{flex-wrap:wrap;row-gap:4px;}
+.fn-cam:not(.is-collapsed) .fn-cam-bar span:nth-child(2){flex:1 1 120px;}
+.fn-cam.is-collapsed .fn-cam-bar{flex-wrap:nowrap;}
+.vr-dock-tools .vr-collapse[aria-expanded]:not(:hover):not(:focus-visible){background:transparent;}
+.vr-dock[data-mode="blind"] .vr-dock-tools button:hover,.vr-dock[data-mode="blind"] .vr-dock-tools button:focus-visible{background:#2a2a2a;color:#FFD54F;}
+/* màn hình hẹp: hàng nút xuống dòng riêng để chữ trợ lý đọc không bị ép */
+@media(max-width:640px){
+  .vr-dock:not(.is-collapsed):not(.vr-dock-off){grid-template-columns:auto minmax(0,1fr);row-gap:6px;}
+  .vr-dock:not(.is-collapsed):not(.vr-dock-off) .vr-dock-tools{grid-column:1 / -1;justify-content:space-between;}
+  .vr-dock-tools button{width:40px;height:40px;}
+}
 
 /* =====================================================================
    AI HealthPulse — ĐO BMI + QUÉT CAMERA (bmi.css) · nạp SAU styles.css
@@ -2158,7 +2293,7 @@ function showView(id){
   const settingsBtn = $('settingsBtn');
   if(settingsBtn) settingsBtn.classList.toggle('hidden', id!=='view-chat');
   if(typeof StudentAuth !== 'undefined' && StudentAuth.renderSession) StudentAuth.renderSession();
-  window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({top:0,behavior:(window.A11y ? A11y.scrollBehavior() : 'smooth')});
   refreshIcons();
   if(window.VoiceRobot) VoiceRobot.onView(id);
 }
@@ -3648,7 +3783,7 @@ function addMsg(role, text){
   appendMsgElement(role, text);
   ChatHistory.addMessage(role, text);
   if(role==='ai' && window.VoiceRobot) VoiceRobot.onAiMessage(text);
-  window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
+  window.scrollTo({top:document.body.scrollHeight, behavior:(window.A11y ? A11y.scrollBehavior() : 'smooth')});
 }
 /** Hàng nút bấm ngay dưới tin nhắn mới nhất của Chatbot (VD: tải file CSV, mở Kho dữ liệu) */
 function addMsgActions(actions){
@@ -4496,7 +4631,7 @@ const WHO2007 = {
       renderResult(res); renderReference(res);
       save(res);
       robotSay(speechOf(res));
-      if(window.innerWidth < 900){ const b = $id('bmiResult'); if(b) b.scrollIntoView({behavior:'smooth', block:'start'}); }
+      if(window.innerWidth < 900){ const b = $id('bmiResult'); if(b) b.scrollIntoView({behavior:(window.A11y ? A11y.scrollBehavior() : 'smooth'), block:'start'}); }
       return res;
     },
     reset(){
@@ -5034,6 +5169,7 @@ const WHO2007 = {
       '</div>';
     document.body.appendChild(d);
     S.el = d; S.video = $('video', d); S.canvas = $('canvas', d); S.ctx = S.canvas.getContext('2d');
+    if(window.A11y) A11y.manageDialog(d, {close:() => close()});    // Escape đóng, giữ Tab trong hộp thoại, trả focus
     d.addEventListener('click', e => {
       const b = e.target.closest('[data-hs]'); if(!b) return;
       const a = b.dataset.hs;
@@ -5550,7 +5686,7 @@ const WHO2007 = {
    AI HealthPulse — NHẬP CHỮ TIẾNG VIỆT THEO QUY TẮC (vn-input.js)
    • telex(raw)   : gõ kiểu Telex → chữ Việt có dấu, đặt dấu thanh theo quy tắc
                     chính tả thông dụng (hòa, thủy, người, quyển, giữa…)
-                    aa→â aw→ă ee→ê oo→ô ow→ơ uw→ư w→ư dd→đ · s sắc f huyền r hỏi x ngã j nặng z xóa dấu
+                    aa→â aw→ă ee→ê oo→ô ow→ơ uw→ư dd→đ (w đứng riêng giữ nguyên là w) · s sắc f huyền r hỏi x ngã j nặng z xóa dấu
    • spell(text)  : hiểu lời ĐÁNH VẦN tiếng Việt ("bê", "a", "dấu sắc", "cách", "xóa"…)
                     → các phím Telex, để nhập bằng giọng nói từng chữ
    • forField(el, text): chuẩn hoá theo quy tắc từng ô (tên đăng nhập, mật khẩu, họ tên, số…)
@@ -5624,12 +5760,8 @@ const WHO2007 = {
         if(tone) word = placeTone(word, tone);
         continue;
       }
-      if(lower === 'w'){   // w đứng một mình → ư
-        const tone = wordTone(word);
-        word = [...plainWord, ch === 'W' ? 'Ư' : 'ư'].join('');
-        if(tone) word = placeTone(word, tone);
-        continue;
-      }
+      /* "w" đứng một mình GIỮ NGUYÊN là chữ W/w (trước đây tự đổi thành ư/Ư → gõ "W" ra "Ư").
+         Chỉ kết hợp với nguyên âm ngay trước: uw → ư, ow → ơ, aw → ă (xử lý ở MOD phía trên). */
       const tone = wordTone(word);
       word = plainWord + ch;
       if(tone) word = placeTone(word, tone);
@@ -5710,13 +5842,342 @@ const WHO2007 = {
 </script>
 <script>
 /* =====================================================================
+   AI HealthPulse — LÕI TRỢ NĂNG DÙNG CHUNG (a11y.js)
+   Nạp TRƯỚC voice-robot.js / finger-nav.js. Không phụ thuộc file nào khác.
+   • Device   : phân biệt máy tính / điện thoại bằng matchMedia (User-Agent chỉ là dự phòng)
+   • A11y.announce(text, {assertive}) : vùng aria-live cho trình đọc màn hình
+   • Hộp thoại (.modal-overlay, [data-a11y-dialog]) : role="dialog", Escape để đóng,
+     giữ Tab trong hộp thoại (focus trap), trả focus về nút đã mở khi đóng
+   • A11y.reducedMotion() : người dùng bật "Giảm chuyển động"
+   ===================================================================== */
+(function(){
+  'use strict';
+  const mq = q => { try{ return !!(window.matchMedia && window.matchMedia(q).matches); }catch(e){ return false; } };
+  const UA = String(navigator.userAgent || '');
+
+  /* ---------------- Device ---------------- */
+  const Device = {
+    /** Có chuột / bàn di chuột (con trỏ chính xác) */
+    hasFinePointer(){ return mq('(any-pointer: fine)') || mq('(pointer: fine)'); },
+    /** Màn hình cảm ứng là cách nhập chính */
+    isTouchPrimary(){ return mq('(pointer: coarse)') && !mq('(any-pointer: fine)'); },
+    isNarrow(){ return mq('(max-width: 768px)'); },
+    isIOS(){ return /iPhone|iPad|iPod/i.test(UA) || (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1); },
+    /** Điện thoại / máy tính bảng: ưu tiên matchMedia, User-Agent chỉ dùng khi trình duyệt không hỗ trợ media query */
+    isMobile(){
+      const hasMQ = !!window.matchMedia;
+      if(hasMQ){
+        if(Device.isTouchPrimary()) return true;                       // điện thoại, máy tính bảng
+        if(Device.isNarrow() && mq('(pointer: coarse)')) return true;  // màn hình hẹp + cảm ứng
+        if(Device.hasFinePointer()) return false;                      // laptop cảm ứng vẫn là máy tính
+      }
+      return /Android|iPhone|iPad|iPod|Mobile|Silk|Opera Mini/i.test(UA) || Device.isIOS();
+    },
+    isDesktop(){ return !Device.isMobile(); },
+    /** Có thể dùng camera nhận diện ký hiệu tay (chỉ máy tính, có getUserMedia, trang an toàn) */
+    canUseHandCamera(){
+      return Device.isDesktop() && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext !== false;
+    },
+    label(){ return Device.isMobile() ? 'điện thoại' : 'máy tính'; }
+  };
+  window.Device = Device;
+  const syncDeviceClass = () => {
+    const b = document.body; if(!b) return;
+    b.classList.toggle('is-mobile', Device.isMobile());
+    b.classList.toggle('is-desktop', Device.isDesktop());
+  };
+  syncDeviceClass();
+  ['(pointer: coarse)', '(max-width: 768px)'].forEach(q => {
+    try{
+      const m = window.matchMedia(q);
+      if(m.addEventListener) m.addEventListener('change', syncDeviceClass); else if(m.addListener) m.addListener(syncDeviceClass);
+    }catch(e){}
+  });
+
+  /* ---------------- Vùng thông báo cho trình đọc màn hình ---------------- */
+  function region(id, level){
+    let el = document.getElementById(id);
+    if(!el){
+      el = document.createElement('div');
+      el.id = id; el.className = 'vr-sr-only';
+      el.setAttribute('aria-live', level); el.setAttribute('aria-atomic', 'true');
+      el.setAttribute('role', level === 'assertive' ? 'alert' : 'status');
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+  const LIVE = {timer:0, last:'', lastAt:0};
+  function announce(text, opts){
+    text = String(text || '').replace(/\s+/g, ' ').trim();
+    if(!text) return;
+    const now = Date.now();
+    if(text === LIVE.last && now - LIVE.lastAt < 1500) return;          // không lặp lại cùng một câu liên tục
+    LIVE.last = text; LIVE.lastAt = now;
+    const el = region(opts && opts.assertive ? 'accessibilityLiveRegionAssertive' : 'accessibilityLiveRegion', opts && opts.assertive ? 'assertive' : 'polite');
+    el.textContent = '';
+    clearTimeout(LIVE.timer);
+    // đổi nội dung sau một nhịp để trình đọc màn hình nhận là thông báo mới
+    LIVE.timer = setTimeout(() => { el.textContent = text; }, 60);
+  }
+
+  /* ---------------- Hộp thoại: Escape, giữ Tab, trả focus ---------------- */
+  const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const isShown = el => !!el && !el.classList.contains('hidden') && el.getAttribute('aria-hidden') !== 'true' &&
+    !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+  const focusables = root => [...root.querySelectorAll(FOCUSABLE)].filter(el => isShown(el) && !el.closest('[inert]'));
+  const D = {stack:[], openers:new WeakMap()};
+  function topDialog(){
+    for(let i = D.stack.length - 1; i >= 0; i--){ if(isShown(D.stack[i])) return D.stack[i]; D.stack.splice(i, 1); }
+    return null;
+  }
+  function onOpen(dlg){
+    if(D.stack.includes(dlg)) return;
+    const opener = document.activeElement;
+    if(opener && opener !== document.body && !dlg.contains(opener)) D.openers.set(dlg, opener);
+    D.stack.push(dlg);
+    setTimeout(() => {
+      if(!isShown(dlg) || dlg.contains(document.activeElement)) return;
+      const first = dlg.querySelector('[autofocus]') || focusables(dlg)[0];
+      if(first) try{ first.focus({preventScroll:true}); }catch(e){}
+    }, 60);
+  }
+  function onClose(dlg){
+    const i = D.stack.indexOf(dlg); if(i >= 0) D.stack.splice(i, 1);
+    const opener = D.openers.get(dlg); D.openers.delete(dlg);
+    if(opener && opener.isConnected && isShown(opener) && (!document.activeElement || document.activeElement === document.body || dlg.contains(document.activeElement))){
+      try{ opener.focus({preventScroll:true}); }catch(e){}
+    }
+  }
+  /** Theo dõi một hộp thoại có sẵn (ẩn/hiện bằng class "hidden") */
+  function manageDialog(dlg, opts){
+    if(!dlg || dlg._a11yManaged) return;
+    dlg._a11yManaged = true; dlg._a11yOpts = opts || {};
+    if(!dlg.getAttribute('role')) dlg.setAttribute('role', 'dialog');
+    if(dlg._a11yOpts.modal !== false) dlg.setAttribute('aria-modal', 'true');
+    if(!dlg.getAttribute('aria-labelledby') && !dlg.getAttribute('aria-label')){
+      const h = dlg.querySelector('h1, h2, h3');
+      if(h){ if(!h.id) h.id = (dlg.id || 'dlg') + 'Title'; dlg.setAttribute('aria-labelledby', h.id); }
+    }
+    let was = isShown(dlg);
+    if(was) onOpen(dlg);
+    new MutationObserver(() => {
+      const now = isShown(dlg);
+      if(now === was) return;
+      was = now;
+      if(now) onOpen(dlg); else onClose(dlg);
+    }).observe(dlg, {attributes:true, attributeFilter:['class', 'hidden', 'aria-hidden']});
+  }
+  function closeDialog(dlg){
+    const o = dlg._a11yOpts || {};
+    if(typeof o.close === 'function') return o.close();
+    const btn = dlg.querySelector('[data-a11y-close], .modal-head .icon-btn, [aria-label^="Đóng"]');
+    if(btn) btn.click(); else dlg.classList.add('hidden');
+  }
+  document.addEventListener('keydown', (e) => {
+    const dlg = topDialog(); if(!dlg) return;
+    if(e.key === 'Escape' && dlg._a11yOpts.escape !== false){
+      e.preventDefault(); e.stopPropagation(); closeDialog(dlg); return;
+    }
+    if(e.key !== 'Tab' || dlg._a11yOpts.trap === false) return;
+    const list = focusables(dlg); if(!list.length){ e.preventDefault(); return; }
+    const first = list[0], last = list[list.length - 1], a = document.activeElement;
+    if(e.shiftKey && (a === first || !dlg.contains(a))){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && (a === last || !dlg.contains(a))){ e.preventDefault(); first.focus(); }
+  }, true);
+
+  /* ---------------- Sửa nhanh ngữ nghĩa trên các phần có sẵn ---------------- */
+  function patchSemantics(root){
+    root = root || document;
+    // nút chỉ có biểu tượng → cần nhãn
+    root.querySelectorAll('button.icon-btn:not([aria-label])').forEach(b => {
+      const t = b.getAttribute('title');
+      const close = /close\(\)/.test(b.getAttribute('onclick') || '') || b.closest('.modal-head');
+      b.setAttribute('aria-label', t || (close ? 'Đóng' : 'Nút'));
+    });
+    // nút "Đăng nhập" mở menu tài khoản: thông báo có menu
+    const acc = document.getElementById('accountMenuBtn');
+    if(acc && !acc.getAttribute('aria-haspopup')) acc.setAttribute('aria-haspopup', 'true');
+    const toast = document.getElementById('toast');
+    if(toast && !toast.getAttribute('role')){ toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); }
+    // phần tử div/span có onclick mà không phải nút → cho bàn phím dùng được
+    root.querySelectorAll('[onclick]:not(button):not(a):not(input):not(select):not(textarea)').forEach(el => {
+      if(!el.getAttribute('role')) el.setAttribute('role', 'button');
+      if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+      if(!el._a11yKey){
+        el._a11yKey = true;
+        el.addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && e.target === el){ e.preventDefault(); el.click(); } });
+      }
+    });
+  }
+  function init(){
+    syncDeviceClass();
+    region('accessibilityLiveRegion', 'polite');
+    region('accessibilityLiveRegionAssertive', 'assertive');
+    patchSemantics();
+    document.querySelectorAll('.modal-overlay').forEach(m => manageDialog(m));
+    // menu tài khoản: Escape đóng và trả focus về nút
+    document.addEventListener('keydown', (e) => {
+      if(e.key !== 'Escape') return;
+      const menu = document.getElementById('accountMenu'), btn = document.getElementById('accountMenuBtn');
+      if(menu && !menu.classList.contains('hidden') && typeof AccountMenu !== 'undefined'){
+        AccountMenu.close(); if(btn) try{ btn.focus(); }catch(err){}
+      }
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+  /* ---------------- KHUNG KÉO / THU GỌN ĐƯỢC (khung trợ lý AI, nút trợ giúp, khung webcam) ----------------
+     makeMovable(el, {key, name, grip, collapseBtn})
+     • Kéo nút "⠿" bằng chuột / ngón tay; hoặc focus nút đó rồi dùng phím mũi tên (Shift = bước dài), Home = về chỗ cũ.
+     • Nút "–" thu gọn / mở rộng. Vị trí + trạng thái được nhớ (localStorage, có try/catch).
+     • Mỗi thao tác đều được trợ lý NÓI RA và báo cho trình đọc màn hình. */
+  const panels = {};
+  const store = {
+    get(k){ try{ return JSON.parse(localStorage.getItem('hp_panel:' + k) || 'null'); }catch(e){ return null; } },
+    set(k, v){ try{ localStorage.setItem('hp_panel:' + k, JSON.stringify(v)); }catch(e){} }
+  };
+  function sayOut(text){
+    announce(text);
+    window.__hpQuietHoverUntil = Date.now() + 1200;   // khung vừa đổi chỗ / thu gọn → chuột "rơi" vào nội dung khác: không đọc đè lời báo
+    const V = window.VoiceRobot;
+    if(V && V.speak) try{ V.speak(text, {force:true, interrupt:true}); }catch(e){}
+  }
+  function whereOf(el){
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2, W = window.innerWidth, H = window.innerHeight;
+    const h = cx < W / 3 ? 'bên trái' : cx > W * 2 / 3 ? 'bên phải' : 'ở giữa';
+    const v = cy < H / 3 ? 'phía trên' : cy > H * 2 / 3 ? 'phía dưới' : 'giữa';
+    if(v === 'giữa' && h === 'ở giữa') return 'giữa màn hình';
+    if(v === 'giữa') return 'giữa màn hình, ' + h;
+    return v + ' màn hình, ' + h;
+  }
+  function makeMovable(el, cfg){
+    if(!el || panels[cfg.key]) return panels[cfg.key];
+    const P = {el, key:cfg.key, name:cfg.name, grip:cfg.grip, btn:cfg.collapseBtn, timer:0};
+    panels[cfg.key] = P;
+    const M = 8;                                                  // chừa mép màn hình
+    function clampPlace(left, top){
+      const r = el.getBoundingClientRect();
+      const W = document.documentElement.clientWidth, H = window.innerHeight;
+      left = Math.max(M, Math.min(W - r.width - M, left));
+      top = Math.max(M, Math.min(H - Math.min(r.height, H - 2 * M) - M, top));
+      Object.assign(el.style, {left:Math.round(left) + 'px', top:Math.round(top) + 'px', right:'auto', bottom:'auto', transform:'none'});
+      el.dataset.moved = '1';
+    }
+    function save(){
+      const st = {collapsed:el.classList.contains('is-collapsed')};
+      if(el.dataset.moved){ const r = el.getBoundingClientRect(); st.x = r.left / Math.max(1, window.innerWidth); st.y = r.top / Math.max(1, window.innerHeight); }
+      store.set(P.key, st);
+    }
+    function syncBtn(){
+      const c = el.classList.contains('is-collapsed');
+      if(P.btn){
+        P.btn.setAttribute('aria-expanded', String(!c));
+        P.btn.setAttribute('aria-label', (c ? 'Mở rộng ' : 'Thu gọn ') + P.name);
+        P.btn.title = (c ? 'Mở rộng ' : 'Thu gọn ') + P.name;
+        P.btn.textContent = c ? '▢' : '–';
+      }
+    }
+    P.collapse = (on, quiet) => {
+      on = on === undefined ? !el.classList.contains('is-collapsed') : !!on;
+      el.classList.toggle('is-collapsed', on); syncBtn(); save();
+      if(cfg.onChange) cfg.onChange(on);
+      if(!quiet) sayOut(on ? 'Đã thu gọn ' + P.name + '.' + (cfg.noteCollapsed ? ' ' + cfg.noteCollapsed : '') + ' Bấm nút mở rộng, hoặc nói: mở rộng ' + P.name + ', để hiện lại.' : 'Đã mở rộng ' + P.name + '.');
+      if(on && P.btn) try{ P.btn.focus({preventScroll:true}); }catch(e){}
+    };
+    P.moveBy = (dx, dy, quiet) => {
+      const r = el.getBoundingClientRect(); clampPlace(r.left + dx, r.top + dy); save();
+      if(!quiet){ clearTimeout(P.timer); P.timer = setTimeout(() => sayOut('Đã di chuyển ' + P.name + ' tới ' + whereOf(el) + '.'), 450); }
+    };
+    P.moveTo = (where, quiet) => {
+      const r = el.getBoundingClientRect(), W = document.documentElement.clientWidth, H = window.innerHeight;
+      const X = {l:M + 8, c:(W - r.width) / 2, r:W - r.width - M - 8}, Y = {t:M + 8, m:(H - r.height) / 2, b:H - r.height - M - 8};
+      const map = {tl:['l','t'], tr:['r','t'], bl:['l','b'], br:['r','b'], center:['c','m'], top:['c','t'], bottom:['c','b'], left:['l','m'], right:['r','m']};
+      const step = Math.round(Math.min(W, H) * 0.2);
+      if(where === 'up') return P.moveBy(0, -step, quiet);
+      if(where === 'down') return P.moveBy(0, step, quiet);
+      if(where === 'leftward') return P.moveBy(-step, 0, quiet);
+      if(where === 'rightward') return P.moveBy(step, 0, quiet);
+      const m = map[where]; if(!m) return;
+      clampPlace(X[m[0]], Y[m[1]]); save();
+      if(!quiet) sayOut('Đã di chuyển ' + P.name + ' tới ' + whereOf(el) + '.');
+    };
+    P.reset = (quiet) => {
+      ['left','top','right','bottom','transform'].forEach(k => { el.style[k] = ''; });
+      delete el.dataset.moved; save();
+      if(!quiet) sayOut('Đã đưa ' + P.name + ' về vị trí ban đầu, ' + whereOf(el) + '.');
+    };
+    P.where = () => whereOf(el);
+    // ---- kéo bằng chuột / ngón tay ----
+    if(P.grip){
+      let drag = null;
+      P.grip.addEventListener('pointerdown', e => {
+        if(e.button !== 0) return;
+        const r = el.getBoundingClientRect();
+        drag = {id:e.pointerId, dx:e.clientX - r.left, dy:e.clientY - r.top, x0:e.clientX, y0:e.clientY, moved:false};
+        try{ P.grip.setPointerCapture(e.pointerId); }catch(err){}
+        e.preventDefault();
+      });
+      P.grip.addEventListener('pointermove', e => {
+        if(!drag || e.pointerId !== drag.id) return;
+        if(!drag.moved && Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) < 5) return;
+        if(!drag.moved){ drag.moved = true; el.classList.add('is-dragging'); }
+        clampPlace(e.clientX - drag.dx, e.clientY - drag.dy);
+      });
+      const end = e => {
+        if(!drag || (e && e.pointerId !== drag.id)) return;
+        const moved = drag.moved; drag = null; el.classList.remove('is-dragging');
+        if(moved){ save(); sayOut('Đã di chuyển ' + P.name + ' tới ' + whereOf(el) + '.'); P.justDragged = Date.now(); }
+      };
+      P.grip.addEventListener('pointerup', end); P.grip.addEventListener('pointercancel', end);
+      P.grip.addEventListener('click', e => {
+        e.stopPropagation();
+        if(P.justDragged && Date.now() - P.justDragged < 400) return;
+        sayOut('Nút di chuyển ' + P.name + ', đang ở ' + whereOf(el) + '. Kéo nút này để di chuyển; hoặc dùng phím mũi tên; phím Home để về chỗ cũ.');
+      });
+      P.grip.addEventListener('dblclick', e => { e.stopPropagation(); P.reset(); });
+      P.grip.addEventListener('keydown', e => {
+        const big = e.shiftKey ? 80 : 24;
+        const k = {ArrowLeft:[-big, 0], ArrowRight:[big, 0], ArrowUp:[0, -big], ArrowDown:[0, big]}[e.key];
+        if(k){ e.preventDefault(); e.stopPropagation(); P.moveBy(k[0], k[1]); return; }
+        if(e.key === 'Home'){ e.preventDefault(); P.reset(); }
+      });
+    }
+    if(P.btn) P.btn.addEventListener('click', e => { e.stopPropagation(); P.collapse(); });
+    // khôi phục trạng thái đã lưu
+    const st = store.get(P.key);
+    if(st){
+      if(st.collapsed){ el.classList.add('is-collapsed'); if(cfg.onChange) cfg.onChange(true); }
+      if(typeof st.x === 'number') requestAnimationFrame(() => { if(el.getBoundingClientRect().width) clampPlace(st.x * window.innerWidth, st.y * window.innerHeight); else P.pendingXY = st; });
+    }
+    syncBtn();
+    P.refit = () => {
+      if(P.pendingXY && el.getBoundingClientRect().width){ const s2 = P.pendingXY; P.pendingXY = null; clampPlace(s2.x * window.innerWidth, s2.y * window.innerHeight); return; }
+      if(el.dataset.moved){ const r = el.getBoundingClientRect(); if(r.width) clampPlace(r.left, r.top); }
+    };
+    return P;
+  }
+  let refitT = 0;
+  window.addEventListener('resize', () => { clearTimeout(refitT); refitT = setTimeout(() => Object.keys(panels).forEach(k => panels[k].refit()), 150); });
+
+  window.A11y = {
+    announce, manageDialog, makeMovable, panels, closeDialog, focusables, patchSemantics,
+    reducedMotion(){ return mq('(prefers-reduced-motion: reduce)'); },
+    /** behavior cho scrollTo/scrollIntoView: "auto" khi người dùng giảm chuyển động */
+    scrollBehavior(){ return mq('(prefers-reduced-motion: reduce)') ? 'auto' : 'smooth'; }
+  };
+})();
+
+</script>
+<script>
+/* =====================================================================
    AI HealthPulse — ROBOT GIỌNG NÓI (voice-robot.js)
    ---------------------------------------------------------------------
    • Mở web: robot tự bật, hỏi "khiếm thị" hay "bình thường".
    • Trang KHIẾM THỊ : robot LUÔN bật, đọc to nội dung, nói tên mục
                         → tự điều hướng; lời nói trong Chatbot tự gửi.
-   • Trang THÔNG THƯỜNG: nút Robot ở góc phải để BẬT / TẮT điều hướng
-                        bằng giọng nói.
+   • Trang THÔNG THƯỜNG: Robot mặc định TẮT; chỉ nghe từ khóa
+                        điều khiển giọng nói, rồi mới nhận lệnh.
    Nạp file này SAU Ai-healthpulse-script.js.
    Mở thẳng một trang: ?voice=khiemthi  hoặc  ?voice=thuong
    ===================================================================== */
@@ -5728,7 +6189,7 @@ const WHO2007 = {
   const MODE_KEY = 'hp_voice_mode';
   const ROBOT_KEY = 'hp_voice_robot';
   const AUTOREAD_KEY = 'hp_voice_autoread';
-  const CHATVOICE_KEY = 'hp_chat_voice';   // Chatbot tự nói + tự mở micro (mặc định BẬT)
+  const CHATVOICE_KEY = 'hp_chat_voice';   // Chỉ bật sau lựa chọn rõ ràng của học sinh
 
   const R = {
     mode:null,            // 'blind' | 'regular'
@@ -5744,7 +6205,15 @@ const WHO2007 = {
     restartTimer:null, restartDelay:300, lastStart:0,
     pumpTimer:null, autoTimer:null,
     awaitField:null, gatePrompts:0, modalWasOpen:false,
-    chatVoice:true, chatIntroDone:false, chatState:''
+    chatVoice:false, chatIntroDone:false, chatState:'',
+    // One owner of the audio device: speech OR recognition, never both.
+    voiceReady:false, voiceArmed:false, micState:'idle', recStarting:false,
+    recStopping:false, ttsMuted:false, userMuted:false, micWaiters:[],
+    listenAfter:0, idleTimer:null, idleTicker:null, lastManualAt:0,
+    currentText:'', suspendedSpeech:null, inputRevision:0, lastInput:null,
+    appendField:null, phase:'idle', lastMoveAt:0,
+    voiceOff:false,       // người dùng chủ động TẮT điều khiển giọng nói → không tự mở micro
+    armedAt:0             // thời điểm vừa bật điều khiển giọng nói (đọc thông báo 8 giây)
   };
 
   /* ------------------------- tiện ích ------------------------- */
@@ -5775,9 +6244,51 @@ const WHO2007 = {
   function isModalOpen(){ const m = byId('settingsModal'); return !!(m && !m.classList.contains('hidden')); }
   function textOf(el){ return el ? String(el.textContent || '').replace(/\s+/g,' ').trim() : ''; }
   function fire(el){
+    echoSeen(el);                         // giá trị do trợ lý điền đã được đọc xác nhận → rời ô không đọc lại lần nữa
     el.dispatchEvent(new Event('input', {bubbles:true}));
     el.dispatchEvent(new Event('change', {bubbles:true}));
   }
+  /* ======================= ĐỌC LẠI NỘI DUNG VỪA NHẬP KHI RỜI Ô =======================
+     Gõ tay xong rồi rời ô (Tab, bấm chỗ khác, blur) → "Cậu vừa nhập họ và tên: Nguyễn Văn A."
+     Mật khẩu / khóa API / mã bí mật: chỉ nói số ký tự. Giá trị không đổi thì không đọc. */
+  const ECHO = {seen:new WeakMap(), base:new WeakMap(), pending:null, timer:0};
+  function echoSeen(el){ try{ ECHO.seen.set(el, el.value); ECHO.base.set(el, el.value); }catch(e){} }
+  function echoable(el){
+    if(!el || !el.matches || el.id === 'chatInput' || el.disabled || el.readOnly) return false;
+    if(el.tagName === 'TEXTAREA') return true;
+    return el.tagName === 'INPUT' && !/^(checkbox|radio|hidden|button|submit|reset|file|range|color|image)$/i.test(el.type || 'text');
+  }
+  function sensitiveField(el){
+    const sig = [el.id, el.name, el.getAttribute('autocomplete'), el.dataset && el.dataset.sensitive].join(' ');
+    return el.type === 'password' || /pass|api|key|token|secret|otp|pin\b/i.test(sig);
+  }
+  function inputEchoText(el){
+    const label = (fieldLabel(el) || 'nhập liệu').replace(/[:：]\s*$/, '').toLowerCase();
+    const v = String(el.value || '').trim();
+    if(sensitiveField(el)) return v ? 'Cậu đã nhập ' + v.length + ' ký tự vào ô ' + label + '.' : 'Đã xóa nội dung ô ' + label + '.';
+    if(!v) return 'Đã xóa nội dung ô ' + label + '.';
+    return 'Cậu vừa nhập ' + label + ': ' + (/Username$/.test(el.id || '') ? spellUser(v.split('').join(' ')) : v) + '.';
+  }
+  function takeInputEcho(){
+    const p = ECHO.pending; if(!p) return '';
+    ECHO.pending = null; clearTimeout(ECHO.timer);
+    return Date.now() - p.at < 900 ? p.text : '';
+  }
+  document.addEventListener('focusin', (e) => { const el = e.target; if(echoable(el) && !ECHO.base.has(el)) ECHO.base.set(el, el.value); }, true);
+  document.addEventListener('focusout', (e) => {
+    const el = e.target; if(!echoable(el)) return;
+    const v = el.value;
+    const base = ECHO.base.get(el); ECHO.base.delete(el);
+    if(base === undefined || v === base || ECHO.seen.get(el) === v) return;
+    ECHO.seen.set(el, v);
+    if(!isNavActive() || R.gateOpen || R.spell) return;
+    const text = inputEchoText(el);
+    if(window.A11y) A11y.announce(text);
+    ECHO.pending = {text, at:Date.now()};
+    clearTimeout(ECHO.timer);
+    // nếu không có thao tác Tab đọc ô kế tiếp (sẽ đọc kèm câu này) thì đọc riêng
+    ECHO.timer = setTimeout(() => { const t = takeInputEcho(); if(t) speak(t, {interrupt:true}); }, 180);
+  }, true);
   function acct(){ try{ return (typeof getActiveAccount === 'function') ? getActiveAccount() : null; }catch(e){ return null; } }
   /** Trợ lý điều hướng đang bật (trang khiếm thị, hoặc trang thường đã bật Trợ lý) */
   function isNavActive(){ return R.gateOpen || R.mode === 'blind' || (R.mode === 'regular' && R.robotOn); }
@@ -5796,7 +6307,7 @@ const WHO2007 = {
   function earcon(freq, ms){
     try{
       earCtx = earCtx || new (window.AudioContext || window.webkitAudioContext)();
-      if(earCtx.state === 'suspended') earCtx.resume();
+      if(earCtx.state === 'suspended') earCtx.resume().catch(() => {});
       const o = earCtx.createOscillator(), g = earCtx.createGain(), t = earCtx.currentTime, d = (ms || 140) / 1000;
       o.type = 'sine'; o.frequency.value = freq || 880;
       g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
@@ -5822,7 +6333,7 @@ const WHO2007 = {
      • Không dùng giọng mạng / API ngoài → không phải chờ tải, không bị ngắt giữa câu.
      • Chỉ chọn giọng có mã ngôn ngữ vi (Edge: HoaiMy, NamMinh · Windows: An · Android: Google · Mac: Linh).
      • Không bao giờ để trình duyệt tự đọc bằng giọng tiếng Anh.
-     • Micro KHÔNG tắt/bật lại mỗi lần nói (tránh giật âm thanh); tiếng vọng của chính trợ lý được lọc bỏ. */
+     • Dừng nhận diện và đợi sự kiện end trước khi phát; chờ 8 giây yên thao tác sau khi đọc xong. */
   const VOICE_KEY = 'hp_tts_voice', RATE_KEY = 'hp_tts_rate';
   function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
   function lsSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
@@ -5973,32 +6484,66 @@ const WHO2007 = {
     if(CAP.text){ CAP.done.textContent = CAP.text; CAP.rest.textContent = ''; CAP.el.dataset.kind = 'said'; }
   }
   function haltAudio(){
+    clearTimeout(R.playGuard); clearInterval(R.keepAlive); clearInterval(CAP.tick);
+    if(R.utter){ R.utter.onstart = R.utter.onend = R.utter.onerror = R.utter.onboundary = null; }
     if(synth){ try{ synth.cancel(); }catch(e){} }
-    clearInterval(R.keepAlive);
-    if(R.audio){ try{ R.audio.onended = R.audio.onerror = R.audio.onplaying = null; R.audio.pause(); }catch(e){} }
+    if(R.audio){
+      try{ R.audio.onended = R.audio.onerror = R.audio.onplaying = null; R.audio.pause(); R.audio.currentTime = 0; }catch(e){}
+    }
+    R.pre = null;                                   // bỏ đoạn Piper/giọng trực tuyến đã tạo trước cho câu cũ
+    R.utter = null; R.audio = null; R.curUtter = null;
   }
-  /** speak(text, {queue:true} để nối tiếp, {force:true} để nói cả khi trợ lý tắt) */
+  // Normal feedback is queued. Only navigation, explicit Stop/Repeat or Mute
+  // may replace current speech. A click never owns the speech cancellation path.
   function speak(text, opts = {}){
     if(!opts.force && !isActive()) return;
-    const t = speakable(text);
-    if(!t) return;
-    R.lastSpoken = t;
-    if(!opts.queue){ R.echoDone = ''; R.curUtter = null; R.webPlayedInSpeech = false; }   // để lọc tiếng vọng khi micro vẫn mở
-    showSaid(t);
+    const t = speakable(text); if(!t) return;
     const parts = chunks(t);
-    if(!opts.queue){
-      R.gen++; R.queue = [];
-      const busy = audioBusy();
-      haltAudio();
-      R.queue.push(...parts);
-      R.speaking = true; setStatus();
-      clearTimeout(R.pumpTimer);
-      if(busy) R.pumpTimer = setTimeout(pump, 60); else pump();   // gọi đồng bộ để iOS chấp nhận
-    } else {
-      R.queue.push(...parts);
-      if(!R.speaking){ R.speaking = true; setStatus(); pump(); }
+    R.lastSpoken = t;
+    if(R.userMuted){
+      if(opts.interrupt || !R.suspendedSpeech) R.suspendedSpeech = [];
+      R.suspendedSpeech.push(...parts);
+      noVoice(t); setStatus(); return;
     }
+    showSaid(t);
+    if(R.speaking && !opts.interrupt){ R.queue.push(...parts); return; }
+    R.gen++;
+    clearTimeout(R.pumpTimer); clearIdleWait();
+    haltAudio();
+    R.queue = parts; R.currentText = ''; R.echoDone = ''; R.webPlayedInSpeech = false;
+    R.speaking = true; setStatus();
+    const gen = R.gen;
+    // abort() is asynchronous. Keep TTS muted until this recognition session ends.
+    pauseListening().then(() => {
+      if(gen !== R.gen || !R.speaking || R.userMuted) return;
+      R.ttsMuted = false; pump();
+    });
   }
+  function finishSpeech(){
+    R.currentText = ''; R.curUtter = null;
+    R.speaking = false; R.lastSpeakEnd = Date.now();
+    captionHide(); resumeSoon(); setStatus();
+  }
+  function remainingSpeech(){
+    const c = R.curUtter;
+    const rest = c ? c.text.slice(Math.max(0, c.idx || 0)).trim() : R.currentText;
+    return [rest, ...R.queue].filter(Boolean);
+  }
+  function setMuted(on){
+    on = !!on;
+    if(on === R.userMuted) return;
+    if(on){
+      R.suspendedSpeech = R.speaking ? remainingSpeech() : null;
+      R.userMuted = true;
+      stopSpeaking({keepSuspended:true});
+    } else {
+      R.userMuted = false;
+      const saved = R.suspendedSpeech; R.suspendedSpeech = null;
+      if(saved && saved.length) speak(saved.join(' '), {force:true, interrupt:true});
+    }
+    updateToggles(); setStatus();
+  }
+
   const MERGE_LIMIT = 600;   // gộp nhiều câu thành một đoạn dài → đọc liền mạch
   function takeMerged(){
     let text = R.queue.shift();
@@ -6007,7 +6552,8 @@ const WHO2007 = {
   }
   function pump(){
     const gen = R.gen;
-    if(!R.queue.length){ R.speaking = false; R.lastSpeakEnd = Date.now(); setStatus(); resumeSoon(); captionHide(); return; }
+    if(!R.speaking || R.userMuted || R.ttsMuted || R.rec || R.recStarting || R.recStopping) return;
+    if(!R.queue.length){ finishSpeech(); return; }
     if(!R.voice && !R.voicesSettled){ clearTimeout(R.pumpTimer); R.pumpTimer = setTimeout(pump, 250); return; }   // Chrome chưa nạp xong giọng
     if(!R.voice || !synth){
       const eng = webEngine();
@@ -6016,7 +6562,7 @@ const WHO2007 = {
       startWebVoice();
       const txt = R.queue.join(' '); R.queue = [];
       noVoice(txt); R.pendingNoVoice = txt.slice(-600);
-      R.speaking = false; R.lastSpeakEnd = Date.now(); setStatus(); return;
+      finishSpeech(); return;
     }
     playLocal(takeMerged(), gen);
   }
@@ -6056,12 +6602,15 @@ const WHO2007 = {
     R.pre = {key, p};
   }
   function playWeb(text, gen, eng){
+    if(gen !== R.gen || R.ttsMuted || R.userMuted) return;
+    R.currentText = text;
     let done = false, started = false;
     const next = (res) => {
-      if(done) return; done = true; clearTimeout(guard);
-      if(gen !== R.gen) return;
+      if(done || gen !== R.gen) return; done = true; clearTimeout(guard);
+      if(R.audio){ R.audio.onplaying = R.audio.onended = R.audio.onerror = null; try{ R.audio.pause(); }catch(e){} }
+      R.currentText = '';
       if(R.curUtter && R.curUtter.text === text){ R.echoDone = ((R.echoDone || '') + ' ' + norm(text)).slice(-1200); R.curUtter = null; }
-      if(res === 'blocked'){ R.gen++; R.queue = []; R.speaking = false; setStatus(); onAudioBlocked(); return; }
+      if(res === 'blocked'){ const retry = [text, ...R.queue].join(' '); R.pendingFirst = () => speak(retry, {force:true}); R.gen++; R.queue = []; R.currentText = ''; R.speaking = false; setStatus(); onAudioBlocked(); resumeSoon(); return; }
       if(res === 'fail'){
         if(eng === 'online'){ R.onlineFails++; if(R.onlineFails >= 2) R.onlineOk = false; } else R.aiFails++;
         setStatus();
@@ -6071,16 +6620,18 @@ const WHO2007 = {
       } else if(eng === 'online'){ R.onlineOk = true; R.onlineFails = 0; }
       pump();
     };
-    const guard = setTimeout(() => next(started ? 'ok' : 'fail'), 20000 + text.length * 160);
+    const guard = R.playGuard = setTimeout(() => next(started ? 'ok' : 'fail'), 20000 + text.length * 160);
     getAudio(eng, text).then(a => {
-      if(done || gen !== R.gen) return;
+      if(done || gen !== R.gen || R.ttsMuted || R.userMuted) return;
       R.audio = a;
+      a.muted = false;
       a.onended = () => next('ok');
       a.onerror = () => next('fail');
       a.onplaying = () => {
-        started = true; R.audioOk = true; if(!R.curUtter || R.curUtter.text !== text) R.curUtter = {text, t0:Date.now(), idx:0};
+        if(gen !== R.gen || R.ttsMuted || R.userMuted){ a.pause(); return; }
+        started = true; R.audioOk = true; R.started = true; R.pendingFirst = null; detachGesture(); hideTapHint(); if(!R.curUtter || R.curUtter.text !== text) R.curUtter = {text, t0:Date.now(), idx:0};
         caption(text);
-        CAP.tick = setInterval(() => { if(a.duration > 0) captionAt(Math.round(text.length * a.currentTime / a.duration)); }, 250);
+        CAP.tick = setInterval(() => { if(a.duration > 0) { const idx = Math.round(text.length * a.currentTime / a.duration); if(R.curUtter) R.curUtter.idx = idx; captionAt(idx); } }, 250);
       };
       try{ a.playbackRate = eng === 'online' ? R.rate : 1; }catch(e){}
       const p = a.play();
@@ -6095,23 +6646,27 @@ const WHO2007 = {
     caption(text); captionHide();                       // không có giọng: vẫn đọc được bằng chữ trong khung
   }
   function playLocal(text, gen){
+    if(gen !== R.gen || R.ttsMuted || R.userMuted) return;
+    R.currentText = text;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = R.voice.lang || 'vi-VN';
     u.voice = R.voice;
     u.rate = R.rate;
     let done = false;
     const next = (res) => {
-      if(done) return; done = true; clearTimeout(guard); clearInterval(R.keepAlive);
+      if(done || gen !== R.gen) return; done = true; clearTimeout(guard); clearInterval(R.keepAlive);
+      R.currentText = '';
       if(R.curUtter && R.curUtter.text === text){ R.echoDone = ((R.echoDone || '') + ' ' + norm(text)).slice(-1200); R.curUtter = null; }
       if(gen !== R.gen) return;
-      if(res === 'blocked'){ R.gen++; R.queue = []; R.speaking = false; setStatus(); onAudioBlocked(); return; }
+      if(res === 'blocked'){ const retry = [text, ...R.queue].join(' '); R.pendingFirst = () => speak(retry, {force:true}); R.gen++; R.queue = []; R.currentText = ''; R.speaking = false; setStatus(); onAudioBlocked(); resumeSoon(); return; }
       pump();
     };
     // phòng khi trình duyệt không báo "đã đọc xong"
-    const guard = setTimeout(() => next('ok'), 8000 + text.length * 160 / R.rate);
-    u.onboundary = (e) => { if(R.curUtter && e && e.charIndex != null){ R.curUtter.idx = e.charIndex; captionAt(e.charIndex); } };
+    const guard = R.playGuard = setTimeout(() => { haltAudio(); next('ok'); }, 8000 + text.length * 160 / R.rate);
+    u.onboundary = (e) => { if(gen === R.gen && R.curUtter && e && e.charIndex != null){ R.curUtter.idx = e.charIndex; captionAt(e.charIndex); } };
     u.onstart = () => {
-      R.audioOk = true;
+      if(gen !== R.gen || R.ttsMuted || R.userMuted){ try{ synth.cancel(); }catch(e){} return; }
+      R.audioOk = true; R.started = true; R.pendingFirst = null; detachGesture(); hideTapHint();
       R.curUtter = {text, t0:Date.now(), idx:0};
       caption(text);
       // Chrome tự dừng giọng mạng của Google sau ~15 giây → "đánh thức" định kỳ
@@ -6123,14 +6678,17 @@ const WHO2007 = {
     u.onend = () => next('ok');
     u.onerror = (e) => next(e && e.error === 'not-allowed' ? 'blocked' : 'ok');
     R.utter = u;                 // giữ tham chiếu (tránh lỗi mất sự kiện trên Chrome)
-    try{ synth.speak(u); }catch(e){ next('ok'); }
+    try{ if(synth.paused) synth.resume(); synth.speak(u); }catch(e){ next('ok'); }
   }
-  function stopSpeaking(){
-    R.gen++; R.queue = [];
-    clearTimeout(R.pumpTimer);
-    haltAudio();
-    R.speaking = false; R.lastSpeakEnd = Date.now(); setStatus(); resumeSoon(); captionHide(400);
+  function stopSpeaking(opts = {}){
+    R.gen++; R.queue = []; R.currentText = ''; R.echoDone = '';
+    if(!opts.keepSuspended) R.suspendedSpeech = null;
+    clearTimeout(R.pumpTimer); haltAudio();
+    R.speaking = false; R.lastSpeakEnd = Date.now(); captionHide();
+    if(opts.resume !== false) resumeSoon(); else clearIdleWait();
+    setStatus();
   }
+
   function useVoice(v, sayIt){
     if(!v) return;
     R.voice = v; lsSet(VOICE_KEY, v.name); setStatus();
@@ -6158,10 +6716,79 @@ const WHO2007 = {
     speak(delta > 0 ? 'Mình sẽ đọc nhanh hơn như thế này.' : 'Mình sẽ đọc chậm hơn như thế này.', {force:true});
   }
 
-  /* ======================= NGHE GIỌNG NÓI =======================
-     Micro luôn mở (kể cả khi trợ lý đang nói) → học sinh nói "dừng", "vùng tiếp theo"… là chen ngang được ngay.
-     Tiếng của chính trợ lý lọt vào micro (tiếng vọng) được so với câu đang đọc và bỏ qua. */
-  function shouldListen(){ return !!SR && !R.micDenied && !document.hidden && (isActive() || R.gateOpen); }
+  /* ======================= ĐIỀU PHỐI MICRO / LOA =======================
+     wake: chỉ so khớp từ khóa, không hiện transcript và không chạy lệnh nền.
+     Web Speech vẫn cần quyền micro để nghe wake word; đây không phải bộ
+     phát hiện từ khóa ngoại tuyến. TTS và STT tuyệt đối không chạy đồng thời. */
+  const IDLE_LISTEN_MS = 8000;
+  const WAKE_WORD = 'dieu khien giong noi';
+  function commandListening(){ return R.gateOpen || R.mode === 'blind' || R.voiceArmed; }
+  function canListen(){
+    if(R.voiceOff && R.mode === 'regular' && !R.gateOpen) return false;      // đã chủ động tắt → không tự mở micro
+    return !!SR && R.voiceReady && !R.micDenied && !document.hidden && !!(R.mode || R.gateOpen);
+  }
+  function shouldListen(){
+    return canListen() && !R.speaking && !audioBusy() && Date.now() >= R.listenAfter;
+  }
+  function clearIdleWait(){
+    clearTimeout(R.idleTimer); clearInterval(R.idleTicker); clearTimeout(R.restartTimer);
+    R.idleTimer = R.idleTicker = R.restartTimer = null; R.listenAfter = 0;
+  }
+  function resumeSoon(){
+    clearIdleWait();
+    if(!canListen() || R.speaking) return;
+    R.listenAfter = Math.max(Date.now(), R.lastManualAt, R.lastSpeakEnd) + IDLE_LISTEN_MS;
+    R.idleTimer = setTimeout(() => {
+      R.idleTimer = null; clearInterval(R.idleTicker); R.idleTicker = null;
+      R.listenAfter = 0; startListening(); setStatus();
+    }, R.listenAfter - Date.now());
+    R.idleTicker = setInterval(setStatus, 1000);
+    setStatus();
+  }
+  function manualActivity(e){
+    if(!e.isTrusted || !R.voiceReady) return;
+    const now = Date.now();
+    if(e.type === 'pointermove'){ if(now - R.lastMoveAt < 250) return; R.lastMoveAt = now; }   // chuột di chuyển: tối đa 4 lần/giây
+    R.lastManualAt = now;
+    if(e.type !== 'pointermove') clearTimeout(HV.timer);
+    // Mouse/keyboard interaction delays recognition, never cancels speech.
+    if(R.rec) pauseListening();
+    if(!R.speaking) resumeSoon();
+  }
+  ['pointerdown','pointermove','click','keydown','input','wheel','touchstart'].forEach(type =>
+    document.addEventListener(type, manualActivity, {capture:true, passive:true}));
+  /* ======================= BẬT ĐIỀU KHIỂN GIỌNG NÓI: ĐỌC THÔNG BÁO, CHỜ 8 GIÂY RỒI MỚI MỞ MICRO =======================
+     1) Tắt micro (TTS và STT không bao giờ chạy cùng lúc).
+     2) Đọc: "Vui lòng chờ 8 giây…" — trong lúc đọc MIC = OFF, STT = OFF.
+     3) Đọc xong → resumeSoon(): đếm 8 giây (thao tác chuột/phím thì đếm lại) → mở micro, khung hiện "Có thể nói".
+     Bấm bật nhiều lần chỉ có MỘT bộ đếm; tắt trong lúc chờ → hủy bộ đếm, không tự mở micro. */
+  const ARM_TEXT = 'Vui lòng chờ 8 giây để nói giọng đọc AI điều khiển chức năng mong muốn.';
+  function armVoice(prefix){
+    R.voiceOff = false; R.voiceArmed = true; R.voiceReady = true; R.started = true; R.micDenied = false;
+    if(R.mode === 'regular'){ R.robotOn = true; ss(ROBOT_KEY, '1'); }
+    R.awaitField = null; R.armedAt = Date.now();
+    clearIdleWait(); pauseListening();
+    applyUi(); ensureMic();
+    const text = (prefix ? prefix + ' ' : '') + ARM_TEXT;
+    if(window.A11y) A11y.announce(text);
+    speak(text, {force:true, interrupt:true});
+    if(R.userMuted){ R.lastSpeakEnd = Date.now(); resumeSoon(); }       // tắt âm thanh: vẫn chờ đủ 8 giây
+    setStatus();
+  }
+  function requestCommands(){ armVoice('Đã bật điều khiển giọng nói.'); }
+  function wakeCommands(text){
+    const n = norm(text);
+    if(!startsWithPhrase(n, WAKE_WORD)) return false;
+    R.voiceArmed = true; R.robotOn = true; R.started = true;
+    ss(ROBOT_KEY, '1'); applyUi();
+    const rest = tokensOf(text).slice(4).map(t => t.o).filter(Boolean).join(' ').trim();
+    // Silent acknowledgment keeps the mic available for the next command.
+    R.voiceOff = false;
+    if(rest){ scriptLine('Đã bật điều khiển giọng nói.', 'heard'); route(rest); }
+    else armVoice('Đã bật điều khiển giọng nói.');
+    return true;
+  }
+
   /* ======================= LỌC TẠP ÂM XUNG QUANH =======================
      1) Mở micro với bộ lọc của trình duyệt: khử tiếng vọng, giảm ồn, tự cân âm lượng;
         trình duyệt hỗ trợ thì cho bộ nhận dạng nghe QUA luồng đã lọc này.
@@ -6176,6 +6803,7 @@ const WHO2007 = {
     try{
       NG.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true, autoGainControl:true, channelCount:1}});
       NG.track = NG.stream.getAudioTracks()[0] || null;
+      if(NG.track) NG.track.enabled = !!(R.rec && !R.recStopping && !R.speaking);
       const AC = window.AudioContext || window.webkitAudioContext;
       if(AC){
         NG.ctx = new AC();
@@ -6187,7 +6815,7 @@ const WHO2007 = {
         NG.buf = new Float32Array(NG.an.fftSize);
         setInterval(sampleNoise, 80);
         if(NG.ctx.state === 'suspended'){                     // cần 1 lần chạm/phím mới chạy được
-          const wake = () => { try{ NG.ctx.resume(); }catch(e){} ['pointerdown','keydown'].forEach(t => document.removeEventListener(t, wake, true)); };
+          const wake = () => { try{ NG.ctx.resume().catch(() => {}); }catch(e){} ['pointerdown','keydown'].forEach(t => document.removeEventListener(t, wake, true)); };
           ['pointerdown','keydown'].forEach(t => document.addEventListener(t, wake, true));
         }
       }
@@ -6195,7 +6823,7 @@ const WHO2007 = {
     NG.busy = false;
   }
   function sampleNoise(){
-    if(!NG.an || document.hidden) return;
+    if(!NG.an || document.hidden || !R.listening || R.speaking || !NG.track || !NG.track.enabled) return;
     if(NG.ctx.state !== 'running'){ return; }
     NG.an.getFloatTimeDomainData(NG.buf);
     let sum = 0; for(let i = 0; i < NG.buf.length; i += 2) sum += NG.buf[i] * NG.buf[i];
@@ -6238,7 +6866,7 @@ const WHO2007 = {
     if(!alts.length) return null;
     let best = alts[0];
     if(!R.gateOpen){
-      const cmdAlt = alts.find(a => matchCommand(norm(a.transcript), true));
+      const cmdAlt = alts.find(a => isInputCommand(norm(a.transcript)) || matchCommand(norm(a.transcript), true));
       if(cmdAlt && !matchCommand(norm(best.transcript), true)) best = cmdAlt;
     }
     const text = stripFillers(best.transcript);
@@ -6246,7 +6874,7 @@ const WHO2007 = {
     if(!n) return null;
     const conf0 = best.confidence || 0;
     if(STOP_WORDS.includes(n) && !R.spell && !R.awaitField && !stopOk(n, conf0, Math.max((R.segAt || 0) - 400, Date.now() - 6000))){ R.dropped = 'dừng?'; return null; }
-    const isCmd = STOP_WORDS.includes(n) || !!matchCommand(n, true) || R.gateOpen;
+    const isCmd = STOP_WORDS.includes(n) || isInputCommand(n) || !!matchCommand(n, true) || R.gateOpen;
     // (2) tiếng quá nhỏ so với nền → tạp âm
     if(gateReady() && R.segAt){
       const peak = segPeak(Math.max(R.segAt - 400, Date.now() - 6000));
@@ -6311,81 +6939,127 @@ const WHO2007 = {
     if(R.lastSegDuringSpeech === true) return true;       // bắt đầu nghe từ lúc trợ lý còn nói → tiếng vọng
     return since < 700;
   }
+  function releaseMicWaiters(){
+    const waiters = R.micWaiters.splice(0);
+    waiters.forEach(resolve => resolve());
+  }
   function ensureRec(){
     if(!SR) return null;
     if(R.rec) return R.rec;
     const rec = new SR();
-    rec.lang = 'vi-VN';
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.maxAlternatives = 3;
-    rec.onstart = () => { R.listening = true; R.recStartedAt = Date.now(); setStatus(); };
-    rec.onspeechstart = () => { R.segAt = Date.now(); };
+    rec.lang = 'vi-VN'; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 3;
+    const current = () => R.rec === rec;
+    const accepting = () => current() && R.listening && !R.recStopping && shouldListen();
+    rec.onstart = () => {
+      if(!current()) return;
+      R.recStarting = false;
+      if(R.recStopping || !shouldListen()){
+        R.recStopping = true; R.micState = 'stopping';
+        try{ rec.abort(); }catch(e){} return;
+      }
+      R.listening = true; R.micState = 'listening'; R.recStartedAt = Date.now(); setStatus();
+    };
+    rec.onspeechstart = () => { if(accepting()) R.segAt = Date.now(); };
     rec.onresult = (e) => {
+      if(!accepting()) return;
       let interim = '';
       for(let i = e.resultIndex; i < e.results.length; i++){
-        const r = e.results[i];
-        const txt = r[0] ? r[0].transcript : '';
-        if(r.isFinal){
-          // đoạn này bắt đầu khi trợ lý còn đang nói? (dùng để phân biệt tiếng vọng với học sinh nói)
-          R.lastSegDuringSpeech = R.segStart ? R.segDuringSpeech : null;
-          if(R.segStart) R.segAt = R.segStart;
-          R.segStart = 0;
-          const heard = pickHeard(r);
+        if(!accepting()) break; // A command may abort this session or begin TTS.
+        const result = e.results[i];
+        if(!commandListening()){
+          if(result.isFinal){
+            const a = Array.from({length:result.length}, (_, k) => result[k]).find(a =>
+              a && startsWithPhrase(norm(a.transcript), WAKE_WORD) && (!a.confidence || a.confidence >= 0.55));
+            if(a) wakeCommands(a.transcript);
+          }
+          continue; // Never show, dictate, store or execute ambient speech in wake mode.
+        }
+        const txt = result[0] ? result[0].transcript : '';
+        if(result.isFinal){
+          const heard = pickHeard(result);
           if(heard) onHeard(heard);
           else if(txt && !R.speaking) showIgnored(txt);
         } else interim += txt;
       }
-      if(interim){
-        if(!R.segStart){ R.segStart = Date.now(); R.segDuringSpeech = !!R.speaking; }
-        const ni = norm(interim);
-        // chen ngang tức thì: nghe "dừng" khi đang đọc → im ngay, không đợi câu kết thúc
-        if(R.speaking && STOP_WORDS.includes(ni) && stopOk(ni, 0, R.segStart - 300, true)){ stopSpeaking(); R.stoppedByInterim = Date.now(); }
-        if(!isEcho(ni)){ showHeard(interim, true); chatInterim(interim); }
+      if(interim && accepting() && commandListening()){
+        showHeard(interim, true);
+        if(!isInputCommand(norm(interim))) chatInterim(interim);
       }
     };
     rec.onerror = (e) => {
+      if(!current() || R.recStopping) return;
       const err = e && e.error;
       if(err === 'not-allowed' || err === 'service-not-allowed'){
-        R.micDenied = true; setStatus();
-        micHelp(true); retryMicOnGesture();
+        R.micDenied = true; clearIdleWait(); pauseListening(); setStatus(); micHelp(false);
       } else if(err === 'audio-capture' && NG.useTrack && NG.trackStartAt && Date.now() - NG.trackStartAt < 3000){
-        NG.useTrack = false;                       // trình duyệt chưa nghe được qua luồng đã lọc → nghe trực tiếp
+        NG.useTrack = false;
       } else if(err === 'audio-capture'){
-        R.micDenied = true; setStatus();
-        speak('Mình không tìm thấy micro. Cậu kiểm tra lại tai nghe hoặc micro nhé.', {force:true});
-      } else if(err === 'network'){
-        R.restartDelay = Math.min(R.restartDelay * 2, 5000);
-      }
+        R.micDenied = true; pauseListening(); setStatus();
+        scriptLine('Không tìm thấy micro. Cậu kiểm tra micro rồi bấm bật lại nhé.', 'warn');
+      } else if(err === 'network') R.restartDelay = Math.min(R.restartDelay * 2, 5000);
     };
     rec.onend = () => {
-      R.listening = false; setStatus();
+      if(!current()) return;
+      clearTimeout(R.micStopGuard);
+      R.listening = R.recStarting = R.recStopping = false;
+      R.rec = null; R.micState = R.micDenied ? 'blocked' : 'idle'; R.ttsMuted = false;
+      if(NG.track) NG.track.enabled = false;
+      setStatus(); releaseMicWaiters();
       if(shouldListen()) scheduleRestart();
     };
-    R.rec = rec;
-    return rec;
+    R.rec = rec; return rec;
   }
   function startListening(){
-    if(!shouldListen() || R.listening) return;
+    if(!shouldListen() || R.rec || R.recStarting || R.recStopping) return;
     const rec = ensureRec(); if(!rec) return;
-    // nghe qua luồng micro đã lọc ồn (Chrome / Edge mới hỗ trợ start(track)); không được thì nghe trực tiếp
-    if(NG.track && NG.useTrack && NG.track.readyState === 'live'){
-      try{ rec.start(NG.track); R.lastStart = NG.trackStartAt = Date.now(); return; }
-      catch(e){ if(!(e && e.name === 'InvalidStateError')) NG.useTrack = false; else return; }
+    R.ttsMuted = true; R.recStarting = true; R.micState = 'starting';
+    clearInterval(CAP.tick);
+    if(NG.track) NG.track.enabled = true;
+    if(NG.ctx && NG.ctx.state === 'suspended') NG.ctx.resume().catch(() => {});
+    try{
+      if(NG.track && NG.useTrack && NG.track.readyState === 'live'){
+        try{ rec.start(NG.track); R.lastStart = NG.trackStartAt = Date.now(); setStatus(); return; }
+        catch(e){ if(e && e.name === 'InvalidStateError') throw e; NG.useTrack = false; }
+      }
+      rec.start(); R.lastStart = Date.now(); setStatus();
+    }catch(e){
+      R.rec = null; R.recStarting = false; R.ttsMuted = false; R.micState = 'idle';
+      if(NG.track) NG.track.enabled = false;
+      if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) R.micDenied = true;
+      setStatus(); releaseMicWaiters();
+      if(shouldListen()) scheduleRestart();
     }
-    try{ rec.start(); R.lastStart = Date.now(); }catch(e){ /* đang chạy */ }
   }
   function pauseListening(){
     clearTimeout(R.restartTimer);
-    if(R.rec && R.listening){ try{ R.rec.abort(); }catch(e){} }
+    if(NG.track) NG.track.enabled = false;
+    if(!R.rec){ R.listening = false; R.ttsMuted = false; return Promise.resolve(); }
+    const done = new Promise(resolve => R.micWaiters.push(resolve));
+    if(!R.recStopping){
+      R.recStopping = true; R.listening = false; R.micState = 'stopping';
+      try{ R.rec.abort(); }catch(e){}
+      // Fail closed: never assume an unacknowledged abort has released the mic.
+      R.micStopGuard = setTimeout(() => {
+        if(R.recStopping) scriptLine('Đang chờ micro dừng. Nếu trạng thái này kéo dài, cậu tải lại trang nhé.', 'warn');
+      }, 3000);
+    }
+    return done;
   }
-  function resumeSoon(){ if(R.listening) return; clearTimeout(R.restartTimer); R.restartTimer = setTimeout(startListening, 250); }
   function scheduleRestart(){
     clearTimeout(R.restartTimer);
+    if(!shouldListen()) return;
     const quick = Date.now() - R.lastStart < 1500;
-    R.restartTimer = setTimeout(startListening, quick ? Math.max(R.restartDelay, 1000) : Math.min(R.restartDelay, 300));
+    R.restartTimer = setTimeout(startListening, quick ? Math.max(R.restartDelay, 1000) : R.restartDelay);
   }
-  document.addEventListener('visibilitychange', () => { if(document.hidden) pauseListening(); else resumeSoon(); });
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden){ clearIdleWait(); pauseListening(); }
+    else if(!R.speaking) resumeSoon();
+  });
+  window.addEventListener('pagehide', () => {
+    R.voiceReady = false; stopSpeaking({resume:false}); pauseListening();
+    if(NG.stream) NG.stream.getTracks().forEach(t => t.stop());
+    NG.stream = NG.track = null;
+  });
 
   /* ======================= GIAO DIỆN ======================= */
   function injectUi(){
@@ -6401,7 +7075,7 @@ const WHO2007 = {
             '<p class="vr-gate-lead">Hãy nói <strong>“khiếm thị”</strong> hoặc <strong>“bình thường”</strong> — hoặc bấm chọn bên dưới.</p>' +
             '<div class="vr-gate-choices">' +
               '<button type="button" class="vr-choice vr-choice-blind" data-mode="blind" aria-label="Học sinh khiếm thị. Nhấn Enter để vào trang có trợ lý đọc to và điều khiển bằng giọng nói."><span class="vr-choice-key">1</span><span class="vr-choice-icon"><i data-lucide="ear"></i></span><strong>Học sinh khiếm thị</strong><small>Trợ lý luôn bật · đọc to nội dung · nói tên mục để tự chuyển trang</small></button>' +
-              '<button type="button" class="vr-choice vr-choice-regular" data-mode="regular"><span class="vr-choice-key">2</span><span class="vr-choice-icon"><i data-lucide="eye"></i></span><strong>Học sinh thông thường</strong><small>Có nút bật / tắt trợ lý điều hướng bằng giọng nói</small></button>' +
+              '<button type="button" class="vr-choice vr-choice-regular" data-mode="regular"><span class="vr-choice-key">2</span><span class="vr-choice-icon"><i data-lucide="eye"></i></span><strong>Học sinh thông thường</strong><small>Trợ lý mặc định tắt · nói “điều khiển giọng nói” để bật</small></button>' +
             '</div>' +
           '</div>' +
           '<div class="vr-gate-resume">' +
@@ -6428,6 +7102,8 @@ const WHO2007 = {
           '<div class="vr-script" id="vrScript" aria-hidden="true"><span class="vr-cap-done"></span><span class="vr-cap-rest">Nói “trợ giúp” để nghe các lệnh</span></div>' +
         '</div>' +
         '<div class="vr-dock-tools">' +
+          '<button type="button" class="vr-grip" data-act="move" aria-label="Di chuyển khung trợ lý AI: kéo, hoặc dùng phím mũi tên" title="Kéo để di chuyển khung">⠿</button>' +
+          '<button type="button" class="vr-collapse" data-act="collapse" aria-expanded="true" aria-label="Thu gọn khung trợ lý AI" title="Thu gọn khung trợ lý AI">–</button>' +
           '<button type="button" data-act="prev" aria-label="Vùng trước" title="Vùng trước"><i data-lucide="chevron-up"></i></button>' +
           '<button type="button" data-act="next" aria-label="Vùng tiếp theo" title="Vùng tiếp theo"><i data-lucide="chevron-down"></i></button>' +
           '<button type="button" data-act="repeat" aria-label="Đọc lại" title="Đọc lại"><i data-lucide="repeat"></i></button>' +
@@ -6435,10 +7111,12 @@ const WHO2007 = {
         '</div>' +
         '<div class="vr-menu hidden" id="vrMenu" role="menu" aria-label="Chức năng trợ lý">' +
           '<div class="vr-menu-voice" id="vrBarVoice"></div>' +
+          '<button type="button" role="menuitemcheckbox" data-act="mute" aria-checked="false"><i data-lucide="volume-x"></i><span id="vrMuteLbl">Tắt âm thanh</span></button>' +
           '<button type="button" role="menuitem" data-act="voice"><i data-lucide="volume-2"></i><span>Đổi giọng đọc</span></button>' +
-          '<button type="button" role="menuitem" data-act="finger"><i data-lucide="pointer"></i><span>Camera ngón tay</span></button>' +
-          '<button type="button" role="menuitem" data-act="hover"><i data-lucide="mouse-pointer"></i><span id="vrHoverLbl">Đọc khi rê chuột: Bật</span></button>' +
-          '<button type="button" role="menuitem" data-act="captions"><i data-lucide="captions"></i><span id="vrCapLbl">Hiện lời trợ lý: Bật</span></button>' +
+          '<button type="button" role="menuitem" data-act="finger" class="vr-only-desktop"><i data-lucide="pointer"></i><span>Camera ngón tay</span></button>' +
+          '<button type="button" role="menuitem" data-act="vk" class="vr-only-mobile"><i data-lucide="keyboard"></i><span>Bàn phím trợ năng</span></button>' +
+          '<button type="button" role="menuitemcheckbox" data-act="hover" aria-checked="true" class="vr-only-desktop"><i data-lucide="mouse-pointer"></i><span id="vrHoverLbl">Đọc khi rê chuột: Bật</span></button>' +
+          '<button type="button" role="menuitemcheckbox" data-act="captions" aria-checked="true"><i data-lucide="captions"></i><span id="vrCapLbl">Hiện lời trợ lý: Bật</span></button>' +
           '<button type="button" role="menuitem" data-act="help"><i data-lucide="info"></i><span>Các lệnh giọng nói</span></button>' +
           '<button type="button" role="menuitem" data-act="switch"><i data-lucide="arrow-left-right"></i><span>Đổi chế độ học sinh</span></button>' +
           '<button type="button" role="menuitem" data-act="power" class="vr-only-regular"><i data-lucide="power"></i><span>Tắt trợ lý</span></button>' +
@@ -6446,6 +7124,14 @@ const WHO2007 = {
       '</div>' +
 
       '<div class="vr-frame hidden" id="vrFrame" aria-hidden="true"><span class="vr-frame-tag" id="vrFrameTag"></span></div>' +
+      /* NÚT TRỢ GIÚP TOÀN CỤC — luôn ở mép phải, ngay phía trên khung trợ lý */
+      '<div class="hp-help-wrap hidden" id="hpHelpWrap" role="group" aria-label="Nút trợ giúp">' +
+        '<button type="button" class="hp-help-fab" id="hpHelpBtn" aria-label="Trợ giúp: nghe hướng dẫn sử dụng trang web" aria-keyshortcuts="Alt+H" data-tip="Nghe hướng dẫn sử dụng (Alt + H)">' +
+          '<span class="hp-help-q" aria-hidden="true">?</span><span class="hp-help-txt">Trợ giúp</span></button>' +
+        '<span class="hp-help-tools">' +
+          '<button type="button" class="hp-mini vr-grip" id="hpHelpGrip" aria-label="Di chuyển nút trợ giúp: kéo, hoặc dùng phím mũi tên" title="Kéo để di chuyển">⠿</button>' +
+          '<button type="button" class="hp-mini" id="hpHelpCollapse" aria-expanded="true" aria-label="Thu gọn nút trợ giúp">–</button>' +
+        '</span></div>' +
       '';
     while(wrap.firstChild) document.body.appendChild(wrap.firstChild);
 
@@ -6464,12 +7150,15 @@ const WHO2007 = {
       if(!b) return;
       const a = b.dataset.act;
       if(a !== 'more') menuOpen(false);
+      if(a === 'move' || a === 'collapse') return;                  // do khung kéo / thu gọn xử lý
       if(a === 'more') return menuOpen(menu.classList.contains('hidden'));
       if(a === 'prev') return regionCommand('vung truoc');
       if(a === 'next') return regionCommand('vung tiep theo');
       if(a === 'repeat') return repeat();
+      if(a === 'mute') return setMuted(!R.userMuted);
       if(a === 'voice') return cycleVoice();
       if(a === 'finger') return fingerToggle();
+      if(a === 'vk') return openVirtualKeyboard();
       if(a === 'hover') return setHoverRead(!R.hoverRead);
       if(a === 'captions') return setCaptions(!R.captions);
       if(a === 'help') return help();
@@ -6477,7 +7166,26 @@ const WHO2007 = {
       if(a === 'power') return setRobot(false);
     });
     document.addEventListener('pointerdown', (e) => { if(!e.target.closest('#vrBar')) menuOpen(false); }, true);
-    document.addEventListener('keydown', (e) => { if(e.key === 'Escape') menuOpen(false); });
+    document.addEventListener('keydown', (e) => {
+      if(menu.classList.contains('hidden')) return;
+      if(e.key === 'Escape'){ menuOpen(false); const mb = dock.querySelector('[data-act="more"]'); if(mb) mb.focus(); return; }
+      if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){                       // di chuyển trong menu bằng phím mũi tên
+        const items = [...menu.querySelectorAll('button')].filter(b => b.offsetParent);
+        if(!items.length) return; e.preventDefault();
+        const i = items.indexOf(document.activeElement);
+        items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+      }
+    });
+    dock.querySelector('[data-act="more"]').addEventListener('click', () => setTimeout(() => {
+      if(!menu.classList.contains('hidden')){ const f = [...menu.querySelectorAll('button')].find(b => b.offsetParent); if(f) f.focus(); }
+    }, 0));
+    byId('hpHelpBtn').addEventListener('click', () => showGuide());
+    // khung kéo / thu gọn được — trợ lý nói ra mỗi thao tác
+    if(window.A11y && A11y.makeMovable){
+      A11y.makeMovable(dock, {key:'dock', name:'khung trợ lý AI', grip:dock.querySelector('[data-act="move"]'), collapseBtn:dock.querySelector('[data-act="collapse"]'),
+        onChange:() => { menuOpen(false); setTimeout(measureChrome, 0); }});
+      A11y.makeMovable(byId('hpHelpWrap'), {key:'help', name:'nút trợ giúp', grip:byId('hpHelpGrip'), collapseBtn:byId('hpHelpCollapse')});
+    }
     const fingerToggle = () => { if(!window.FingerNav) return speak('Chức năng camera ngón tay chưa được nạp.'); if(FingerNav.on) FingerNav.stop(); else FingerNav.start(); };
     updateToggles();
     icons();
@@ -6485,15 +7193,26 @@ const WHO2007 = {
   function setInert(on){ const app = byId('app'); if(app){ if(on) app.setAttribute('inert',''); else app.removeAttribute('inert'); } }
 
   function statusText(){
-    if(!SR && !synth) return 'Trình duyệt không hỗ trợ giọng nói — hãy dùng Microsoft Edge hoặc Chrome';
-    if(R.speaking) return 'Đang nói';
-    if(R.micDenied) return 'Micro chưa được cho phép';
-    if(!SR) return 'Trình duyệt chưa nghe được giọng nói — dùng Edge hoặc Chrome';
-    if(R.mode === 'regular' && !R.robotOn && !R.gateOpen) return 'Trợ lý đang tắt — bấm để bật';
-    if(R.listening) return 'Đang nghe';
-    if(!R.started) return 'Chạm màn hình hoặc nhấn phím để bắt đầu';
-    return 'Đang chuẩn bị nghe';
+    if(R.recStopping && R.speaking){ R.phase = 'stopping'; return 'Đang dừng micro trước khi đọc'; }
+    if(R.speaking){ R.phase = 'speaking'; return 'AI đang đọc · micro tạm ngắt'; }
+    if(R.micDenied){ R.phase = 'blocked'; return 'Micro chưa được cho phép'; }
+    if(!SR){ R.phase = 'unsupported'; return 'Trình duyệt chưa hỗ trợ nhận giọng nói'; }
+    if(document.hidden){ R.phase = 'hidden'; return 'Đã tạm ngắt micro'; }
+    if(R.voiceOff && R.mode === 'regular' && !R.gateOpen){ R.phase = 'off'; return 'Điều khiển giọng nói đang tắt'; }
+    if(R.listenAfter > Date.now()){
+      R.phase = 'cooldown';
+      return 'Đang chuẩn bị… micro mở sau ' + Math.ceil((R.listenAfter - Date.now()) / 1000) + ' giây';
+    }
+    if(R.listening){
+      R.phase = commandListening() ? 'listening' : 'sleeping';
+      return commandListening() ? 'Có thể nói · đang nghe lệnh' : 'Chờ: “điều khiển giọng nói” · trợ lý tắt';
+    }
+    R.phase = 'idle';
+    if(R.userMuted) return 'Âm thanh đã tắt · bật lại để đọc tiếp';
+    if(!R.voiceReady) return 'Chạm màn hình để bắt đầu';
+    return commandListening() ? 'Đang chuẩn bị nghe lệnh' : 'Trợ lý tắt · nói “điều khiển giọng nói” để bật';
   }
+
   function setStatus(){
     const s = statusText();
     ['vrGateStatus','vrBarStatus'].forEach(id => { const el = byId(id); if(el && el.textContent !== s) el.textContent = s; });
@@ -6528,7 +7247,7 @@ const WHO2007 = {
     const t = String(heard || '').trim();
     scriptLine((note || 'Bỏ qua') + (t ? ': “' + (t.length > 60 ? t.slice(0, 58) + '…' : t) + '”' : '') + ' · cứ nói lệnh khác', 'warn');
     const now = Date.now();
-    if(R.mode === 'blind' && now - (R.lastMissTone || 0) > 4000){ R.lastMissTone = now; earcon(330, 70); }
+    // Keep feedback visual while the mic owns the audio device.
   }
   function showIgnored(txt){
     const el = byId('vrBarStatus'); if(el) el.title = 'Tạp âm đã bỏ qua: ' + txt;
@@ -6546,17 +7265,20 @@ const WHO2007 = {
     b.classList.toggle('vr-robot-on', R.mode === 'regular' && R.robotOn);
     const dock = byId('vrBar');
     dock.classList.toggle('hidden', !R.mode || R.gateOpen);
-    const off = R.mode === 'regular' && !R.robotOn && !chatVoiceActive();      // Chatbot tự nói vẫn hiện lời trong khung
+    const hb = byId('hpHelpWrap'); if(hb) hb.classList.toggle('hidden', !R.mode || R.gateOpen);
+    if(window.A11y && A11y.panels) ['dock', 'help'].forEach(k => { const P = A11y.panels[k]; if(P) requestAnimationFrame(P.refit); });
+    const off = R.mode === 'regular' && !R.robotOn && !chatVoiceActive() && !R.speaking && !R.suspendedSpeech;      // Chatbot tự nói vẫn hiện lời trong khung
     dock.classList.toggle('vr-dock-off', off);
     dock.dataset.mode = R.mode || '';
-    if(off) scriptLine('Trợ lý đang tắt. Bấm biểu tượng để bật.', 'idle');
+    if(off) scriptLine(R.voiceOff ? 'Điều khiển giọng nói đang tắt. Bấm biểu tượng hoặc Alt + V để bật.' : 'Trợ lý đang tắt. Nói “điều khiển giọng nói” hoặc bấm biểu tượng để bật.', 'idle');
     setStatus();
     renderRegionBar(); placeFrame();
     measureChrome();
   }
   function updateToggles(){
-    const h = byId('vrHoverLbl'); if(h) h.textContent = 'Đọc khi rê chuột: ' + (R.hoverRead ? 'Bật' : 'Tắt');
-    const c = byId('vrCapLbl'); if(c) c.textContent = 'Hiện lời trợ lý: ' + (R.captions ? 'Bật' : 'Tắt');
+    const m = byId('vrMuteLbl'); if(m){ m.textContent = R.userMuted ? 'Bật âm thanh · đọc tiếp' : 'Tắt âm thanh'; m.parentElement.setAttribute('aria-checked', String(R.userMuted)); }
+    const h = byId('vrHoverLbl'); if(h){ h.textContent = 'Đọc khi rê chuột: ' + (R.hoverRead ? 'Bật' : 'Tắt'); h.parentElement.setAttribute('aria-checked', String(!!R.hoverRead)); }
+    const c = byId('vrCapLbl'); if(c){ c.textContent = 'Hiện lời trợ lý: ' + (R.captions ? 'Bật' : 'Tắt'); c.parentElement.setAttribute('aria-checked', String(!!R.captions)); }
     document.body.classList.toggle('vr-noscript', !R.captions);
   }
   /** Đo chiều cao thật của thanh robot + thanh vùng → CSS chừa đúng khoảng trống, trang không bị che / lệch */
@@ -6565,6 +7287,11 @@ const WHO2007 = {
     const bar = byId('vrBar');
     const bh = bar && !bar.classList.contains('hidden') ? Math.ceil(bar.getBoundingClientRect().height) : 0;
     if(root.style.getPropertyValue('--vr-bar-h') !== bh + 'px') root.style.setProperty('--vr-bar-h', bh + 'px');
+    // nút trợ giúp đặt theo chiều cao LỚN NHẤT của khung (không nhảy lên xuống mỗi khi phụ đề đổi số dòng)
+    const sig = (R.mode || '') + (bar && bar.classList.contains('is-collapsed') ? 'c' : '') + (bar && bar.classList.contains('vr-dock-off') ? 'o' : '') + window.innerWidth;
+    if(sig !== R.helpSig){ R.helpSig = sig; R.helpH = 0; }
+    if(bh > (R.helpH || 0)){ R.helpH = bh; root.style.setProperty('--vr-help-h', bh + 'px'); }
+    if(!bh){ R.helpH = 0; root.style.setProperty('--vr-help-h', '0px'); }
     if(root.style.getPropertyValue('--vr-reg-h') !== '0px') root.style.setProperty('--vr-reg-h', '0px');
   }
   if('ResizeObserver' in window){
@@ -6580,7 +7307,7 @@ const WHO2007 = {
     ['pointerup','touchend','click','keydown'].forEach(t => document.removeEventListener(t, onGesture, true));
   }
   function onGesture(e){
-    if(NG.ctx && NG.ctx.state === 'suspended') try{ NG.ctx.resume(); }catch(err){}
+    if(NG.ctx && NG.ctx.state === 'suspended') try{ NG.ctx.resume().catch(() => {}); }catch(err){}
     if(R.audioOk){ detachGesture(); hideTapHint(); R.started = true; if(!R.listening) startListening(); return; }
     const onChoice = e.target && e.target.closest && e.target.closest('.vr-choice');
     const choiceKey = e.type === 'keydown' && R.gateOpen && (e.key === '1' || e.key === '2');
@@ -6597,20 +7324,14 @@ const WHO2007 = {
   }
   /** Thử tự bật ngay khi mở trang; nếu trình duyệt chặn thì chờ 1 lần chạm/nhấn phím. */
   function tryAuto(first){
-    R.pendingFirst = first || null;
-    attachGesture();
+    R.pendingFirst = first || null; attachGesture();
     const ua = navigator.userActivation;
     if(ua && ua.hasBeenActive){ activate(); return; }
-    startListening();
-    if(!first){ R.pendingFirst = null; return; }
-    R.audioOk = false;
-    first();
-    clearTimeout(R.autoTimer);
-    R.autoTimer = setTimeout(() => {
-      if(R.audioOk){ R.started = true; R.pendingFirst = null; detachGesture(); hideTapHint(); }
-      else { R.gen++; R.queue = []; haltAudio(); R.speaking = false; setStatus(); resumeSoon(); onAudioBlocked(); }
-    }, 1800);
+    if(first) first(); else startListening();
+    // Loading a voice model is not an autoplay error. Wait for an actual
+    // not-allowed callback; never cancel speech using an arbitrary watchdog.
   }
+
   /** Trình duyệt chặn phát tiếng: vẫn NGHE bình thường, chờ 1 phím/chạm bất kỳ để đọc lại. */
   function onAudioBlocked(){
     R.audioOk = false; R.started = false;
@@ -6622,9 +7343,11 @@ const WHO2007 = {
   function blindIntro(prefix){
     speak(prefix || 'Trang dành cho học sinh khiếm thị. Trợ lý luôn bật.');
     micNotice();
-    describeView(activeView(), true).then(d => speak(d + ' Nói: trợ giúp, để nghe các lệnh; nói: bình thường, nếu cậu muốn đổi sang trang thông thường.', {queue:true}));
+    const view = activeView();
+    describeView(view, true).then(d => { if(R.mode === 'blind' && !R.gateOpen && activeView() === view) speak(d + ' Nói: trợ giúp, để nghe các lệnh; nói: bình thường, nếu cậu muốn đổi sang trang thông thường. Bấm nút dấu hỏi ở góc phải để nghe hướng dẫn. ' + ARM_TEXT, {queue:true}); });
   }
   function announceSR(text){
+    if(window.A11y){ A11y.announce(text, {assertive:true}); return; }
     const el = byId('vrLive'); if(!el) return;
     el.textContent = '';
     setTimeout(() => { el.textContent = text; }, 120);
@@ -6648,7 +7371,7 @@ const WHO2007 = {
 
   /* ======================= RÊ CHUỘT / PHÍM TAB → ĐỌC NỘI DUNG =======================
      Hai cách điều khiển song song: GIỌNG NÓI hoặc RÊ CHUỘT. Chuột dừng trên khung nào
-     ~0,35 giây là trợ lý đọc khung đó (nút, ô nhập, đoạn nội dung, lựa chọn ở màn hình đầu).
+     ~0,12 giây là trợ lý dừng câu cũ và đọc khung đó (nút, ô nhập, đoạn nội dung, lựa chọn ở màn hình đầu).
      Chỉ lắng nghe sự kiện "chuột đi vào phần tử" (không tính toán liên tục) → không làm giật trang. */
   /* Rê chuột để nghe đọc là dành cho học sinh KHÔNG nhìn thấy: mặc định BẬT ở trang khiếm thị (và màn hình chọn chế độ),
      TẮT ở trang thường (điều khiển bằng giọng nói vẫn dùng cho mọi điều hướng). Mỗi trang nhớ lựa chọn riêng. */
@@ -6658,10 +7381,10 @@ const WHO2007 = {
     R.hoverRead = v == null ? R.mode === 'blind' : v === '1';
   }
   syncHover();
-  const HV = {el:null, timer:0, last:null, lastAt:0, mark:null};
+  const HV = {el:null, timer:0, last:null, lastAt:0, mark:null, region:-1};
   const HOVER_CTRL = 'button, a[href], [role="button"], input, select, textarea, .vr-choice, .vr-reg';
   function hoverTarget(t){
-    if(!t || !t.closest || t.closest('#vrScript, .fn-cursor, .vr-frame, .vr-menu-voice')) return null;
+    if(!t || !t.closest || t.closest('#vrScript, .fn-cursor, .vr-frame, .vr-menu-voice, #vkBoard')) return null;
     const ctl = t.closest(HOVER_CTRL);
     if(ctl) return ctl;
     const info = t.closest('#accountMenuSession, .account-menu-title, .brand, .vr-dock-state, .vr-dock-task, #stepNav');
@@ -6683,8 +7406,34 @@ const WHO2007 = {
     if(el.closest('#vrGate')) return 'ở màn hình chọn chế độ';
     if(el.closest('#heightScan')) return 'trong màn hình quét chiều cao';
     const regs = getRegions(); const i = regs.findIndex(r => r.contains(el));
+    if(i >= 0 && i === HV.region) return 'trong vùng số ' + (i + 1) + ', ' + regs[i].name;       // ký hiệu vùng vừa đọc ở câu trước
     if(i >= 0) return 'thuộc vùng ' + regs[i].name + ', vùng ' + (i + 1) + ' trên ' + regs.length;
     return '';
+  }
+  /* KÝ HIỆU VÙNG cho học sinh khiếm thị: rê chuột sang vùng MỚI → đọc trước "Vào vùng 2 trên 4: Biểu mẫu.
+     Ký hiệu vùng số 2 …" + cách quay lại bằng giọng nói; khung vàng và nhãn "V2" chuyển theo vùng đó. */
+  function regionSymbolFor(el){
+    if(R.gateOpen || !el || el.closest('#vrBar, #fnMenu, #fsBoard, #vkBoard, .topbar, #hpHelpWrap, #fnCam')) return '';
+    const view = activeViewEl(); if(!view || !view.contains(el)) return '';
+    const regs = getRegions(); const i = regs.findIndex(r => r.contains(el));
+    if(i < 0 || i === HV.region) return '';
+    HV.region = i;
+    if(i !== R.region) setRegion(i, {scroll:false, focus:false});
+    const reg = regs[i];
+    const fields = reg.els.reduce((n, e) => n + [...e.querySelectorAll('input:not([type=hidden]), select, textarea')].filter(visible).length, 0);
+    const btns = reg.els.reduce((n, e) => n + [...e.querySelectorAll('button, a[href]')].filter(visible).length, 0);
+    let s = 'Vào vùng ' + (i + 1) + ' trên ' + regs.length + ': ' + reg.name + '. Ký hiệu vùng số ' + (i + 1) + '.';
+    if(fields) s += ' Vùng có ' + fields + ' ô nhập' + (btns ? ' và ' + btns + ' nút' : '') + '.';
+    else if(btns) s += ' Vùng có ' + btns + ' nút.';
+    s += ' Nói: vùng số ' + (i + 1) + ', để nghe cả vùng. ';
+    return s;
+  }
+  /** "Ô số 2 trên 3 của vùng" — vị trí của ô nhập trong vùng đang đứng */
+  function fieldPosInRegion(el){
+    const regs = getRegions(); const reg = regs.find(r => r.contains(el)); if(!reg) return '';
+    const list = []; reg.els.forEach(e => e.querySelectorAll('input:not([type=hidden]), select, textarea').forEach(x => { if(visible(x)) list.push(x); }));
+    const k = list.indexOf(el);
+    return k >= 0 && list.length > 1 ? ' Ô số ' + (k + 1) + ' trên ' + list.length + ' của vùng.' : '';
   }
   /** Đang đăng nhập tài khoản nào */
   function accountSpeech(short){
@@ -6730,11 +7479,11 @@ const WHO2007 = {
     if(el.id === 'vrOrb') return R.mode === 'regular' ? 'Nút bật tắt trợ lý, ' + (R.robotOn ? 'đang bật. Bấm để tắt.' : 'đang tắt. Bấm để bật.') : 'Nút trợ lý. Bấm để ' + (R.speaking ? 'dừng đọc.' : 'đọc lại câu vừa rồi.');
     if(/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)){
       const lb = fieldLabel(el) || 'nhập liệu';
-      if(el.tagName === 'SELECT') return 'Ô chọn ' + lb + at + (el.value ? ' Đang chọn ' + textOf(el.options[el.selectedIndex]) + '.' : ' Chưa chọn.') + ' Các lựa chọn: ' + optionList(el) + '.' + (R.mode === 'blind' ? ' Nói tên lựa chọn để chọn.' : '');
+      if(el.tagName === 'SELECT') return 'Ô chọn ' + lb + at + fieldPosInRegion(el) + (el.value ? ' Đang chọn ' + textOf(el.options[el.selectedIndex]) + '.' : ' Chưa chọn.') + ' Các lựa chọn: ' + optionList(el) + '.' + (R.mode === 'blind' ? ' Nói tên lựa chọn để chọn.' : '');
       if(el.type === 'checkbox' || el.type === 'radio') return 'Ô đánh dấu ' + lb + at + (el.checked ? ' Đang chọn.' : ' Chưa chọn.');
       const v = el.type === 'password' ? (el.value ? ' Đã nhập ' + el.value.length + ' ký tự.' : ' Đang trống.') : (el.value ? ' Đang là: ' + el.value + '.' : ' Đang trống.');
       const how = R.mode === 'blind' ? inputWays(el) : ' Bấm vào ô để gõ' + (R.robotOn ? ', hoặc nói: ' + lb.toLowerCase() + ', rồi nội dung cần điền.' : '.');
-      return 'Ô nhập ' + lb + at + v + how;
+      return 'Ô nhập ' + lb + at + fieldPosInRegion(el) + v + how;
     }
     if(el.matches('a[href]')){ const lb = btnLabel(el) || textOf(el); return 'Liên kết ' + lb + at + (el.target === '_blank' ? ' Mở ở thẻ mới.' : '') + howToPress(el, ''); }
     if(el.classList.contains('vr-reg')) return 'Vùng ' + textOf(el) + '. Bấm để nghe vùng này.';
@@ -6751,30 +7500,42 @@ const WHO2007 = {
     if(HV.mark) HV.mark.classList.remove('vr-hover');
     HV.mark = el; if(el) el.classList.add('vr-hover');
   }
+  /* Giống trình đọc màn hình thật: chuột / Tab sang chỗ MỚI → DỪNG NGAY câu đang đọc và đọc chỗ mới.
+     (Không còn điều kiện "đang nói thì bỏ qua"; speak(..., {interrupt:true}) gọi speechSynthesis.cancel()
+     và dừng <audio> Piper / giọng trực tuyến trước khi đọc.) */
+  const HOVER_DEBOUNCE_MS = 120;           // lướt chuột thật nhanh qua nhiều khung thì chỉ đọc khung dừng lại
   function hoverSpeak(el){
-    if(el !== HV.el || !el.isConnected) return;
-    if(el === HV.last && Date.now() - HV.lastAt < 5000) return;     // vừa đọc rồi
-    const text = hoverDescribe(el);
+    if(el !== HV.el || !el.isConnected || R.userMuted) return;
+    if(Date.now() < (window.__hpQuietHoverUntil || 0) && !tabbing){ HV.el = null; return; }   // vừa thu gọn / di chuyển khung
+    if(el === HV.last && Date.now() - HV.lastAt < 5000 && (R.speaking || HV.lastSpoke === R.lastSpoken)) return;   // vừa đọc đúng chỗ này
+    const sym = regionSymbolFor(el);                           // ký hiệu vùng khi vừa sang vùng mới
+    let text = sym + (hoverDescribe(el) || '');
+    const echo = takeInputEcho();                               // "Cậu vừa nhập …" của ô vừa rời (Tab) đọc trước
+    if(echo) text = echo + ' ' + (text || '');
     if(!text) return;
     HV.last = el; HV.lastAt = Date.now();
-    speak(text, {force:R.gateOpen});
+    speak(text, {force:R.gateOpen || !!echo, interrupt:true});
+    HV.lastSpoke = R.lastSpoken;
   }
   function hoverOn(){ return R.hoverRead && (R.gateOpen ? !byId('hpLoader') : isNavActive()); }
   document.addEventListener('pointerover', (e) => {
     if(e.pointerType && e.pointerType !== 'mouse') return;              // chỉ chuột (cảm ứng / bút không tính)
     if(!hoverOn()) return;
+    // chuột ĐỨNG YÊN mà nội dung bên dưới đổi chỗ (khung thu gọn, chữ phụ đề dài ra…) → không tính là rê sang vùng mới
+    if(e.clientX === HV.px && e.clientY === HV.py) return;
+    HV.px = e.clientX; HV.py = e.clientY;
     const el = hoverTarget(e.target);
     if(el === HV.el) return;
     HV.el = el; clearTimeout(HV.timer); hoverMark(el);
-    if(el) HV.timer = setTimeout(() => hoverSpeak(el), 350);
+    if(el) HV.timer = setTimeout(() => hoverSpeak(el), HOVER_DEBOUNCE_MS);
   }, {passive:true});
-  document.addEventListener('mouseleave', () => { HV.el = null; clearTimeout(HV.timer); hoverMark(null); });
+  document.addEventListener('mouseleave', () => { HV.el = null; HV.region = -1; clearTimeout(HV.timer); hoverMark(null); });
   // phím Tab chuyển ô / nút → đọc ngay (học sinh khiếm thị dùng bàn phím)
   let tabbing = false;
   document.addEventListener('keydown', (e) => { if(e.key === 'Tab') tabbing = true; }, true);
   document.addEventListener('mousedown', () => { tabbing = false; }, true);
   document.addEventListener('focusin', (e) => {
-    if(!tabbing || !(isNavActive() || R.gateOpen) || (window.BrailleInput && BrailleInput.active)) return;
+    if(!tabbing || !(isNavActive() || R.gateOpen) || (window.BrailleInput && BrailleInput.active) || (e.target.closest && e.target.closest('#vkBoard'))) return;
     const el = e.target && e.target.closest && e.target.closest(HOVER_CTRL);
     if(!el) return;
     HV.el = el; HV.last = null; hoverMark(el); hoverSpeak(el);
@@ -6793,11 +7554,14 @@ const WHO2007 = {
   /** Hướng dẫn cách nhập cho học sinh khiếm thị (lần đầu nói đủ, sau đó nói gọn) */
   function inputWays(el){
     if(R.mode !== 'blind' || !el || el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'radio') return '';
+    const mobile = isMobileDev();
     if(!R.waysTold){
       R.waysTold = true; ss('hp_ways', '1');
-      return ' Cậu có 3 cách nhập. Một: nói nội dung, mình tự nhận diện và điền vào ô. Hai: nói: chữ nổi, rồi gõ chữ nổi ngay trên bàn phím máy tính, dùng 6 phím F, D, S, J, K, L; phím F và J có gờ nổi để cậu đặt ngón trỏ. Ba: nói: ký hiệu tay, rồi làm ký hiệu chữ cái ngón tay trước camera.';
+      return mobile
+        ? ' Cậu có 2 cách nhập. Một: nói nội dung, mình tự nhận diện và điền vào ô. Hai: nói: bàn phím trợ năng, để mở bàn phím lớn có chữ A đến Z, chữ hoa chữ thường, Cách, Xóa một ký tự, Xóa hết, Xong và Thoát.'
+        : ' Cậu có 3 cách nhập. Một: nói nội dung, mình tự nhận diện và điền vào ô. Hai: nói: chữ nổi, rồi gõ chữ nổi ngay trên bàn phím máy tính, dùng 6 phím F, D, S, J, K, L; phím F và J có gờ nổi để cậu đặt ngón trỏ. Ba: nói: ký hiệu tay, rồi làm ký hiệu chữ cái ngón tay trước camera.';
     }
-    return ' Nói nội dung; hoặc nói: chữ nổi, hay: ký hiệu tay.';
+    return mobile ? ' Nói nội dung; hoặc nói: bàn phím trợ năng.' : ' Nói nội dung; hoặc nói: chữ nổi, hay: ký hiệu tay.';
   }
 
   /* ======================= CỔNG CHỌN TRANG ======================= */
@@ -6808,7 +7572,8 @@ const WHO2007 = {
   const AUTO_BLIND_MS = 25000;
   function gatePrompt(){ R.gatePrompts++; speak(GATE_TEXT, {force:true}); micNotice(); }
   function openGate(initial){
-    R.gateOpen = true; R.gatePrompts = 0; R.awaitField = null;
+    stopSpeaking({resume:false}); pauseListening();
+    R.gateOpen = true; R.gatePrompts = 0; R.awaitField = null; R.voiceArmed = true;
     R.gateInitial = initial === true; R.gateOpenedAt = Date.now(); R.sightedSignal = false;
     const gate = byId('vrGate');
     gate.dataset.state = 'choose';
@@ -6853,8 +7618,14 @@ const WHO2007 = {
 
   function chooseMode(mode, opts = {}){
     if(mode !== 'blind' && mode !== 'regular') return;
-    R.mode = mode; ss(MODE_KEY, mode);
-    if(mode === 'regular'){ R.robotOn = true; ss(ROBOT_KEY, '1'); }
+    stopSpeaking({resume:false}); pauseListening();
+    R.mode = mode; ss(MODE_KEY, mode); R.voiceReady = true; R.voiceOff = false;
+    R.voiceArmed = mode === 'blind'; R.robotOn = mode === 'blind';
+    R.chatVoice = mode === 'blind'; R.autoRead = false; R.userMuted = false;
+    R.pendingFirst = null; R.chatIntroDone = false; R.chatState = '';
+    clearTimeout(R.viewTimer); R.pendingView = null;
+    R.form = null; R.awaitField = null; R.appendField = null; spellCancel(true); closeInputs();
+    ss(ROBOT_KEY, R.robotOn ? '1' : '0'); updateToggles();
     closeGate();
     if(R.audioOk || !opts.auto) R.started = true;
     applyUi();
@@ -6871,24 +7642,29 @@ const WHO2007 = {
       }
       focusHeading(view);
     } else {
-      speak('Đã vào trang học sinh thông thường. Trợ lý điều hướng đang bật: cậu nói tên mục cần mở, ví dụ: tư liệu, trò chuyện, đo BMI, đăng nhập. Bấm nút Trợ lý ở góc phải màn hình để bật hoặc tắt.');
+      scriptLine('Trợ lý đang tắt. Nói “điều khiển giọng nói” để bắt đầu nhận lệnh.', 'idle');
     }
     startListening();
   }
   function setRobot(on){
-    if(R.mode !== 'regular'){ chooseMode('regular'); return; }
-    R.robotOn = !!on; ss(ROBOT_KEY, on ? '1' : '0');
-    R.awaitField = null;
+    if(R.mode !== 'regular'){ chooseMode('regular'); if(!on) return; }
+    R.robotOn = !!on; R.voiceArmed = !!on; R.voiceReady = true;
+    ss(ROBOT_KEY, on ? '1' : '0'); R.awaitField = null;
     if(on){
-      R.started = true; R.micDenied = false; detachGesture();
-      applyUi();
-      speak('Trợ lý đã bật. Cậu nói tên mục cần mở, ví dụ: tư liệu, trò chuyện, đo BMI, đăng nhập. Nói: trợ giúp, để nghe các lệnh.');
+      detachGesture();
+      armVoice('Trợ lý đã bật. Đọc xong thông báo này, cậu nói tên mục cần mở; nói trợ giúp để nghe các lệnh.');
     } else {
-      pauseListening();
+      R.voiceOff = true;
+      R.chatVoice = false; R.autoRead = false; R.chatState = '';
+      clearChatInterim();
+      if(R.speaking && Date.now() - R.armedAt < 20000) stopSpeaking({resume:false});   // đang đọc thông báo bật → dừng luôn
+      clearIdleWait(); pauseListening();                                                  // hủy bộ đếm 8 giây, tắt micro
       applyUi();
-      speak('Đã tắt trợ lý.', {force:true});
+      if(window.A11y) A11y.announce('Đã tắt điều khiển giọng nói.');
+      if(!R.speaking) scriptLine('Điều khiển giọng nói đã tắt. Bấm nút trợ lý hoặc Alt + V để bật lại.', 'idle');
     }
   }
+
   function setAutoRead(on){
     R.autoRead = !!on; ss(AUTOREAD_KEY, on ? '1' : '0');
     speak(on ? 'Đã bật tự đọc tin nhắn của Chatbot.' : 'Đã tắt tự đọc tin nhắn của Chatbot.');
@@ -6916,12 +7692,18 @@ const WHO2007 = {
       q('.weekly-summary-feedback') + ' ' +
       (tried ? 'Cậu đã đánh dấu là đã thử hoạt động này.' : 'Nếu cậu sẽ thử, hãy nói: mình đã thử.');
   }
+  /** Tên ô: label → aria-label / aria-labelledby → nhãn trong .field → placeholder → data-label */
   function fieldLabel(el){
     const l = el.id ? document.querySelector('label[for="' + el.id + '"]') : null;
-    if(l) return textOf(l);
+    if(l && textOf(l)) return textOf(l);
+    const aria = el.getAttribute && el.getAttribute('aria-label');
+    if(aria) return aria.trim();
+    const lb = el.getAttribute && el.getAttribute('aria-labelledby');
+    if(lb){ const t = lb.split(/\s+/).map(id => textOf(byId(id))).filter(Boolean).join(' '); if(t) return t; }
     const f = el.closest('.field');
     const fl = f && f.querySelector('.field-label');
-    return fl ? textOf(fl) : (el.placeholder || '');
+    if(fl && textOf(fl)) return textOf(fl);
+    return el.placeholder || (el.dataset && (el.dataset.label || el.dataset.name)) || '';
   }
   function visibleFields(){
     const list = [];
@@ -7067,7 +7849,7 @@ const WHO2007 = {
     const before = window.scrollY;
     R.awaitField = null;
     if(dir === 'top' || dir === 'up') R.readSet = new WeakSet();
-    if(opts.smooth && (dir === 'down' || dir === 'up')){
+    if(opts.smooth && (dir === 'down' || dir === 'up') && !(window.A11y && A11y.reducedMotion())){
       smoothScrollBy(dir === 'down' ? step : -step, opts.smooth, () => afterScroll(dir, before));
       return;
     }
@@ -7328,7 +8110,7 @@ const WHO2007 = {
     f.style.transform = 'translate(' + left + 'px,' + top + 'px)';
     f.style.width = width + 'px'; f.style.height = (q.height + pad * 2) + 'px';
     const tag = byId('vrFrameTag');
-    const txt = 'Vùng ' + (cur + 1) + '/' + regs.length + ' · ' + regs[cur].name;
+    const txt = 'V' + (cur + 1) + ' · Vùng ' + (cur + 1) + '/' + regs.length + ' · ' + regs[cur].name;
     if(tag.textContent !== txt) tag.textContent = txt;
   }
   let frameRaf = 0;
@@ -7399,6 +8181,7 @@ const WHO2007 = {
     }
     if(['danh van','nhap tung chu','go tung chu'].some(k => n === k)){ spellStart(el); return true; }
     if(['chu noi','go chu noi','ban phim','braille','chu braille'].some(k => n === k)){ openBraille(el); return true; }
+    if(['ban phim tro nang','ban phim ao','ban phim lon'].some(k => n === k)){ openVirtualKeyboard(el); return true; }
     if(['ky hieu tay','ky hieu','go ky hieu'].some(k => n === k)){ openFingerSign(el); return true; }
     if(regionCommand(n, true)){ R.form = null; return true; }
     const cmd = matchCommand(n, true);
@@ -7416,46 +8199,127 @@ const WHO2007 = {
   function closeInputs(){ if(window.FingerNav) FingerNav.closeKeyboard(true); if(window.BrailleInput) BrailleInput.close(true); }
   const V = () => window.VNInput;
   function noTelex(el){ return !!el && (/Username$|refUrl$/.test(el.id || '') || el.type === 'password' || el.type === 'number'); }
+  function editable(el){
+    return !!(el && el.matches && el.matches('input:not([type=checkbox]):not([type=radio]),textarea,select') &&
+      !el.disabled && !el.readOnly && visible(el));
+  }
   function spellTarget(){
-    const a = document.activeElement;
-    if(R.awaitField && visible(R.awaitField)) return R.awaitField;
-    if(R.form && R.form.list[R.form.i]) return R.form.list[R.form.i];
-    if(a && a.matches && a.matches('input[type=text], input[type=password], input[type=number]') && visible(a)) return a;
+    const choices = [R.spell && R.spell.el, R.awaitField, R.form && R.form.list[R.form.i], document.activeElement, R.lastInput];
+    const el = choices.find(editable); if(el) return el;
     const chat = byId('chatInput');
-    if(activeView() === 'view-chat' && chat && visible(chat) && !chat.disabled) return chat;
+    if(activeView() === 'view-chat' && editable(chat)) return chat;
     return formFields().find(el => el.tagName !== 'SELECT' && !el.value) || null;
   }
-  function spellDisplay(){
+  function reconcileSpell(){
+    const S = R.spell;
+    if(S && S.el.value !== S.rendered){ S.raw = S.el.value; S.rendered = S.el.value; S.state = {}; }
+    return S;
+  }
+  function renderSpell(S){ return noTelex(S.el) ? S.raw : (V() ? V().telex(S.raw) : S.raw); }
+  function writeSpell(){
     const S = R.spell; if(!S) return '';
-    return noTelex(S.el) ? S.raw : (V() ? V().telex(S.raw) : S.raw);
+    const text = renderSpell(S); S.rendered = text; S.el.value = text;
+    fire(S.el); previewInputs(); return text;
+  }
+  function cancelPendingInput(el){
+    R.inputRevision++;
+    if(el && el.id === 'chatInput'){
+      R.cvInterim = false; el.classList.remove('vr-cv-typing');
+      R.pendingChat = ''; clearInterval(R.pendingChatT); R.pendingChatT = null;
+    }
+    // Results from before a clear/manual edit cannot repopulate the field.
+    pauseListening();
+    if(!R.speaking) resumeSoon();
+  }
+  function clearInput(el, opts = {}){
+    el = el || (activeView() === 'view-chat' && R.pendingChat ? byId('chatInput') : spellTarget());
+    // A queued chat answer can still be cancelled while its editor is disabled.
+    if(!el || !visible(el) || el.readOnly || !el.matches('input:not([type=checkbox]):not([type=radio]),textarea,select')){
+      if(!opts.silent) speak('Cậu chọn ô muốn xóa trước nhé.'); return false;
+    }
+    cancelPendingInput(el);
+    if(R.spell && R.spell.el === el){ R.spell.raw = ''; R.spell.rendered = ''; R.spell.state = {}; }
+    R.appendField = null; R.lastInput = el;
+    if(!R.spell) R.awaitField = el;
+    el.value = '';
+    if(window.BrailleInput && BrailleInput.resetInputState) BrailleInput.resetInputState(el);
+    if(window.FingerNav && FingerNav.resetInputState) FingerNav.resetInputState(el);
+    fire(el); previewInputs();
+    if(!opts.silent) speak('Đã xóa hết ký tự trong ô ' + (fieldLabel(el) || 'nhập liệu') + '.', {force:!!opts.force, interrupt:!!opts.force});
+    return true;
+  }
+  const CLEAR_INPUT_WORDS = /^(?:xoa|xoat) (?:het|tat ca)(?: (?:cac )?(?:ky tu|chu|noi dung)(?: (?:vua |da )?go| vua nhap| da nhap| trong o| o nay)?)?(?: giup (?:toi|minh))?$/;
+  const MORE_INPUT_WORDS = /^(?:doc them tu moi|doc tu moi|them tu moi|nhap them tu moi|nhap them|go them)(?:\s+|$)/;
+  function isInputCommand(n){ return CLEAR_INPUT_WORDS.test(n) || MORE_INPUT_WORDS.test(n) || n === 'lam trong o'; }
+  function appendInput(el, text){
+    if(!editable(el)) return;
+    if(R.spell && R.spell.el === el){
+      reconcileSpell();
+      const old = renderSpell(R.spell);
+      R.spell.raw = old + (old && !/\s$/.test(old) ? ' ' : '') + text.trim();
+      writeSpell();
+    } else {
+      const value = el.value + (el.value && !/\s$/.test(el.value) ? ' ' : '') + text.trim();
+      el.value = V() ? V().forField(el, value) : value; fire(el); previewInputs();
+    }
+    speak(el.type === 'password' ? 'Đã thêm ký tự vào mật khẩu.' : 'Đã thêm: ' + text.trim() + '.');
+  }
+  function handleInputCommand(text, n){
+    if(CLEAR_INPUT_WORDS.test(n) || n === 'lam trong o'){ clearInput(); return true; }
+    const more = n.match(MORE_INPUT_WORDS);
+    if(!more) return false;
+    const el = spellTarget();
+    if(!editable(el)){ speak('Cậu chọn một ô để nhập từ mới nhé.'); return true; }
+    reconcileSpell(); R.lastInput = el;
+    const rest = tokensOf(text).slice(wc(more[0].trim())).map(t => t.o).filter(Boolean).join(' ');
+    if(rest) appendInput(el, rest);
+    else {
+      if(!R.spell){ R.appendField = el; R.awaitField = el; }
+      speak((el.value ? 'Mình sẽ thêm vào nội dung hiện tại. ' : 'Ô đang trống. ') + 'Cậu đọc từ mới nhé.');
+    }
+    return true;
+  }
+  document.addEventListener('focusin', e => { if(editable(e.target)) R.lastInput = e.target; });
+  document.addEventListener('input', e => {
+    if(!editable(e.target)) return;
+    reconcileSpell();
+    if(e.isTrusted) cancelPendingInput(e.target);
+    if(!e.target.value && R.spell && R.spell.el === e.target){ R.spell.raw = ''; R.spell.state = {}; R.spell.rendered = ''; }
+    previewInputs();
+  });
+
+  function spellDisplay(){
+    const S = reconcileSpell(); return S ? renderSpell(S) : '';
   }
   function spellStart(el, opts = {}){
     if(!el){ speak('Cậu chọn một ô chữ trước nhé. Ví dụ nói: tên trường, rồi nói: đánh vần.'); return; }
     R.awaitField = null;
-    R.spell = {el, raw:'', state:{}};
-    try{ el.focus({preventScroll:false}); }catch(e){}
+    R.spell = {el, raw:el.value || '', rendered:el.value || '', state:{}}; R.lastInput = el;
+    if(!opts.noFocus) try{ el.focus({preventScroll:false}); }catch(e){}           // bàn phím trợ năng: không mở bàn phím điện thoại
     if(!opts.silent) speak('Đánh vần cho ô ' + (fieldLabel(el) || 'này') + '. Nói từng chữ, ví dụ: bê, a, dấu huyền. Nói: cách, để cách chữ; xóa, để xóa; viết hoa. Nói: xong, khi đánh vần xong.');
   }
   /** opts.say: tên đọc to thay cho phím cuối (VD chữ nổi "ơ" kèm dấu huyền → đọc "ơ") */
   function spellKeys(keys, opts){
-    const S = R.spell; if(!S || !V()) return;
+    const S = reconcileSpell(); if(!S || !V()) return;
+    if(keys.includes('⌧')){ clearInput(S.el); return; }
     const before = spellDisplay();
     S.raw = V().applyKeys(S.raw, keys, S.state);
-    const text = spellDisplay();
-    S.el.value = text; fire(S.el);
-    previewInputs();
+    const text = writeSpell();
     const last = keys[keys.length - 1];
     const TONE = {'s':'dấu sắc','f':'dấu huyền','r':'dấu hỏi','x':'dấu ngã','j':'dấu nặng'};
     // s, f, r, x, j: thành DẤU khi đứng sau nguyên âm; nếu chữ dài thêm thì đó là CHỮ CÁI (VD "tr", "ph")
-    const asTone = TONE[last] && !noTelex(S.el) && text.replace(/\s/g, '').length <= before.replace(/\s/g, '').length;
-    const name = (opts && opts.say) || (asTone ? TONE[last] : (V().KEY_NAMES[last] && !TONE[last] ? V().KEY_NAMES[last] : last));
+    const asTone = TONE[String(last).toLowerCase()] && !noTelex(S.el) && text.replace(/\s/g, '').length <= before.replace(/\s/g, '').length;
+    const upper = /^[A-ZĐ]$/.test(last);
+    const name = (opts && opts.say) || (asTone ? TONE[last.toLowerCase()] || TONE[last] : (V().KEY_NAMES[last] && !TONE[last] ? V().KEY_NAMES[last] : (upper ? 'chữ hoa ' + last : last)));
     const word = (text.split(' ').pop() || '').trim();
-    const pw = S.el.type === 'password';
-    speak(name + (pw ? '' : (word && last !== '␠' ? '. ' + word : '')));
+    const pw = sensitiveField(S.el);
+    if(opts && opts.quiet) return;
+    speak(name + (pw ? '' : (word && last !== '␠' ? '. ' + word : '')), {force:!!(opts && opts.force), interrupt:!!(opts && opts.interrupt)});
   }
-  function spellFinish(){
-    const S = R.spell; if(!S) return;
-    const el = S.el; R.spell = null;
+  function spellFinish(fopts = {}){
+    const S = reconcileSpell(); if(!S) return;
+    const sayF = (t) => speak(t, {force:!!fopts.force, interrupt:!!fopts.force});
+    const el = S.el; R.spell = null; R.appendField = null;
     const val = V() ? V().forField(el, noTelex(el) ? S.raw : V().telex(S.raw)) : S.raw;
     el.value = val; fire(el);
     previewInputs();
@@ -7466,9 +8330,9 @@ const WHO2007 = {
       return;
     }
     const lb = (fieldLabel(el) || 'ô').toLowerCase();
-    const said = el.type === 'password' ? 'Đã điền ' + lb + ', ' + val.length + ' ký tự.' : 'Đã điền ' + lb + ': ' + (/Username$/.test(el.id) ? val.split('').join(' ') : val) + '.';
-    if(R.form){ speak(said + ' '); formGo(R.form.i + 1, '', true); }
-    else speak(said + ' ' + nextHint());
+    const said = sensitiveField(el) ? 'Cậu đã nhập ' + val.length + ' ký tự vào ô ' + lb + '.' : (val ? 'Cậu vừa nhập ' + lb + ': ' + (/Username$/.test(el.id) ? val.split('').join(' ') : val) + '.' : 'Ô ' + lb + ' đang trống.');
+    if(R.form){ sayF(said + ' '); formGo(R.form.i + 1, '', true); }
+    else sayF(said + ' ' + nextHint());
   }
   function spellCancel(silent){
     if(!R.spell) return; R.spell = null;
@@ -7478,16 +8342,16 @@ const WHO2007 = {
     const tight = k => n === k || (startsWithPhrase(n, k) && wc(n) <= wc(k) + 1);
     if(['xong','xong roi','ket thuc','hoan tat','dien vao','xac nhan'].some(tight)){ spellFinish(); closeInputs(); return; }
     if(['huy','thoat','thoat danh van','dung danh van','thoi danh van','dong ban phim','thoat ky hieu','tat ky hieu'].some(tight)){ spellCancel(); closeInputs(); return; }
+    if(window.FingerNav && FingerNav.voice && FingerNav.voice(n)) return;   // chữ hoa / chữ thường / chế độ ký hiệu tay
     if(window.BrailleInput && BrailleInput.voice(n, text)) return;          // hỏi mã chữ nổi khi đang gõ
     const keys = V() ? V().spell(text) : null;
     if(keys && keys.length){ spellKeys(keys); return; }
     const cmd = matchCommand(n, true);
     if(cmd){ spellCancel(true); closeInputs(); runCommand(cmd); return; }
     // nói cả từ/câu → thêm thẳng vào ô (đã có dấu sẵn)
-    const S = R.spell;
+    const S = reconcileSpell();
     S.raw = (noTelex(S.el) ? S.raw : spellDisplay()) + (S.raw && !/\s$/.test(S.raw) ? ' ' : '') + text.trim();
-    S.el.value = spellDisplay(); fire(S.el);
-    previewInputs();
+    writeSpell();
     speak('Đã thêm: ' + text.trim() + '. Nói: xong, khi xong.');
   }
 
@@ -7565,7 +8429,7 @@ const WHO2007 = {
     }
     return 'Đã mở ' + (VIEW_NAMES[id] || 'trang mới') + '.';
   }
-  async function announceView(verbose){ speak(await describeView(activeView(), verbose)); }
+  async function announceView(verbose){ const view = activeView(); const text = await describeView(view, verbose); if(view === activeView()) speak(text); }
   function readLastAi(){
     if(activeView() !== 'view-chat') return speak('Hãy nói: chatbot, để mở trang trò chuyện trước nhé.');
     speak(lastAiText() || 'Chưa có tin nhắn nào.');
@@ -7587,7 +8451,41 @@ const WHO2007 = {
     const labels = [...new Set(clickables().map(btnLabel))].slice(0, 15);
     speak(labels.length ? 'Các mục có thể bấm: ' + labels.join('; ') + '. Nói: bấm, rồi tên mục.' : 'Trang này không có nút nào.');
   }
-  function repeat(){ speak(R.lastSpoken || 'Mình chưa nói gì cả.', {force:true}); }
+  function repeat(){ speak(R.lastSpoken || 'Mình chưa nói gì cả.', {force:true, interrupt:true}); }
+  /* ======================= HƯỚNG DẪN TỔNG THỂ (nút "?" Trợ giúp) =======================
+     Nội dung đổi theo: máy tính / điện thoại · trang khiếm thị / thông thường · trạng thái điều khiển giọng nói · trang đang mở */
+  function guideText(){
+    const mobile = isMobileDev(), blind = R.mode === 'blind', view = activeView();
+    const voiceOn = blind || (R.robotOn && !R.voiceOff);
+    let s = 'Đây là AI HealthPulse. ';
+    s += mobile ? 'Cậu có thể dùng trang web bằng cách chạm màn hình, hoặc bằng giọng nói. '
+                : 'Cậu có thể dùng trang web bằng chuột, bàn phím hoặc giọng nói. ';
+    if(!mobile){
+      s += R.hoverRead ? 'Rê chuột vào nội dung để nghe trợ lý đọc; chuyển sang chỗ khác, trợ lý dừng câu cũ và đọc ngay chỗ mới. '
+                       : 'Đọc khi rê chuột đang tắt; mở nút ba chấm trong khung trợ lý để bật. ';
+      s += 'Nhấn phím Tab để đi qua các nút và ô nhập, trợ lý đọc tên từng mục; phím Escape để dừng đọc. ';
+    }
+    if(R.micDenied) s += 'Micro chưa được cho phép, nên lúc này mình chưa nghe được giọng nói; cậu nhờ người bên cạnh cho phép micro trên trình duyệt. ';
+    else if(blind) s += 'Ở trang khiếm thị, trợ lý luôn bật. Khi trợ lý đọc, micro tạm tắt; đọc xong, chờ 8 giây không thao tác thì micro mở để cậu nói lệnh, ví dụ: trợ giúp; vùng tiếp theo; trò chuyện; đo bê em i. ';
+    else if(voiceOn) s += 'Điều khiển giọng nói đang bật. Khi trợ lý đọc, micro tạm tắt; đọc xong, chờ 8 giây không thao tác thì micro mở, khung trợ lý hiện: có thể nói. Nói tên mục cần mở, ví dụ: tư liệu, trò chuyện, đo bê em i. ';
+    else s += 'Điều khiển giọng nói đang tắt. Muốn bật, bấm nút trợ lý ở góc phải dưới màn hình' + (mobile ? '' : ', hoặc nhấn Alt V') + '; trợ lý sẽ nhắc cậu chờ 8 giây rồi mới mở micro. ';
+    s += mobile
+      ? 'Trên điện thoại, mình không dùng camera nhận diện ký hiệu tay. Khi cần nhập thông tin, cậu có thể gõ bằng bàn phím điện thoại, đọc bằng giọng nói, hoặc nói: bàn phím trợ năng, để mở bàn phím lớn có chữ A đến Z, nút chữ hoa chữ thường, Cách, Xóa một ký tự, Xóa hết, Xong và Thoát. '
+      : 'Trên máy tính, cậu có thể dùng camera để nhập bằng ký hiệu tay: nói ký hiệu tay; bảng có hai chế độ, đang gõ chữ và đang điều khiển, giơ ngón cái để chuyển. Khi cần nhập thông tin, cậu có thể gõ phím, đọc bằng giọng nói, hoặc nói: chữ nổi, để gõ chữ nổi bằng 6 phím F D S J K L. ';
+    s += 'Rời một ô nhập, mình đọc lại nội dung cậu vừa nhập; mật khẩu thì chỉ nói số ký tự. ';
+    s += 'Khung trợ lý, nút trợ giúp và khung webcam đều có nút chấm vuông để kéo di chuyển và nút gạch ngang để thu gọn; hoặc nói, ví dụ: thu gọn khung trợ lý; di chuyển khung webcam sang phải; đặt lại vị trí khung trợ lý. ';
+    if(!mobile && R.hoverRead) s += 'Rê chuột sang vùng mới, mình đọc ký hiệu vùng, ví dụ vùng số 2, để cậu nói: vùng số 2, khi muốn nghe lại cả vùng. ';
+    if(view && VIEW_NAMES[view]) s += 'Cậu đang ở ' + VIEW_NAMES[view] + '. ';
+    s += voiceOn ? 'Nói: trợ giúp, để nghe danh sách lệnh giọng nói. ' : '';
+    s += 'Bấm nút dấu hỏi' + (mobile ? '' : ' hoặc nhấn Alt H') + ' để nghe lại hướng dẫn này.';
+    return s;
+  }
+  function showGuide(){
+    clearTimeout(R.viewTimer); R.pendingView = null;
+    const t = guideText();
+    if(window.A11y) A11y.announce('Đang đọc hướng dẫn sử dụng trang web.');
+    speak(t, {force:true, interrupt:true});        // dừng câu đang đọc và đọc hướng dẫn ngay
+  }
   function help(){
     const v = activeView();
     let s = 'Các lệnh chung: trang chủ; trò chuyện; đo BMI; tư liệu; đăng nhập; tạo tài khoản; giáo viên; đăng xuất. ' +
@@ -7596,10 +8494,11 @@ const WHO2007 = {
       'Ngón tay: nói bật camera ngón tay; chỉ một ngón trỏ vào vùng cần nghe; giữ yên ngón tay 5 giây trên nút để chọn, hoặc chụm hai ngón; duỗi hai ngón rồi vẩy xuống để trượt xuống, vẩy lên để trượt lên. Nói: ký hiệu tay, để gõ chữ bằng bảng chữ cái ngón tay. ' +
       'Nhập chữ: nói nội dung, mình tự nhận diện; hoặc nói: chữ nổi, để gõ chữ nổi 6 phím F D S J K L; hoặc nói: ký hiệu tay, để dùng ký hiệu trước camera; hoặc nói: đánh vần. ' +
       'Rê chuột: chuột dừng ở đâu mình đọc chỗ đó; nói: tắt đọc khi rê chuột, để tắt. Phụ đề: nói tắt phụ đề, hoặc bật phụ đề. ' +
-      'Điền thông tin: nói tên ô rồi nội dung, hoặc nói: điền giúp, để mình hỏi từng ô. Bấm nút: nói bấm, rồi tên nút. Đổi trang: nói đổi trang.';
+      'Điền thông tin: nói tên ô rồi nội dung, hoặc nói: điền giúp, để mình hỏi từng ô. Bấm nút: nói bấm, rồi tên nút. Đổi trang: nói đổi trang. ' +
+      'Khung: thu gọn khung trợ lý; mở rộng khung trợ lý; di chuyển khung webcam sang trái, sang phải, lên trên, xuống dưới, góc phải trên hoặc giữa màn hình; đặt lại vị trí nút trợ giúp; vị trí khung trợ lý.';
     if(v === 'view-landing') s += ' Ở trang chủ: nói khối 10; tên trường, rồi đọc tên trường; cấp học trung học phổ thông; phường; quận; tỉnh; sau đó nói: mở chatbot.';
     if(v === 'view-chat') s += (R.mode === 'blind' || R.chatVoice)
-      ? ' Ở Chatbot: Chatbot tự đọc câu hỏi, nghe tiếng bíp thì cậu nói câu trả lời, mình tự gửi. Nói: đọc lại, để nghe lại câu hỏi; cuộc trò chuyện mới, để bắt đầu lại; đọc kết quả, để nghe tổng kết' + (R.mode === 'blind' ? '.' : '; tắt giọng chatbot, nếu chỉ muốn xem chữ.')
+      ? ' Ở Chatbot: Chatbot tự đọc câu hỏi, sau 8 giây không thao tác thì micro mở để cậu nói câu trả lời, mình tự gửi. Nói: đọc lại, để nghe lại câu hỏi; cuộc trò chuyện mới, để bắt đầu lại; đọc kết quả, để nghe tổng kết' + (R.mode === 'blind' ? '.' : '; tắt giọng chatbot, nếu chỉ muốn xem chữ.')
       : ' Ở Chatbot: lời cậu nói sẽ được điền vào ô chat, nói: gửi, để gửi. Nói: bật giọng chatbot, để Chatbot tự đọc và tự mở micro.';
     if(v === 'view-studentAuth' || v === 'view-adminAuth') s += ' Ở trang đăng nhập: nói tên ô rồi nội dung, ví dụ: tên đăng nhập an123; mật khẩu 123456; sau đó nói: đăng nhập.';
     if(v === 'view-library') s += ' Ở trang tư liệu: nói mở tài liệu số 1, hoặc đọc tài liệu số 1.';
@@ -7607,8 +8506,8 @@ const WHO2007 = {
     else if(acct()) s += ' Nói: cập nhật thông tin, để sửa họ tên, khối, trường hoặc mật khẩu nếu bị sai.';
     if(v === 'view-data') s += ' Ở trang Kho dữ liệu: nói tổng quan; theo tuần; theo tháng; theo ngày; đọc thống kê tuần này; đọc thống kê tháng này; xuất dữ liệu tuần, tháng hoặc ngày.';
     if(v === 'view-bmi') s += ' Ở trang BMI: nói một câu như: nữ, 14 tuổi, cao 1 mét 55, nặng 45 ký. Nói: tính BMI; đọc kết quả; đo lại; quét camera.';
-    s += ' Về giọng đọc: nói đổi giọng; đọc nhanh hơn; hoặc đọc chậm hơn.';
-    if(R.mode === 'regular') s += ' Nói: tắt trợ lý, hoặc bấm nút Trợ lý ở góc phải để tắt.';
+    s += ' Xóa chữ: nói xóa hết ký tự gõ. Để nhập tiếp, nói đọc thêm từ mới. Về giọng đọc: nói đổi giọng; đọc nhanh hơn; hoặc đọc chậm hơn. Khi trợ lý đọc, micro tạm ngắt; đọc xong, chờ 8 giây không thao tác thì micro mở lại. Bấm nút trợ lý hoặc phím Escape để dừng đọc.';
+    if(R.mode === 'regular') s += ' Nói: tắt trợ lý, hoặc bấm nút Trợ lý ở góc phải để tắt. Nói điều khiển giọng nói để đánh thức trợ lý.';
     speak(s, {force:true});
   }
 
@@ -7739,7 +8638,7 @@ const WHO2007 = {
       if(!isFinite(n)){ quietMiss(value, 'Chưa thấy con số cho ô ' + label); return true; }
       el.value = String(n); fire(el);
       if(id === 'bmiHeight' && B) B.setHeightSource('manual');
-      speak('Đã nhập ' + label + ': ' + String(n).replace('.', ',') + '. ' + nextHint());
+      speak('Cậu vừa nhập ' + label + ': ' + String(n).replace('.', ',') + '. ' + nextHint());
       return true;
     }
     if(/Username$/.test(id)) v = compact(value).toLowerCase();
@@ -7748,9 +8647,9 @@ const WHO2007 = {
     else if(/^ref/.test(id)) v = value.charAt(0).toLocaleUpperCase('vi-VN') + value.slice(1);
     else v = smartCase(value);
     el.value = v; fire(el);
-    if(el.type === 'password') speak('Đã nhập ' + label + ', gồm ' + v.length + ' ký tự. ' + nextHint());
-    else if(/Username$/.test(id)) speak('Đã nhập tên đăng nhập: ' + spell(v) + '. ' + nextHint());
-    else speak('Đã nhập ' + label + ': ' + v + '. ' + nextHint());
+    if(sensitiveField(el)) speak('Cậu đã nhập ' + v.length + ' ký tự vào ô ' + label + '. ' + nextHint());
+    else if(/Username$/.test(id)) speak('Cậu vừa nhập tên đăng nhập: ' + spell(v) + '. ' + nextHint());
+    else speak('Cậu vừa nhập ' + label + ': ' + v + '. ' + nextHint());
     return true;
   }
   function gradeCommand(n){
@@ -7822,23 +8721,24 @@ const WHO2007 = {
     const input = byId('chatInput'), send = byId('sendBtn');
     if(!input) return;
     if(R.mode === 'regular' && !chatVoiceActive()){
-      input.value = text; try{ input.focus(); }catch(e){}
+      input.value = text; fire(input); try{ input.focus(); }catch(e){}
       speak('Đã điền vào ô chat. Nói: gửi, để gửi.');
       return;
     }
     if(input.disabled || (send && send.disabled)){
       // Chatbot đang bận → giữ câu trả lời lại, tự gửi khi rảnh (không bắt học sinh nói lại)
+      const revision = R.inputRevision;
       R.pendingChat = text; scriptLine('Đã nhớ câu trả lời, sẽ tự gửi: “' + text + '”', 'heard');
       clearInterval(R.pendingChatT); const t0 = Date.now();
       R.pendingChatT = setInterval(() => {
         const i2 = byId('chatInput'), s2 = byId('sendBtn');
-        if(!R.pendingChat || Date.now() - t0 > 30000 || !i2){ clearInterval(R.pendingChatT); return; }
+        if(revision !== R.inputRevision || activeView() !== 'view-chat' || !R.pendingChat || Date.now() - t0 > 30000 || !i2){ clearInterval(R.pendingChatT); return; }
         if(i2.disabled || (s2 && s2.disabled) || R.speaking) return;
         clearInterval(R.pendingChatT); const tx = R.pendingChat; R.pendingChat = ''; dictateChat(tx);
       }, 400);
       return;
     }
-    input.value = text;
+    input.value = text; fire(input);
     speak(R.mode === 'blind' ? 'Cậu vừa trả lời: ' + text + '. Đang gửi.' : 'Đã gửi: ' + text + '.');
     if(typeof Hdtl !== 'undefined') Hdtl.sendAnswer();
   }
@@ -7876,6 +8776,8 @@ const WHO2007 = {
     btn.click();
   }
   const COMMANDS = [
+    {keys:['tat am thanh','tat tieng'], strictOnly:true, run:() => setMuted(true)},
+    {keys:['bat am thanh','bat tieng'], strictOnly:true, run:() => setMuted(false)},
     {keys:['dung lai','dung doc','im lang','im di','ngung doc','ngung lai','dung','thoi','im'], strictOnly:true, run:() => stopSpeaking()},
     {keys:['doc lai','nhac lai','noi lai','lap lai'], run:() => repeat()},
     {keys:['tro giup','huong dan','danh sach lenh','co nhung lenh nao','giup toi','giup minh','giup do'], run:() => help()},
@@ -7910,6 +8812,8 @@ const WHO2007 = {
     {keys:['tat camera ngon tay','tat ngon tay','tat che do ngon tay'], run:() => window.FingerNav && FingerNav.stop()},
     {keys:['danh van','nhap tung chu','go tung chu','danh van o nay','danh van tung chu'], run:() => spellStart(spellTarget())},
     {keys:['chu noi','go chu noi','bang chu noi','chu braille','braille','ban phim','mo ban phim','ban phim chu noi','go bang chu noi'], run:() => openBraille()},
+    {keys:['ban phim tro nang','mo ban phim tro nang','ban phim ao','ban phim lon','ban phim cam ung'], run:() => openVirtualKeyboard()},
+    {keys:['tro giup trang web','huong dan su dung','huong dan trang web','nut tro giup'], run:() => showGuide()},
     {keys:['tai khoan','tai khoan nao','dang dang nhap tai khoan nao','toi la ai','minh la ai','dang nhap chua','kiem tra tai khoan'], run:() => speak(accountSpeech('voice'))},
     {keys:['tat phu de','an phu de','tat chu phu de','an loi tro ly'], run:() => setCaptions(false)},
     {keys:['bat phu de','hien phu de','mo phu de','hien loi tro ly'], run:() => setCaptions(true)},
@@ -7992,7 +8896,16 @@ const WHO2007 = {
     });
     return best;
   }
+  const isMobileDev = () => !!(window.Device && Device.isMobile());
+  /** Bàn phím trợ năng (điện thoại) */
+  function openVirtualKeyboard(el){
+    if(!window.FingerNav || !FingerNav.openVK) return speak('Bàn phím trợ năng chưa được nạp.');
+    el = el || spellTarget();
+    if(!el) return speak('Cậu chọn một ô chữ trước nhé, ví dụ nói: tên trường, rồi nói: bàn phím trợ năng.');
+    FingerNav.openVK(el);
+  }
   function openBraille(el){
+    if(isMobileDev()) return openVirtualKeyboard(el);       // điện thoại không có bàn phím 6 phím F D S J K L
     if(!window.BrailleInput) return speak('Chức năng chữ nổi chưa được nạp.');
     el = el || spellTarget();
     if(!el) return speak('Cậu chọn một ô chữ trước nhé, ví dụ nói: tên trường, rồi nói: chữ nổi.');
@@ -8002,8 +8915,8 @@ const WHO2007 = {
     if(!window.FingerNav || !FingerNav.openSign) return speak('Chức năng ký hiệu tay chưa được nạp.');
     el = el || spellTarget();
     if(!el) return speak('Cậu chọn một ô chữ trước nhé, ví dụ nói: tên trường, rồi nói: ký hiệu tay.');
-    if(!FingerNav.on) FingerNav.start({quiet:true});
-    FingerNav.openSign(el);
+    if(isMobileDev()) return FingerNav.openVK(el);            // điện thoại: bàn phím trợ năng thay camera
+    FingerNav.openSign(el);                                    // tự bật camera (một luồng); lỗi → báo và gợi ý bàn phím
   }
   // ở trang Chatbot: câu hỏi thống kê gửi cho Chatbot trả lời (có chữ + giọng + nút tải file)
   function notChat(){ return activeView() !== 'view-chat'; }
@@ -8011,24 +8924,60 @@ const WHO2007 = {
     try{ cmd.run(); }catch(e){ console.warn('[VoiceRobot]', e); speak('Mình chưa làm được lệnh này.'); }
   }
 
+  /* ======================= LỆNH THU GỌN / DI CHUYỂN KHUNG =======================
+     "thu gọn khung trợ lý" · "mở rộng khung webcam" · "di chuyển nút trợ giúp sang trái"
+     "đưa khung trợ lý lên góc trái trên" · "đặt lại vị trí khung camera" */
+  const PANEL_NAMES = [
+    ['dock', ['khung tro ly ai','khung tro ly','khung ai doc','khung ai','khung dieu khien','khung doc']],
+    ['cam',  ['khung webcam','khung camera','khung cam','webcam','camera ngon tay','camera']],
+    ['help', ['nut tro giup','khung tro giup','nut hoi','tro giup']]
+  ];
+  function panelCommand(n){
+    const P = window.A11y && A11y.panels; if(!P) return false;
+    const m = n.match(/^(thu gon|thu nho|an bot|mo rong|phong to|hien lai|di chuyen|dua|keo|chuyen|dat lai vi tri|dat lai|tra ve vi tri cu|vi tri)\s+(.+)$/);
+    if(!m) return false;
+    let key = null, rest = '';
+    for(const [k, names] of PANEL_NAMES){ const nm = names.find(x => m[2] === x || m[2].indexOf(x + ' ') === 0); if(nm){ key = k; rest = m[2].slice(nm.length).trim(); break; } }
+    if(!key) return false;
+    const p = P[key];
+    const label = {dock:'khung trợ lý AI', cam:'khung webcam', help:'nút trợ giúp'}[key];
+    if(!p || !visible(p.el)){ speak(key === 'cam' ? 'Khung webcam chưa mở. Nói: bật camera ngón tay.' : label + ' đang ẩn.', {force:true}); return true; }
+    const v = m[1];
+    if(/^(thu gon|thu nho|an bot)$/.test(v)){ p.collapse(true); return true; }
+    if(/^(mo rong|phong to|hien lai)$/.test(v)){ p.collapse(false); return true; }
+    if(/^(dat lai|tra ve)/.test(v) || /^(ve cho cu|ve vi tri cu|mac dinh)$/.test(rest)){ p.reset(); return true; }
+    if(v === 'vi tri'){ speak(label + ' đang ở ' + p.where() + '.', {force:true}); return true; }
+    const has2 = w => (' ' + rest + ' ').indexOf(' ' + w + ' ') !== -1;
+    let where = null;
+    if(has2('goc') || (has2('tren') || has2('duoi')) && (has2('trai') || has2('phai'))){
+      where = (has2('duoi') ? 'b' : 't') + (has2('phai') ? 'r' : 'l');
+    } else if(has2('giua')) where = 'center';
+    else if(has2('len') || has2('tren')) where = 'up';
+    else if(has2('xuong') || has2('duoi')) where = 'down';
+    else if(has2('trai')) where = 'leftward';
+    else if(has2('phai')) where = 'rightward';
+    if(!where){ speak('Cậu muốn đưa ' + label + ' đi đâu? Ví dụ nói: di chuyển ' + label + ' sang trái; lên trên; góc phải dưới; hoặc giữa màn hình.', {force:true}); return true; }
+    p.moveTo(where);
+    return true;
+  }
+
   /* ======================= XỬ LÝ LỜI NÓI ======================= */
   function onHeard(raw){
-    const text = String(raw || '').trim();
-    if(!text) return;
-    const nn = norm(text);
-    if(isEcho(nn)) return;                                             // tiếng của chính trợ lý lọt vào micro
-    if(R.stoppedByInterim && Date.now() - R.stoppedByInterim < 2500 && STOP_WORDS.includes(nn)){ R.stoppedByInterim = 0; return; }
+    const text = String(raw || '').trim(); if(!text || R.speaking || R.recStopping) return;
+    if(!commandListening()){ wakeCommands(text); return; }
+    if(wakeCommands(text)) return;
+    if(isEcho(norm(text))) return;
     R.lastHeardAt = Date.now(); R.restartDelay = 300; R.lastHeardText = text;
-    clearChatInterim();
-    showHeard(text, false);
+    clearChatInterim(); showHeard(text, false);
     if(R.gateOpen) return gateAnswer(norm(text));
-    if(!isActive()) return;
+    if(!isActive() && !R.voiceArmed) return;
     route(text);
   }
+
   function route(text){
     let n = norm(text);
     let forced = false;
-    const wake = n.match(/^(robot oi|ro bot oi|robot|ro bot|tro ly oi)(\s+|$)/);
+    const wake = n.match(/^(dieu khien giong noi|robot oi|ro bot oi|robot|ro bot|tro ly oi)(\s+|$)/);
     if(wake){
       forced = true;
       const cut = wc(wake[1]);
@@ -8036,6 +8985,8 @@ const WHO2007 = {
       n = norm(text);
     }
     if(!n) return speak('Mình đây, cậu cần mở mục nào?');
+    if(handleInputCommand(text, n)) return;
+    if(panelCommand(n)) return;
     const view = activeView();
 
     // 00. Đang đánh vần / gõ bàn phím ngón tay
@@ -8046,9 +8997,11 @@ const WHO2007 = {
     if(regionCommand(n, view === 'view-chat' && !forced)) return;
     // 0. Trợ lý đang chờ nội dung cho một ô
     if(R.awaitField && view === 'view-bmi' && window.BMI && Object.keys(BMI._parse(text)).length) R.awaitField = null;   // câu kiểu "15 tuổi, cao 1m60"
-    if(R.awaitField && view !== 'view-chat' && fieldCommand(text)){ R.awaitField = null; return; }                       // nói rõ tên ô thì ưu tiên ô đó
+    if(R.awaitField && !R.appendField && view !== 'view-chat' && fieldCommand(text)){ R.awaitField = null; return; }                       // nói rõ tên ô thì ưu tiên ô đó
     if(R.awaitField){
       const el = R.awaitField; R.awaitField = null;
+      if(R.appendField === el && !matchCommand(n, true)){ R.appendField = null; appendInput(el, text); return; }
+      R.appendField = null;
       if(!matchCommand(n, true) && visible(el)){ fillField(el, text); return; }
     }
     // 1. Chatbot: lời nói thường = câu trả lời
@@ -8096,11 +9049,8 @@ const WHO2007 = {
       '<button type="button" class="vr-cv-toggle" id="vrCvToggle" aria-pressed="true"><i data-lucide="volume-2"></i><span>Giọng nói: Bật</span></button>';
     row.insertBefore(bar, row.firstChild);
     byId('vrCvToggle').addEventListener('click', () => setChatVoice(!R.chatVoice));
-    byId('vrCvMic').addEventListener('click', () => {
-      if(!R.chatVoice) return setChatVoice(true);
-      if(R.speaking) stopSpeaking();
-      R.micDenied = false; ensureMic(); startListening(); setStatus();
-    });
+    byId('vrCvMic').addEventListener('click', requestCommands);
+
     const log = byId('chatLog');
     if(log && 'MutationObserver' in window) new MutationObserver(() => updateChatVoice()).observe(log, {childList:true});
     const input = byId('chatInput');
@@ -8110,11 +9060,16 @@ const WHO2007 = {
   function chatState(){
     const input = byId('chatInput');
     if(!R.mode || R.gateOpen) return ['hide', '', ''];
+    if(!SR) return ['nosr', 'Trình duyệt chưa hỗ trợ nhận giọng nói', 'Cậu vẫn có thể gõ hoặc dùng các nút trên màn hình.'];
+    if(R.micDenied) return ['mic', 'Micro chưa được phép', 'Bấm biểu tượng micro, rồi chọn Cho phép.'];
+    if(!commandListening()) return ['sleep', 'Trợ lý đang tắt · chờ từ khóa đánh thức', 'Nói “điều khiển giọng nói” hoặc bấm micro để nhận lệnh.'];
+    if(R.speaking) return ['speak', 'AI đang đọc · micro tạm ngắt', 'Đọc xong, chờ 8 giây không thao tác để mở lại micro.'];
+    if(R.listenAfter > Date.now()) return ['cooldown', 'Mở micro sau ' + Math.ceil((R.listenAfter - Date.now()) / 1000) + ' giây', 'Thao tác tay sẽ bắt đầu lại thời gian chờ 8 giây.'];
+    if(!R.chatVoice && R.listening) return ['commands', 'Đang nghe lệnh · giọng đọc tự động tắt', 'Nói nội dung để điền vào ô chat; nói “gửi” để gửi.'];
     if(!R.chatVoice) return ['off', 'Giọng nói Chatbot đang tắt', 'Bấm “Giọng nói” để Chatbot tự đọc câu hỏi và tự mở micro.'];
     if(!SR) return ['nosr', 'Trình duyệt chưa nghe được giọng nói', 'Chatbot vẫn đọc to; cậu gõ câu trả lời, hoặc mở bằng Edge / Chrome.'];
     if(R.micDenied) return ['mic', 'Micro chưa được phép', 'Bấm biểu tượng micro, rồi chọn “Cho phép”.'];
     if(byId('thinkingBubble') || (input && input.disabled)) return ['think', 'Chatbot đang suy nghĩ…', 'Đợi một chút, Chatbot sẽ trả lời bằng chữ và giọng nói.'];
-    if(R.speaking) return ['speak', 'Chatbot đang nói…', 'Chữ hiện ở khung trên. Nói “dừng” để ngắt, rồi trả lời luôn cũng được.'];
     if(R.listening) return ['listen', 'Micro đang mở — cậu nói câu trả lời nhé', 'Nói xong mình tự gửi. Nói “đọc lại” để nghe lại câu hỏi.'];
     return ['wait', 'Đang mở micro…', 'Chờ một chút nhé.'];
   }
@@ -8122,7 +9077,7 @@ const WHO2007 = {
     const bar = byId('vrChatVoice'); if(!bar) return;
     const [st, title, hint] = chatState();
     const prev = R.chatState;
-    if(st === prev) return;
+    const changed = st !== prev;
     R.chatState = st;
     bar.dataset.state = st;
     bar.classList.toggle('hidden', st === 'hide');
@@ -8134,13 +9089,13 @@ const WHO2007 = {
     document.body.classList.toggle('vr-cv-on', !!R.chatVoice);
     // Chatbot vừa nói / vừa nghĩ xong → bíp báo micro đã mở, tới lượt học sinh trả lời
     if(st === 'speak' || st === 'think') R.cvNeedBeep = true;
-    if(st === 'listen' && R.cvNeedBeep){ R.cvNeedBeep = false; if(chatVoiceActive() && !document.hidden) earcon(880, 150); }
+    if(changed && st === 'listen') R.cvNeedBeep = false; // No speaker beep while the microphone is capturing.
   }
   function chatIntroText(){
     const first = !R.chatIntroDone; R.chatIntroDone = true;
     let s = 'Trang Chatbot. ';
     s += first
-      ? 'Mình sẽ tự đọc từng câu hỏi bằng giọng nói, chữ vẫn hiện trên màn hình. Đọc xong, micro tự mở: nghe tiếng bíp thì cậu nói câu trả lời, mình sẽ tự gửi. ' +
+      ? 'Mình sẽ tự đọc từng câu hỏi bằng giọng nói, chữ vẫn hiện trên màn hình. Đọc xong, chờ 8 giây không thao tác thì micro tự mở; cậu nói câu trả lời, mình sẽ tự gửi. ' +
         'Nói: đọc lại, để nghe lại câu hỏi' + (R.mode === 'blind' ? '. ' : '; nói: tắt giọng nói, nếu chỉ muốn xem chữ. ')
       : 'Mình tự đọc câu hỏi và tự mở micro. ';
     if(R.micDenied) s += 'Micro đang bị chặn nên cậu gõ câu trả lời, hoặc nhờ người bên cạnh cho phép micro. ';
@@ -8152,25 +9107,26 @@ const WHO2007 = {
     return s;
   }
   function setChatVoice(on){
-    R.chatVoice = !!on; ls(CHATVOICE_KEY, on ? '1' : '0');
-    R.chatState = '';
+    R.chatVoice = !!on; ls(CHATVOICE_KEY, on ? '1' : '0'); R.chatState = '';
     if(on){
-      R.started = true;
-      if(activeView() === 'view-chat'){
+      R.started = true; R.voiceArmed = true; R.voiceReady = true;
+      if(R.mode === 'regular') R.robotOn = true;
+      ensureMic();
+      if(!R.speaking){
         R.chatIntroDone = false;
-        ensureMic(); startListening();
-        speak(chatIntroText(), {force:true});
-      } else speak('Đã bật giọng nói cho Chatbot. Khi vào Chatbot, câu hỏi sẽ được đọc to và micro tự mở.', {force:true});
+        speak(activeView() === 'view-chat' ? chatIntroText() : 'Đã bật giọng nói cho Chatbot.', {force:true});
+      }
     } else {
       clearChatInterim();
-      speak('Đã tắt giọng nói. Tin nhắn vẫn hiện bằng chữ; bấm nút Giọng nói để bật lại.', {force:true});
-      if(!isActive()) pauseListening();
+      // Finish the current speech; the toggle only changes future automatic reading.
+      if(!R.speaking) scriptLine('Đã tắt tự đọc Chatbot. Tin nhắn vẫn hiện bằng chữ.', 'idle');
     }
-    setStatus(); renderRegionBar(); placeFrame();
+    applyUi();
   }
+
   /** Lời đang nói hiện ngay trong ô chat (chữ mờ) */
   function chatInterim(text){
-    if(!chatVoiceActive() || R.spell) return;
+    if(!chatVoiceActive() || !commandListening() || R.speaking || R.recStopping || R.spell) return;
     const input = byId('chatInput');
     if(!input || input.disabled || (input.value && !R.cvInterim)) return;   // không ghi đè chữ học sinh đang gõ
     input.value = text; R.cvInterim = true; input.classList.add('vr-cv-typing');
@@ -8187,31 +9143,34 @@ const WHO2007 = {
     if(R.mode && !R.gateOpen) applyUi();
     updateChatVoice();
     if(R.gateOpen) return;
+    stopSpeaking({resume:false}); pauseListening(); R.pendingFirst = null;
+    spellCancel(true); closeInputs(); R.appendField = null; clearChatInterim();
+    R.pendingChat = ''; clearInterval(R.pendingChatT);
     if(!isActive()){
       // vừa rời Chatbot ở trang thường (Trợ lý tắt) → tắt micro, ngừng đọc
       R.awaitField = null;
-      if(R.speaking) stopSpeaking();
-      pauseListening(); renderRegionBar(); placeFrame(); setStatus();
+      resumeSoon(); renderRegionBar(); placeFrame(); setStatus();
       return;
     }
     if(id === 'view-chat' && chatVoiceActive()){ ensureMic(); startListening(); }
+    HV.region = -1;
     R.awaitField = null; R.form = null; R.readSet = new WeakSet(); R.region = -1; R.regionEl = null; R.regionRest = null;
     invalidateRegions(); watchView();
     setTimeout(() => { invalidateRegions(); renderRegionBar(); placeFrame(); }, 300);
     R.pendingView = id;
     clearTimeout(R.viewTimer);
     R.viewTimer = setTimeout(async () => {
-      const cur = R.pendingView;
+      const cur = R.pendingView; if(!cur) return;
       const chat = cur === 'view-chat' && chatVoiceActive();
       const text = chat ? chatIntroText() : R.mode === 'blind' ? await describeView(cur, true) : 'Đã mở ' + (VIEW_NAMES[cur] || 'trang mới') + '.';
       R.pendingView = null;
-      if(activeView() !== cur) return;
+      if(activeView() !== cur || !isActive() || R.gateOpen) return;
       const regs = getRegions();
       const hint = (R.mode === 'blind' && !chat)
         ? (regs.length > 1 ? ' Trang có ' + regs.length + ' vùng: ' + regs.map((r, i) => (i + 1) + ', ' + r.name).join('; ') + '. Nói: vùng tiếp theo, hoặc: đọc lại vùng, kèm tên.' : '') +
           (formFields().length > 1 ? ' Nói: điền giúp, để mình hỏi lần lượt từng ô.' : '')
         : '';
-      speak(text + hint);
+      speak(text + hint, {interrupt:true});
       focusHeading(cur);
     }, 250);
   }
@@ -8254,7 +9213,8 @@ const WHO2007 = {
       if(e.key === '2'){ e.preventDefault(); chooseMode('regular'); return; }
     }
     if(e.key === 'Escape' && R.speaking) stopSpeaking();
-    if(e.altKey && (e.key === 'v' || e.key === 'V') && R.mode === 'regular' && !R.gateOpen){ e.preventDefault(); setRobot(!R.robotOn); }
+    if(e.altKey && (e.key === 'v' || e.key === 'V') && R.mode === 'regular' && !R.gateOpen){ e.preventDefault(); setRobot(!(R.robotOn && !R.voiceOff)); }
+    if(e.altKey && (e.key === 'h' || e.key === 'H') && R.mode && !R.gateOpen){ e.preventDefault(); showGuide(); }
   });
 
   /* ======================= LUÔN XIN QUYỀN MICRO ======================= */
@@ -8269,10 +9229,10 @@ const WHO2007 = {
       perm._hpWatch = true;
       perm.onchange = () => {
         if(perm.state === 'granted'){ R.micDenied = false; setStatus(); initNoiseGate(); startListening(); }
-        if(perm.state === 'denied'){ R.micDenied = true; setStatus(); }
+        if(perm.state === 'denied'){ R.micDenied = true; clearIdleWait(); pauseListening(); setStatus(); }
       };
     }
-    if(state === 'denied'){ R.micDenied = true; setStatus(); micHelp(false); retryMicOnGesture(); loaderMic(1, 'Micro chưa được cho phép — vẫn dùng chuột / phím Tab được'); return; }
+    if(state === 'denied'){ R.micDenied = true; setStatus(); micHelp(false); loaderMic(1, 'Micro chưa được cho phép — vẫn dùng chuột / phím Tab được'); return; }
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ loaderMic(1, 'Trình duyệt không có micro'); return; }
     if(state === 'granted'){ initNoiseGate(); loaderMic(1, 'Micro sẵn sàng · đã bật lọc tạp âm'); return; }
     loaderMic(0.5, 'Bấm "Cho phép" để dùng micro');
@@ -8282,7 +9242,7 @@ const WHO2007 = {
       R.micDenied = false; setStatus(); initNoiseGate(); startListening();
       loaderMic(1, 'Micro sẵn sàng · đã bật lọc tạp âm');
     }catch(e){
-      if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')){ R.micDenied = true; setStatus(); micHelp(false); retryMicOnGesture(); }
+      if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')){ R.micDenied = true; setStatus(); micHelp(false); }
       loaderMic(1, 'Chưa có quyền micro — vẫn dùng chuột được');
     }
   }
@@ -8320,11 +9280,12 @@ const WHO2007 = {
     else if(['thuong','binhthuong','thongthuong','regular'].includes(p)) mode = 'regular';
     if(!mode){ const saved = ss(MODE_KEY); if(saved === 'blind' || saved === 'regular') mode = saved; }
     R.autoRead = ss(AUTOREAD_KEY) === '1';
-    R.chatVoice = ls(CHATVOICE_KEY) !== '0';
+    R.chatVoice = mode === 'blind';
     injectChatVoiceUi();
     if(mode){
       R.mode = mode; ss(MODE_KEY, mode);
-      R.robotOn = mode === 'regular' ? ss(ROBOT_KEY) !== '0' : true;
+      R.robotOn = mode === 'blind'; R.voiceArmed = mode === 'blind';
+      if(mode === 'regular') R.autoRead = false;
     }
     applyUi();
     ensureMic();
@@ -8332,23 +9293,24 @@ const WHO2007 = {
     if(!mode) openGate(true);
     // Màn hình tải xong (giọng đọc + dữ liệu + micro) mới bắt đầu nói
     const begin = () => {
+      R.voiceReady = true;
       if(!mode) tryAuto(gatePrompt);
       else if(mode === 'blind') tryAuto(() => blindIntro());
-      else if(R.robotOn) tryAuto(null);
+      else tryAuto(null);
     };
     if(window.HPLoader && !HPLoader.done) HPLoader.ready(begin); else begin();
   }
 
   window.VoiceRobot = {
     onView, onAiMessage, onSummary, onToast,
-    chooseMode, openGate, setRobot, help, repeat,
-    stop: stopSpeaking, speak, _hear: onHeard, state: R,
+    chooseMode, openGate, setRobot, help, repeat, guide:showGuide, guideText,
+    stop: stopSpeaking, speak, setMuted, requestCommands, _hear: onHeard, state: R,
     // dùng chung cho điều hướng bằng ngón tay (finger-nav.js)
     setChatVoice, get chatVoice(){ return R.chatVoice; },
     api: {getRegions, setRegion, regionCommand, blockText, BLOCK_SEL, clickEl, controlOf, fieldLabel, optionList, scrollRead, visible,
           activeViewEl, viewBox, isActive, placeFrame, btnLabel,
           await(el){ R.awaitField = el; },
-          spellStart, spellKeys, spellFinish, spellCancel, inputWays,
+          spellStart, spellKeys, spellFinish, spellCancel, clearInput, inputWays,
           setTask(t){ const el = byId('vrTask'); if(!el) return; el.textContent = t || ''; el.classList.toggle('hidden', !t); }, spellState(){ return R.spell ? {text:spellDisplay(), el:R.spell.el} : null; }}
   };
   init();
@@ -8518,7 +9480,11 @@ const WHO2007 = {
     updatePreview();
     if(!silent && !keepSpell){ const api = A(); if(api.spellCancel) api.spellCancel(true); }
   }
-  window.BrailleInput = {open, close, updatePreview, voice, guide, dotsOf, get active(){ return B.on; }, TABLE:BRAILLE, TONES, _commit:(dots) => commit(new Set(dots))};
+  function resetInputState(el){
+    if(el && B.el !== el) return;
+    B.held.clear(); B.chord.clear(); B.tap.clear(); B.pendingTone = null; B.caps = false; B.num = false; lastMsg = '';
+  }
+  window.BrailleInput = {open, close, resetInputState, updatePreview, voice, guide, dotsOf, get active(){ return B.on; }, TABLE:BRAILLE, TONES, _commit:(dots) => commit(new Set(dots))};
 })();
 
 </script>
@@ -8538,6 +9504,12 @@ const WHO2007 = {
      đó vào ô (dấu tiếng Việt gõ kiểu Telex). Xòe tay = cách, xòe tay vẩy ngang = xóa 1 ký tự,
      ngón cái chỉ xuống = xóa hết, giơ ngón cái = xong. Nói "xóa" / "xóa hết" cũng được.
    • Chọn ô chữ → mở GÕ BẰNG KÝ HIỆU TAY cho ô đó (đã bỏ bàn phím ngón tay).
+   • Ký hiệu tay có 2 CHẾ ĐỘ tách biệt (một động tác chỉ thuộc MỘT chế độ):
+       – ĐANG GÕ CHỮ  : chỉ nhận chữ A–Z, xòe tay = cách; giơ ngón cái = chuyển sang chế độ điều khiển.
+       – ĐANG ĐIỀU KHIỂN: giơ ngón cái = Xong · ngón cái chỉ xuống = Xóa hết · 1 ngón trỏ hoặc xòe tay vẩy ngang = Xóa 1 ký tự
+                          · chữ V = chữ hoa/chữ thường · chữ Y = Thoát · xòe tay giữ yên = quay lại gõ chữ.
+     Chữ hoa / chữ thường (abc ↔ ABC): nút trên bảng, lệnh "chữ hoa" / "chữ thường", hoặc chữ V ở chế độ điều khiển.
+   • ĐIỆN THOẠI: không bật camera — mở BÀN PHÍM TRỢ NĂNG (A–Z, chữ hoa/thường, Cách, Xóa 1 ký tự, Xóa hết, Xong, Thoát).
    AI nhận dạng bàn tay: MediaPipe Hand Landmarker (mã nguồn mở), xử lý trên máy.
    Lệnh: "bật camera ngón tay" · "tắt camera ngón tay" · "ký hiệu tay"
    Nạp SAU voice-robot.js và vn-input.js
@@ -8574,8 +9546,10 @@ const WHO2007 = {
     pinchSince:0, pinched:false, lastSeen:0, warned:false,
     multiFrames:0, swiping:false, swipeHist:[], lastSwipe:0,
     hold:null, holdTarget:null, menuItem:null, lastField:null,
-    kbEl:null
+    kbEl:null, starting:null, stopReq:false, paused:false, camErr:''
   };
+  const isMobile = () => !!(window.Device && window.Device.isMobile());
+  const live = (t, assertive) => { if(window.A11y) window.A11y.announce(t, {assertive:!!assertive}); };
   const VR = () => window.VoiceRobot;
   const A = () => (window.VoiceRobot && window.VoiceRobot.api) || {};
   const say = (t, o) => { const v = VR(); if(v) v.speak(t, Object.assign({force:true}, o || {})); };
@@ -8586,7 +9560,7 @@ const WHO2007 = {
   function beep(freq, ms, vol){
     try{
       actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      if(actx.state === 'suspended') actx.resume();
+      if(actx.state === 'suspended') actx.resume().catch(() => {});
       const o = actx.createOscillator(), g = actx.createGain();
       o.type = 'sine'; o.frequency.value = freq || 660;
       g.gain.value = vol || 0.06;
@@ -8609,6 +9583,8 @@ const WHO2007 = {
       '<div class="fn-cam hidden" id="fnCam" role="region" aria-label="Camera điều hướng bằng ngón tay">' +
         '<video playsinline muted autoplay></video>' +
         '<div class="fn-cam-bar"><span class="fn-dot"></span><span id="fnStatus">Đang bật camera…</span>' +
+        '<button type="button" class="fn-mini vr-grip" id="fnGrip" aria-label="Di chuyển khung webcam: kéo, hoặc dùng phím mũi tên" title="Kéo để di chuyển">⠿</button>' +
+        '<button type="button" class="fn-mini" id="fnCollapse" aria-expanded="true" aria-label="Thu gọn khung webcam">–</button>' +
         '<button type="button" id="fnStop" aria-label="Tắt camera ngón tay">Tắt</button></div>' +
         '<canvas class="fn-skel" id="fnSkel" width="320" height="240" aria-hidden="true"></canvas>' +
         '<div class="fn-cam-tip" id="fnTip">1 ngón: chỉ · giữ yên 5 giây: chọn · 2 ngón vẩy: cuộn trang</div>' +
@@ -8629,42 +9605,84 @@ const WHO2007 = {
     F.skel = document.getElementById('fnSkel');
     F.sign.addEventListener('click', e => { const b = e.target.closest('[data-sg]'); if(b) signAction(b.dataset.sg); });
     document.getElementById('fnStop').addEventListener('click', () => stop());
+    if(window.A11y && A11y.makeMovable) A11y.makeMovable(F.el, {key:'cam', name:'khung webcam', grip:document.getElementById('fnGrip'), collapseBtn:document.getElementById('fnCollapse'), noteCollapsed:'Camera vẫn đang nhận diện tay.'});
     F.menu.addEventListener('click', e => { const b = e.target.closest('[data-fn]'); if(b) runFn(b.dataset.fn); });
   }
   function status(t){ const e = document.getElementById('fnStatus'); if(e) e.textContent = t; }
   function showMenu(){ if(F.menu) F.menu.classList.toggle('hidden', !F.on || SG.on); }
 
   /* ------------------------- Bật / tắt ------------------------- */
-  async function start(opts){
+  const CAM_FALLBACK = 'Không thể mở camera. Bạn có thể sử dụng bàn phím để nhập.';
+  function camErrorText(e){
+    const n = e && e.name;
+    if(n === 'NotAllowedError' || n === 'SecurityError' || n === 'PermissionDeniedError') return 'Camera chưa được cho phép. ' + CAM_FALLBACK;
+    if(n === 'NotFoundError' || n === 'DevicesNotFoundError' || n === 'OverconstrainedError') return 'Không tìm thấy camera. ' + CAM_FALLBACK;
+    if(n === 'NotReadableError' || n === 'TrackStartError' || n === 'AbortError') return 'Camera đang được ứng dụng khác sử dụng. ' + CAM_FALLBACK;
+    return CAM_FALLBACK;
+  }
+  /** Bật camera + nhận dạng bàn tay. Trả về true nếu chạy được. Chỉ MỘT luồng camera / MỘT vòng nhận dạng. */
+  function start(opts){
     opts = opts || {};
     build();
-    if(F.on){ if(!opts.quiet) say('Camera ngón tay đang bật rồi.'); return; }
-    if(window.HeightScan) try{ window.HeightScan.close(); }catch(e){}
-    F.el.classList.remove('hidden'); status('Đang bật camera…');
-    if(!opts.quiet) say('Đang bật camera ngón tay. Duỗi một ngón trỏ để chỉ vào màn hình: chỉ vào vùng nào, mình đọc hết vùng đó. ' +
-        'Muốn chọn nút hay chức năng, giữ yên ngón tay ở đó ' + Math.round(SELECT_MS / 1000) + ' giây, hoặc chụm ngón cái và ngón trỏ. ' +
-        'Muốn trượt trang, duỗi hai ngón rồi vẩy xuống hoặc vẩy lên. Bảng chức năng nằm ở mép phải màn hình.');
-    try{
-      F.stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:'user', width:{ideal:320}, height:{ideal:240}, frameRate:{ideal:15, max:20}}});
-      F.video.srcObject = F.stream; await F.video.play();
-    }catch(e){
-      status('Không mở được camera'); F.el.classList.add('hidden');
-      say(e && e.name === 'NotAllowedError' ? 'Camera đang bị chặn. Nhờ người bên cạnh cho phép camera giúp nhé.' : 'Không mở được camera.');
-      return;
+    if(isMobile()){
+      if(!opts.quiet) say('Trên điện thoại, mình không dùng camera nhận diện bàn tay. Khi cần nhập chữ, cậu nói: bàn phím trợ năng, hoặc mở menu trợ lý, chọn Bàn phím trợ năng.');
+      return Promise.resolve(false);
     }
-    F.on = true; F.lastSeen = performance.now(); F.warned = false; F.region = -1;
-    document.body.classList.add('fn-on');
-    showMenu();
-    try{ await loadModel(); }catch(e){
-      status('Không tải được mô hình AI'); say('Không tải được mô hình nhận dạng bàn tay. Lần đầu cần có mạng.');
-      stop(true); return;
-    }
-    status('Đang theo dõi ngón tay');
-    runDetect(); runCursor();
+    if(F.on){ if(!opts.quiet) say('Camera ngón tay đang bật rồi.'); return Promise.resolve(true); }
+    if(F.starting) return F.starting;                       // đang bật dở → không mở thêm luồng camera thứ hai
+    F.stopReq = false; F.camErr = '';
+    F.starting = (async () => {
+      if(window.HeightScan) try{ window.HeightScan.close(); }catch(e){}
+      if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
+        F.camErr = 'Trình duyệt không cho dùng camera ở trang này. ' + CAM_FALLBACK;
+        status('Không mở được camera'); say(F.camErr); live(F.camErr, true); return false;
+      }
+      F.el.classList.remove('hidden'); status('Đang bật camera…');
+      if(window.A11y && A11y.panels && A11y.panels.cam) requestAnimationFrame(A11y.panels.cam.refit);
+      if(!opts.quiet) say('Đang bật camera ngón tay. Duỗi một ngón trỏ để chỉ vào màn hình: chỉ vào vùng nào, mình đọc hết vùng đó. ' +
+          'Muốn chọn nút hay chức năng, giữ yên ngón tay ở đó ' + Math.round(SELECT_MS / 1000) + ' giây, hoặc chụm ngón cái và ngón trỏ. ' +
+          'Muốn trượt trang, duỗi hai ngón rồi vẩy xuống hoặc vẩy lên. Bảng chức năng nằm ở mép phải màn hình.');
+      let stream = null;
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:'user', width:{ideal:320}, height:{ideal:240}, frameRate:{ideal:15, max:20}}});
+        if(F.stopReq){ stream.getTracks().forEach(t => t.stop()); F.el.classList.add('hidden'); return false; }   // đã bấm tắt trong lúc chờ quyền
+        F.stream = stream;
+        F.video.srcObject = stream;
+        await F.video.play();
+      }catch(e){
+        if(stream) stream.getTracks().forEach(t => t.stop());
+        F.stream = null; if(F.video) F.video.srcObject = null;
+        F.camErr = camErrorText(e);
+        status('Không mở được camera'); F.el.classList.add('hidden');
+        say(F.camErr, {interrupt:true}); live(F.camErr, true);
+        return false;
+      }
+      // camera bị rút / bị ứng dụng khác chiếm giữa chừng
+      stream.getVideoTracks().forEach(t => { t.onended = () => { if(F.stream === stream){ stop(true); say('Camera đã ngắt. ' + CAM_FALLBACK); live('Camera đã ngắt.', true); } }; });
+      F.on = true; F.paused = false; F.lastSeen = performance.now(); F.warned = false; F.region = -1;
+      document.body.classList.add('fn-on');
+      showMenu();
+      try{ await loadModel(); }catch(e){
+        status('Không tải được mô hình AI');
+        const t = 'Không tải được mô hình nhận dạng bàn tay, lần đầu cần có mạng. ' + CAM_FALLBACK;
+        say(t, {interrupt:true}); live(t, true);
+        stop(true); return false;
+      }
+      if(!F.on) return false;                                 // đã tắt trong lúc tải mô hình
+      status('Đang theo dõi ngón tay');
+      runDetect();
+      return true;
+    })().catch(() => false).finally(() => { F.starting = null; });
+    return F.starting;
   }
   function stop(silent){
-    F.on = false; clearTimeout(F.timer); cancelAnimationFrame(F.raf);
-    if(F.stream){ F.stream.getTracks().forEach(t => t.stop()); F.stream = null; }
+    const was = F.on || !!F.starting;
+    F.stopReq = true;
+    F.on = false; F.paused = false; clearTimeout(F.timer); F.timer = 0;
+    cancelAnimationFrame(F.raf); F.raf = 0;
+    if(F.stream){ F.stream.getTracks().forEach(t => { t.onended = null; t.stop(); }); F.stream = null; }
+    if(F.video){ try{ F.video.pause(); }catch(e){} F.video.srcObject = null; }
+    F.lastTs = -1; F.has = false;
     if(F.el) F.el.classList.add('hidden');
     if(F.cursor) F.cursor.classList.add('hidden');
     closeSign(true);
@@ -8672,8 +9690,18 @@ const WHO2007 = {
     showMenu();
     resetHold(); setSwipe(false); setMenuItem(null);
     setBlock(null);
-    if(silent !== true) say('Đã tắt camera ngón tay.');
+    if(silent !== true && was) say('Đã tắt camera ngón tay.');
   }
+  // Tab bị ẩn → dừng nhận dạng (không tốn CPU/GPU); quay lại → chạy tiếp
+  document.addEventListener('visibilitychange', () => {
+    if(!F.on) return;
+    if(document.hidden){ F.paused = true; clearTimeout(F.timer); cancelAnimationFrame(F.raf); F.raf = 0; }
+    else if(F.paused){ F.paused = false; F.lastSeen = performance.now(); runDetect(); }
+  });
+  window.addEventListener('pagehide', () => {
+    stop(true);
+    if(F.landmarker){ try{ F.landmarker.close(); }catch(e){} F.landmarker = null; F.loading = null; }
+  });
   async function loadModel(){
     if(F.landmarker) return F.landmarker;
     if(F.loading) return F.loading;
@@ -8693,9 +9721,10 @@ const WHO2007 = {
   function runDetect(){
     clearTimeout(F.timer);
     const step = () => {
-      if(!F.on) return;
+      if(!F.on || !F.landmarker) return;
+      if(document.hidden){ F.paused = true; return; }        // visibilitychange sẽ gọi lại
       const t0 = performance.now();
-      if(F.video.readyState >= 2 && !document.hidden){
+      if(F.video.readyState >= 2){
         const ts = Math.max(t0, F.lastTs + 1); F.lastTs = ts;
         let res = null;
         try{ res = F.landmarker.detectForVideo(F.video, ts); }catch(e){}
@@ -8708,15 +9737,16 @@ const WHO2007 = {
     };
     step();
   }
-  // Con trỏ trượt mượt tới vị trí ngón tay (chỉ đổi transform → rất nhẹ)
+  // Con trỏ trượt mượt tới vị trí ngón tay (chỉ đổi transform → rất nhẹ).
+  // requestAnimationFrame CHỈ chạy khi con trỏ còn đang di chuyển — tới nơi là dừng, không lặp vô hạn.
   function runCursor(){
-    cancelAnimationFrame(F.raf);
+    if(F.raf || !F.on || !F.has || document.hidden) return;
     const tick = () => {
-      if(!F.on) return;
-      F.raf = requestAnimationFrame(tick);
-      if(!F.has) return;
+      F.raf = 0;
+      if(!F.on || !F.has || !F.cursor) return;
       F.x += (F.tx - F.x) * 0.35; F.y += (F.ty - F.y) * 0.35;
       F.cursor.style.transform = 'translate3d(' + (F.x - 26) + 'px,' + (F.y - 26) + 'px,0)';
+      if(Math.abs(F.tx - F.x) + Math.abs(F.ty - F.y) > 0.6) F.raf = requestAnimationFrame(tick);
     };
     F.raf = requestAnimationFrame(tick);
   }
@@ -8783,6 +9813,7 @@ const WHO2007 = {
   }
   function showCursor(){
     if(!F.has){ F.x = F.tx; F.y = F.ty; F.has = true; if(F.cursor) F.cursor.classList.remove('hidden'); }
+    runCursor();
   }
   function setSwipe(on){
     F.swiping = !!on;
@@ -8824,7 +9855,7 @@ const WHO2007 = {
     const px = Math.round(window.innerHeight * k), ms = Math.round(380 + k * 260);
     F.lastFling = {dir:scrollDir, px, ms};
     if(api.scrollRead && api.isActive && api.isActive()) api.scrollRead(scrollDir, {px, smooth:ms});
-    else { window.scrollBy({top:(scrollDir === 'down' ? 1 : -1) * px, behavior:'smooth'}); say(scrollDir === 'down' ? 'Trượt xuống.' : 'Trượt lên.'); }
+    else { window.scrollBy({top:(scrollDir === 'down' ? 1 : -1) * px, behavior:(window.A11y ? A11y.scrollBehavior() : 'smooth')}); say(scrollDir === 'down' ? 'Trượt xuống.' : 'Trượt lên.'); }
   }
 
   /* ---------- Giữ yên ngón tay để chọn ---------- */
@@ -8991,7 +10022,9 @@ const WHO2007 = {
      • J (ngón út vẽ móc) và Z (ngón trỏ vẽ chữ Z) nhận theo chuyển động.
      • Xòe cả bàn tay giữ yên = cách · xòe tay vẩy ngang = xóa · giơ ngón cái (like) = xong. */
   const SIGN_HOLD_MS = 800, SIGN_REPEAT_MS = 1600, SIGN_DONE_MS = 1200, SIGN_CLEAR_MS = 300, SIGN_LOST_MS = 500;
-  const SG = {on:false, el:null, cand:null, since:0, last:null, lastAt:0, block:null, lostAt:0, hist:[], ui:{}};
+  /* SG.mode: 'typing' (gõ chữ) | 'command' (điều khiển) · SG.caseMode: 'lower' | 'upper' */
+  const SG = {on:false, el:null, cand:null, since:0, last:null, lastAt:0, block:null, lostAt:0, hist:[], ui:{},
+    mode:'typing', caseMode:'lower', starting:false};
   const SIGN_GUIDE = [
     ['A','Nắm tay, ngón cái áp cạnh ngón trỏ'], ['B','4 ngón duỗi khép, ngón cái gập vào lòng'], ['C','Các ngón cong thành chữ C'],
     ['D','Ngón trỏ thẳng, các ngón kia chạm ngón cái'], ['E','Các ngón gập, đầu ngón tựa lên ngón cái'], ['F','Ngón cái chạm ngón trỏ, 3 ngón kia duỗi'],
@@ -9001,22 +10034,31 @@ const WHO2007 = {
     ['R','Ngón trỏ và giữa bắt chéo'], ['S','Nắm tay, ngón cái vắt ngang trước'], ['T','Ngón cái kẹp giữa ngón trỏ và giữa'],
     ['U','Trỏ + giữa duỗi, khép'], ['V','Trỏ + giữa duỗi, tách chữ V'], ['W','Trỏ + giữa + áp út duỗi'], ['X','Ngón trỏ cong móc'],
     ['Y','Ngón cái + ngón út duỗi'], ['Z','Ngón trỏ vẽ chữ Z'],
-    ['␣','Xòe cả bàn tay, giữ yên = cách'], ['⌫','Xòe bàn tay, vẩy ngang = xóa 1 ký tự'], ['⌧','Ngón cái chỉ xuống, giữ yên = xóa hết'], ['👍','Giơ ngón cái = xong']
+    ['␣','GÕ CHỮ: xòe cả bàn tay, giữ yên = cách'], ['👍','GÕ CHỮ: giơ ngón cái = chuyển sang chế độ điều khiển']
+  ];
+  const CMD_GUIDE = [
+    ['👍','Giơ ngón cái = Xong (điền vào ô)'], ['👎','Ngón cái chỉ xuống = Xóa hết'], ['☝','Một ngón trỏ = Xóa 1 ký tự'],
+    ['↔','Xòe tay vẩy ngang = Xóa 1 ký tự'], ['V','Chữ V = chữ hoa / chữ thường'], ['Y','Chữ Y = Thoát'], ['✋','Xòe tay giữ yên = quay lại gõ chữ']
   ];
   function signBoardHtml(){
-    return '<div class="fs-board hidden" id="fsBoard" role="dialog" aria-label="Gõ chữ bằng ký hiệu tay">' +
+    return '<div class="fs-board hidden" id="fsBoard" role="dialog" aria-modal="false" aria-labelledby="fsLabel">' +
       '<div class="fs-top">' +
-        '<div class="fs-live"><div class="fs-letter" id="fsLetter" aria-live="polite">–</div><div class="fs-prog"><i id="fsProg"></i></div><div class="fs-hint" id="fsHint">Đưa bàn tay lên trước camera</div></div>' +
-        '<div class="fs-text"><div class="fs-label" id="fsLabel">Ký hiệu tay</div><div class="fs-preview" id="fsPreview">&nbsp;</div>' +
-          '<div class="fs-tip">Dấu gõ kiểu Telex: <b>s</b> sắc · <b>f</b> huyền · <b>r</b> hỏi · <b>x</b> ngã · <b>j</b> nặng · <b>aa</b>=â · <b>aw</b>=ă · <b>ee</b>=ê · <b>oo</b>=ô · <b>ow</b>=ơ · <b>uw</b>=ư · <b>dd</b>=đ</div>' +
+        '<div class="fs-live"><div class="fs-letter" id="fsLetter">–</div><div class="fs-prog"><i id="fsProg"></i></div><div class="fs-hint" id="fsHint">Đưa bàn tay lên trước camera</div></div>' +
+        '<div class="fs-text"><div class="fs-label" id="fsLabel">Ký hiệu tay</div>' +
+          '<div class="fs-state"><span class="fs-mode" id="fsMode" data-mode="typing" role="status" aria-live="polite">Đang gõ chữ</span>' +
+          '<span class="fs-case" id="fsCase" aria-hidden="true">abc</span></div>' +
+          '<div class="fs-preview" id="fsPreview" aria-live="polite">&nbsp;</div>' +
+          '<div class="fs-tip" id="fsTip"></div>' +
           '<div class="fs-debug" id="fsDebug"></div></div>' +
         '<div class="fs-actions">' +
+          '<button type="button" data-sg="mode" id="fsModeBtn" aria-pressed="false">Chế độ điều khiển</button><button type="button" data-sg="case" id="fsCaseBtn" aria-pressed="false" aria-label="Chữ hoa hoặc chữ thường, đang là chữ thường">abc ↔ ABC</button>' +
           '<button type="button" data-sg="space">Cách</button><button type="button" data-sg="del">Xóa 1 ký tự</button>' +
           '<button type="button" data-sg="clear">Xóa hết</button><button type="button" data-sg="done" class="ok">Xong</button>' +
           '<button type="button" data-sg="close">Thoát</button></div>' +
       '</div>' +
-      '<details class="fs-guide"><summary>Bảng chữ cái ngón tay (bấm để xem)</summary><div class="fs-grid">' +
+      '<details class="fs-guide"><summary>Bảng chữ cái ngón tay và động tác điều khiển (bấm để xem)</summary><div class="fs-grid">' +
         SIGN_GUIDE.map(g => '<div><b>' + g[0] + '</b><span>' + g[1] + '</span></div>').join('') +
+        CMD_GUIDE.map(g => '<div class="fs-cmd"><b>' + g[0] + '</b><span>ĐIỀU KHIỂN: ' + g[1] + '</span></div>').join('') +
       '</div></details>' +
     '</div>';
   }
@@ -9091,8 +10133,34 @@ const WHO2007 = {
     }
     return null;
   }
-  const SIGN_NAME = {space:'Cách', del:'Xóa', clear:'Xóa hết', done:'Xong'};
-  function signLabel(c){ return !c ? '–' : SIGN_NAME[c] || c.toUpperCase(); }
+  const SIGN_NAME = {space:'Cách', del:'Xóa 1', clear:'Xóa hết', done:'Xong'};
+  const CMD_NAME = {done:'Xong', clear:'Xóa hết', del:'Xóa 1', d:'Xóa 1', v:'Hoa/thường', y:'Thoát', space:'Gõ chữ'};
+  function caseKey(c){ return SG.caseMode === 'upper' ? c.toUpperCase() : c; }
+  function signLabel(c){
+    if(!c) return '–';
+    if(SG.mode === 'command') return CMD_NAME[c] || c.toUpperCase();
+    if(c === 'done') return 'Điều khiển';
+    return SIGN_NAME[c] || caseKey(c);
+  }
+  /* Mỗi động tác được xử lý ở ĐÚNG MỘT chế độ:
+     typing  → chữ a–z, cách; ngón cái giơ lên = chuyển sang điều khiển (không bao giờ xóa / xong / thoát)
+     command → xong, xóa 1, xóa hết, đổi hoa/thường, thoát, quay lại gõ (không bao giờ gõ chữ) */
+  function signIntent(c){
+    if(!c) return null;
+    if(SG.mode === 'typing'){
+      if(/^[a-z]$/.test(c)) return {kind:'letter', key:c, need:SIGN_HOLD_MS, repeatable:true};
+      if(c === 'space') return {kind:'space', need:SIGN_HOLD_MS, repeatable:true};
+      if(c === 'done') return {kind:'mode', to:'command', need:SIGN_DONE_MS};
+      return null;                                     // xóa / xóa hết khi đang gõ chữ → bỏ qua
+    }
+    if(c === 'done') return {kind:'done', need:SIGN_DONE_MS};
+    if(c === 'clear') return {kind:'clear', need:SIGN_DONE_MS};
+    if(c === 'del' || c === 'd') return {kind:'del', need:SIGN_HOLD_MS, repeatable:true};
+    if(c === 'v') return {kind:'case', need:SIGN_HOLD_MS};
+    if(c === 'y') return {kind:'close', need:SIGN_DONE_MS};
+    if(c === 'space') return {kind:'mode', to:'typing', need:SIGN_HOLD_MS};
+    return null;
+  }
   function signFeed(lm, now){
     if(!lm){
       if(!SG.lostAt) SG.lostAt = now;
@@ -9105,16 +10173,16 @@ const WHO2007 = {
     let c = classifySign(f);
     SG.hist.push({t:now, c, wx:lm[0].x, ix:lm[8].x / f.W, iy:lm[8].y / f.W, px:lm[20].x / f.W, py:lm[20].y / f.W});
     while(SG.hist.length && now - SG.hist[0].t > 700) SG.hist.shift();
-    // Xòe tay VẨY NGANG → xóa
-    if(c === 'space'){
+    // Xòe tay VẨY NGANG → xóa 1 ký tự (CHỈ ở chế độ điều khiển)
+    if(c === 'space' && SG.mode === 'command'){
       const h = SG.hist.filter(x => x.c === 'space' && now - x.t < 450);
       if(h.length >= 2){
         const xs = h.map(x => x.wx);
         if(Math.max(...xs) - Math.min(...xs) > 0.14 && now - SG.lastAt > 400){ commitSign('del', now); SG.cand = 'del'; SG.since = now; SG.block = 'space'; return; }
       }
     }
-    // Ngón út vẽ móc = J · ngón trỏ vẽ chữ Z = Z (nhận ngay khi thấy chuyển động)
-    if(c === 'i' || c === 'd'){
+    // Ngón út vẽ móc = J · ngón trỏ vẽ chữ Z = Z (chỉ khi đang gõ chữ)
+    if(SG.mode === 'typing' && (c === 'i' || c === 'd')){
       const kx = c === 'i' ? 'px' : 'ix', ky = c === 'i' ? 'py' : 'iy';
       const h = SG.hist.filter(x => x.c === c);
       if(h.length >= 3){
@@ -9133,23 +10201,36 @@ const WHO2007 = {
     if(c && SG.block && c !== SG.block && held > SIGN_CLEAR_MS) SG.block = null;
     if(!c){ signUi(null, 0, f, 'Chưa rõ ký hiệu — giữ tay yên, lòng bàn tay hướng về camera'); return; }
     if(c === SG.block){ signUi(c, 0, f, 'Đổi sang ký hiệu khác'); return; }
-    const repeat = c === SG.last;
-    const need = (c === 'done' || c === 'clear') ? SIGN_DONE_MS : repeat ? SIGN_REPEAT_MS : SIGN_HOLD_MS;
+    const it = signIntent(c);
+    if(!it){
+      signUi(c, 0, f, SG.mode === 'typing' ? 'Đang gõ chữ: xóa / xong dùng ở chế độ điều khiển (giơ ngón cái)' : 'Đang điều khiển: chữ cái không được gõ — xòe tay để quay lại gõ chữ');
+      return;
+    }
+    const repeat = it.repeatable && c === SG.last;
+    const need = repeat ? SIGN_REPEAT_MS : it.need;
     const from = repeat ? Math.max(SG.since, SG.lastAt) : SG.since;
     const p = Math.min(1, (now - from) / need);
-    signUi(c, p, f, repeat ? 'Giữ tiếp để gõ lặp ' + signLabel(c) : 'Giữ yên để gõ');
+    signUi(c, p, f, repeat ? 'Giữ tiếp để lặp ' + signLabel(c) : (SG.mode === 'typing' ? 'Giữ yên để gõ' : 'Giữ yên để thực hiện: ' + signLabel(c)));
     if(p >= 1) commitSign(c, now);
   }
   function commitSign(c, now){
     const api = A();
+    const it = signIntent(c);
+    if(!it) return;
     SG.last = c; SG.lastAt = now;
-    beep(c === 'done' ? 990 : c === 'del' ? 420 : 760, 90);
+    beep(it.kind === 'done' ? 990 : it.kind === 'del' || it.kind === 'clear' ? 420 : it.kind === 'mode' ? 880 : 760, 90);
     const box = SG.ui.letter; if(box){ box.classList.remove('fs-hit'); void box.offsetWidth; box.classList.add('fs-hit'); }
-    if(c === 'done') return signAction('done');
-    if(c === 'clear'){ SG.block = 'clear'; return signAction('clear'); }
-    if(!api.spellKeys) return;
-    api.spellKeys([c === 'space' ? '␠' : c === 'del' ? '⌫' : c]);
-    updatePreview();
+    if(!it.repeatable) SG.block = c;                    // lệnh / đổi chế độ: phải đổi động tác mới nhận lần nữa
+    switch(it.kind){
+      case 'letter': if(api.spellKeys){ api.spellKeys([caseKey(it.key)]); updatePreview(); } return;
+      case 'space': return signAction('space');
+      case 'mode': return setSignMode(it.to);
+      case 'done': return signAction('done');
+      case 'clear': return signAction('clear');
+      case 'del': return signAction('del');
+      case 'case': return setSignCase(SG.caseMode === 'upper' ? 'lower' : 'upper');
+      case 'close': return signAction('close');
+    }
   }
   function signUi(c, p, f, hint){
     const u = SG.ui;
@@ -9163,21 +10244,57 @@ const WHO2007 = {
       if(u.debug.textContent !== d) u.debug.textContent = d;
     }
   }
+  const TIP_TYPING = 'ĐANG GÕ CHỮ: làm ký hiệu chữ cái, giữ yên khoảng 1 giây. Xòe tay = cách. Giơ ngón cái = chuyển sang chế độ điều khiển. Dấu kiểu Telex: <b>s</b> sắc · <b>f</b> huyền · <b>r</b> hỏi · <b>x</b> ngã · <b>j</b> nặng · <b>aa</b>=â · <b>aw</b>=ă · <b>ee</b>=ê · <b>oo</b>=ô · <b>ow</b>=ơ · <b>uw</b>=ư · <b>dd</b>=đ · chữ <b>w</b> đứng riêng vẫn là w.';
+  const TIP_COMMAND = 'ĐANG ĐIỀU KHIỂN: 👍 giơ ngón cái = <b>Xong</b> · 👎 ngón cái chỉ xuống = <b>Xóa hết</b> · ☝ một ngón trỏ hoặc xòe tay vẩy ngang = <b>Xóa 1 ký tự</b> · chữ <b>V</b> = chữ hoa/thường · chữ <b>Y</b> = <b>Thoát</b> · ✋ xòe tay giữ yên = quay lại gõ chữ.';
+  function renderSignState(){
+    const m = document.getElementById('fsMode'), cs = document.getElementById('fsCase');
+    const mb = document.getElementById('fsModeBtn'), cb = document.getElementById('fsCaseBtn'), tip = document.getElementById('fsTip');
+    const cmd = SG.mode === 'command', up = SG.caseMode === 'upper';
+    if(m){ m.textContent = cmd ? 'Đang điều khiển' : 'Đang gõ chữ'; m.dataset.mode = SG.mode; }
+    if(cs){ cs.textContent = up ? 'ABC' : 'abc'; cs.dataset.case = SG.caseMode; }
+    if(mb){ mb.textContent = cmd ? 'Quay lại gõ chữ' : 'Chế độ điều khiển'; mb.setAttribute('aria-pressed', String(cmd)); }
+    if(cb){ cb.setAttribute('aria-pressed', String(up)); cb.setAttribute('aria-label', 'Chữ hoa hoặc chữ thường, đang là ' + (up ? 'chữ hoa' : 'chữ thường')); cb.textContent = up ? 'ABC → abc' : 'abc → ABC'; }
+    if(tip) tip.innerHTML = cmd ? TIP_COMMAND : TIP_TYPING;
+    if(F.sign) F.sign.dataset.mode = SG.mode;
+  }
+  function setSignMode(mode, quiet){
+    if(mode !== 'typing' && mode !== 'command') return;
+    SG.mode = mode; SG.cand = null; SG.last = null; SG.hist = [];
+    renderSignState();
+    if(quiet) return;
+    const t = mode === 'command'
+      ? 'Đã chuyển sang chế độ điều khiển. Giơ ngón cái để xong; ngón cái chỉ xuống để xóa hết; một ngón trỏ để xóa một ký tự; chữ V để đổi chữ hoa, chữ thường; chữ Y để thoát; xòe tay giữ yên để quay lại gõ chữ.'
+      : 'Đã chuyển sang chế độ gõ chữ. Làm ký hiệu chữ cái để gõ, xòe tay để cách.';
+    say(t, {interrupt:true}); live(mode === 'command' ? 'Đang điều khiển' : 'Đang gõ chữ');
+  }
+  function setSignCase(mode, quiet){
+    SG.caseMode = mode === 'upper' ? 'upper' : 'lower';
+    renderSignState(); renderVkCase();
+    if(quiet) return;
+    const t = SG.caseMode === 'upper' ? 'Đã chuyển sang chữ hoa.' : 'Đã chuyển sang chữ thường.';
+    say(t, {interrupt:true}); live(t);
+  }
   function signAction(a){
     const api = A();
+    if(a === 'mode') return setSignMode(SG.mode === 'command' ? 'typing' : 'command');
+    if(a === 'case') return setSignCase(SG.caseMode === 'upper' ? 'lower' : 'upper');
     if(a === 'space') return api.spellKeys && (api.spellKeys(['␠']), updatePreview());
     if(a === 'del') return api.spellKeys && (api.spellKeys(['⌫']), updatePreview());
     if(a === 'done'){ if(api.spellFinish) api.spellFinish(); closeSign(true); return; }
-    if(a === 'clear'){ if(api.spellKeys){ api.spellKeys(['⌧']); updatePreview(); say('Đã xóa hết các ký tự vừa nhận diện.'); } return; }
+    if(a === 'clear'){ if(api.spellKeys){ api.spellKeys(['⌧']); updatePreview(); } return; }
     if(a === 'close'){ closeSign(false); say('Đã thoát gõ ký hiệu tay.'); }
   }
+  /** Mở bảng gõ ký hiệu tay. Máy tính: bật camera trước; camera lỗi → báo và gợi ý bàn phím.
+      Điện thoại: mở bàn phím trợ năng thay cho camera. */
   function openSign(el){
+    if(isMobile()) return openVK(el);
     build();
     const api = A();
     el = el || pickField();
     if(!el){ say('Cậu chọn một ô chữ trước nhé.'); return; }
     if(window.BrailleInput && BrailleInput.active) BrailleInput.close(true, true);
-    Object.assign(SG, {on:true, el, cand:null, since:0, last:null, lastAt:0, block:null, lostAt:0, hist:[]});
+    closeVK(true, true);
+    Object.assign(SG, {on:true, el, cand:null, since:0, last:null, lastAt:0, block:null, lostAt:0, hist:[], mode:'typing'});
     SG.ui = {letter:document.getElementById('fsLetter'), prog:document.getElementById('fsProg'), hint:document.getElementById('fsHint'), debug:document.getElementById('fsDebug')};
     F.sign.classList.remove('hidden');
     document.body.classList.add('fs-open');
@@ -9185,19 +10302,173 @@ const WHO2007 = {
     if(F.cursor) F.cursor.classList.add('hidden'); F.has = false;
     showMenu();
     document.getElementById('fsLabel').textContent = 'Ký hiệu tay → ' + fieldName(el);
+    renderSignState();
     api.spellStart(el, {silent:true});
     updatePreview();
-    say('Gõ bằng ký hiệu tay cho ' + fieldName(el) + '. Làm ký hiệu một chữ cái trước camera, giữ yên khoảng một giây, mình đọc chữ đó và gõ vào. ' +
-        'Dấu gõ kiểu Telex, ví dụ chữ s là dấu sắc, chữ f là dấu huyền. Xòe cả bàn tay giữ yên để cách chữ; xòe tay vẩy ngang để xóa một ký tự; ngón cái chỉ xuống và giữ yên để xóa hết; giơ ngón cái để xong. Cũng có thể nói: cách; xóa; xóa hết; xong.');
+    const guide = () => say('Gõ bằng ký hiệu tay cho ' + fieldName(el) + '. Đang ở chế độ gõ chữ, ' + (SG.caseMode === 'upper' ? 'chữ hoa' : 'chữ thường') + '. Làm ký hiệu một chữ cái trước camera, giữ yên khoảng một giây, mình đọc chữ đó và gõ vào. ' +
+        'Xòe cả bàn tay giữ yên để cách chữ. Giơ ngón cái để chuyển sang chế độ điều khiển: ở đó mới có xong, xóa một ký tự, xóa hết, đổi chữ hoa thường và thoát. Cũng có thể nói: chữ hoa; chữ thường; xóa; xóa hết; xong.', {interrupt:true});
+    if(F.on){ guide(); return; }
+    // camera chưa bật → bật (một luồng duy nhất); lỗi thì đóng bảng và gợi ý dùng bàn phím
+    SG.starting = true;
+    if(SG.ui.hint) SG.ui.hint.textContent = 'Đang bật camera…';
+    start({quiet:true}).then(ok => {
+      SG.starting = false;
+      if(!SG.on || SG.el !== el) return;
+      if(ok) guide();
+      else { closeSign(true, true); A().spellCancel && A().spellCancel(true); }
+    });
   }
   /** keepSpell: chuyển sang chữ nổi, giữ nguyên chữ đang gõ */
   function closeSign(silent, keepSpell){
     if(!SG.on) return;
-    SG.on = false;
+    SG.on = false; SG.starting = false;
     if(F.sign) F.sign.classList.add('hidden');
     document.body.classList.remove('fs-open');
     showMenu();
     if(!silent && !keepSpell){ const api = A(); if(api.spellCancel) api.spellCancel(true); }
+  }
+
+  /* ======================= BÀN PHÍM TRỢ NĂNG (ĐIỆN THOẠI) =======================
+     Không bật camera. Phím lớn ≥ 48px, có xem trước nội dung, hỗ trợ xoay ngang, vùng an toàn iPhone,
+     Tab / phím mũi tên / Escape, aria-label rõ ràng. Trợ lý đọc hướng dẫn khi mở và đọc tên phím khi
+     chọn bằng bàn phím hoặc rê chuột; chạm vào phím thì gõ luôn và đọc chữ vừa gõ (không nói chồng nhau). */
+  const VK = {on:false, el:null, nums:false, hoverT:0, lastSaid:'', lastSaidAt:0};
+  const VK_LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  const VK_NUMS = '0123456789'.split('').concat(['.', ',', '@', '_', '-']);
+  const VK_SAY = {'.':'dấu chấm', ',':'dấu phẩy', '@':'a còng', '_':'gạch dưới', '-':'gạch ngang'};
+  function buildVK(){
+    if(document.getElementById('vkBoard')) return;
+    const d = document.createElement('div');
+    d.innerHTML =
+      '<div class="vk-board hidden" id="vkBoard" role="dialog" aria-modal="true" aria-labelledby="vkTitle" aria-describedby="vkTip">' +
+        '<div class="vk-head"><h2 id="vkTitle">Bàn phím trợ năng</h2><span class="vk-case" id="vkCaseTag" aria-hidden="true">abc</span></div>' +
+        '<div class="vk-preview"><span class="vk-field" id="vkField"></span><span class="vk-preview-label">Nội dung hiện tại:</span>' +
+          '<output id="vkPreview" aria-live="polite">&nbsp;</output></div>' +
+        '<div class="vk-keys" id="vkLetters" role="group" aria-label="Các chữ cái">' +
+          VK_LETTERS.map(c => '<button type="button" class="vk-key" data-vk="' + c + '" aria-label="Chữ ' + c.toUpperCase() + '">' + c + '</button>').join('') + '</div>' +
+        '<div class="vk-keys vk-nums hidden" id="vkNums" role="group" aria-label="Số và ký hiệu">' +
+          VK_NUMS.map(c => '<button type="button" class="vk-key" data-vk="' + c + '" aria-label="' + (VK_SAY[c] || 'Số ' + c) + '">' + c + '</button>').join('') + '</div>' +
+        '<div class="vk-ctrl" role="group" aria-label="Điều khiển bàn phím">' +
+          '<button type="button" data-vk-act="case" id="vkCase" aria-pressed="false" aria-label="Chữ hoa hoặc chữ thường, đang là chữ thường">abc → ABC</button>' +
+          '<button type="button" data-vk-act="nums" id="vkNumBtn" aria-pressed="false" aria-label="Chuyển sang số và ký hiệu">123</button>' +
+          '<button type="button" data-vk-act="space" class="vk-wide" aria-label="Nút Cách">Cách</button>' +
+          '<button type="button" data-vk-act="del" aria-label="Xóa một ký tự">Xóa 1 ký tự</button>' +
+          '<button type="button" data-vk-act="clear" aria-label="Xóa hết">Xóa hết</button>' +
+          '<button type="button" data-vk-act="done" class="ok" aria-label="Xong, điền vào ô">Xong</button>' +
+          '<button type="button" data-vk-act="close" aria-label="Thoát bàn phím">Thoát</button>' +
+        '</div>' +
+        '<p class="vk-tip" id="vkTip">Dấu tiếng Việt gõ kiểu Telex: s sắc · f huyền · r hỏi · x ngã · j nặng · aa=â · aw=ă · ee=ê · oo=ô · ow=ơ · uw=ư · dd=đ.</p>' +
+      '</div>';
+    document.body.appendChild(d.firstChild);
+    const b = document.getElementById('vkBoard');
+    b.addEventListener('click', e => {
+      const k = e.target.closest('[data-vk]'); if(k) return vkKey(k.dataset.vk);
+      const a = e.target.closest('[data-vk-act]'); if(a) return vkAction(a.dataset.vkAct);
+    });
+    // đọc tên phím khi chọn bằng Tab / phím mũi tên (không đọc khi chạm — chạm là gõ luôn)
+    b.addEventListener('focusin', e => { if(VK.kbdNav) vkSayKey(e.target); });
+    b.addEventListener('pointerover', e => { if(e.pointerType === 'mouse'){ clearTimeout(VK.hoverT); const t = e.target.closest('button'); if(t) VK.hoverT = setTimeout(() => vkSayKey(t), 120); } });
+    b.addEventListener('pointerdown', () => { VK.kbdNav = false; clearTimeout(VK.hoverT); });
+    b.addEventListener('keydown', e => {
+      VK.kbdNav = true;
+      if(!/^Arrow(Left|Right|Up|Down)$|^Home$|^End$/.test(e.key)) return;
+      const list = [...b.querySelectorAll('button')].filter(x => x.offsetParent);
+      const i = list.indexOf(document.activeElement); if(i < 0) return;
+      e.preventDefault();
+      let j = i;
+      if(e.key === 'ArrowRight') j = i + 1; else if(e.key === 'ArrowLeft') j = i - 1;
+      else if(e.key === 'Home') j = 0; else if(e.key === 'End') j = list.length - 1;
+      else {                                                   // lên / xuống: phím gần nhất ở hàng trên / dưới
+        const r = list[i].getBoundingClientRect(), down = e.key === 'ArrowDown';
+        let best = -1, bd = Infinity;
+        list.forEach((x, k) => { const q = x.getBoundingClientRect(); const dy = down ? q.top - r.bottom : r.top - q.bottom;
+          if(dy < -2) return; const dd = dy * 4 + Math.abs((q.left + q.right) / 2 - (r.left + r.right) / 2); if(dd < bd){ bd = dd; best = k; } });
+        if(best >= 0) j = best;
+      }
+      list[(j + list.length) % list.length].focus();
+    });
+    if(window.A11y) A11y.manageDialog(b, {close:() => vkAction('close')});
+  }
+  function vkLabel(btn){ return (btn && (btn.getAttribute('aria-label') || btn.textContent) || '').trim(); }
+  function vkSayKey(btn){
+    if(!VK.on || !btn || !btn.closest || !btn.closest('#vkBoard') || btn.tagName !== 'BUTTON') return;
+    const t = vkLabel(btn); const now = Date.now();
+    if(t === VK.lastSaid && now - VK.lastSaidAt < 1200) return;      // không lặp lại liên tục
+    VK.lastSaid = t; VK.lastSaidAt = now;
+    say(t, {interrupt:true});
+  }
+  function renderVkCase(){
+    const up = SG.caseMode === 'upper';
+    const tag = document.getElementById('vkCaseTag'), cb = document.getElementById('vkCase');
+    if(tag) tag.textContent = up ? 'ABC' : 'abc';
+    if(cb){ cb.setAttribute('aria-pressed', String(up)); cb.setAttribute('aria-label', 'Chữ hoa hoặc chữ thường, đang là ' + (up ? 'chữ hoa' : 'chữ thường')); cb.textContent = up ? 'ABC → abc' : 'abc → ABC'; }
+    document.querySelectorAll('#vkLetters [data-vk]').forEach(k => {
+      const c = k.dataset.vk; k.textContent = up ? c.toUpperCase() : c;
+      k.setAttribute('aria-label', (up ? 'Chữ hoa ' : 'Chữ ') + c.toUpperCase());
+    });
+  }
+  function vkKey(k){
+    const api = A(); if(!VK.on || !api.spellKeys) return;
+    const key = /^[a-z]$/.test(k) ? caseKey(k) : k;
+    api.spellKeys([key], {force:true, interrupt:true});
+    updatePreview();
+  }
+  function vkAction(a){
+    const api = A();
+    if(a === 'case') return setSignCase(SG.caseMode === 'upper' ? 'lower' : 'upper');
+    if(a === 'nums'){
+      VK.nums = !VK.nums;
+      document.getElementById('vkLetters').classList.toggle('hidden', VK.nums);
+      document.getElementById('vkNums').classList.toggle('hidden', !VK.nums);
+      const nb = document.getElementById('vkNumBtn');
+      nb.textContent = VK.nums ? 'ABC' : '123'; nb.setAttribute('aria-pressed', String(VK.nums));
+      nb.setAttribute('aria-label', VK.nums ? 'Chuyển về chữ cái' : 'Chuyển sang số và ký hiệu');
+      say(VK.nums ? 'Đã chuyển sang số và ký hiệu.' : 'Đã chuyển về chữ cái.', {interrupt:true});
+      return;
+    }
+    if(a === 'space'){ api.spellKeys && api.spellKeys(['␠'], {force:true, interrupt:true}); return updatePreview(); }
+    if(a === 'del'){ api.spellKeys && api.spellKeys(['⌫'], {force:true, interrupt:true}); return updatePreview(); }
+    if(a === 'clear'){ if(api.clearInput) api.clearInput(VK.el, {force:true}); else if(api.spellKeys) api.spellKeys(['⌧']); return updatePreview(); }
+    if(a === 'done'){ if(api.spellFinish) api.spellFinish({force:true}); closeVK(true, true); return; }
+    if(a === 'close'){ closeVK(false); say('Đã thoát bàn phím trợ năng.', {interrupt:true}); }
+  }
+  function openVK(el){
+    const api = A();
+    el = el || pickField();
+    if(!el){ say('Cậu chọn một ô chữ trước nhé.'); return; }
+    if(window.BrailleInput && BrailleInput.active) BrailleInput.close(true, true);
+    closeSign(true, true);
+    buildVK();
+    VK.on = true; VK.el = el; VK.kbdNav = false;
+    const b = document.getElementById('vkBoard');
+    document.getElementById('vkField').textContent = fieldName(el);
+    renderVkCase();
+    // không để bàn phím của điện thoại bật lên đè bàn phím trợ năng
+    const ae = document.activeElement; if(ae && ae !== document.body && /^(INPUT|TEXTAREA)$/.test(ae.tagName)) try{ ae.blur(); }catch(e){}
+    if(api.spellStart) api.spellStart(el, {silent:true, noFocus:true});
+    b.classList.remove('hidden');
+    document.body.classList.add('vk-open');
+    updatePreview();
+    const t = 'Bàn phím trợ năng đã mở, cho ô ' + fieldName(el) + '. Màn hình có các chữ cái từ A đến Z. Có nút chữ hoa hoặc chữ thường, nút 1 2 3 để gõ số, nút Cách để thêm khoảng trắng, Xóa một ký tự, Xóa hết, Xong và Thoát. Chạm vào chữ để gõ, mình đọc lại chữ vừa gõ.';
+    say(t, {interrupt:true}); live('Bàn phím trợ năng đã mở.');
+  }
+  function closeVK(silent, keepSpell){
+    if(!VK.on) return;
+    VK.on = false;
+    const b = document.getElementById('vkBoard'); if(b) b.classList.add('hidden');
+    document.body.classList.remove('vk-open');
+    if(!keepSpell){ const api = A(); if(api.spellCancel) api.spellCancel(true); }
+  }
+  /** Lệnh giọng nói khi bảng ký hiệu tay / bàn phím trợ năng đang mở (voice-robot.js gọi trước khi đánh vần) */
+  function voiceCmd(n){
+    if(!SG.on && !VK.on) return false;
+    const is = (...k) => k.includes(n);
+    if(is('chu hoa', 'viet hoa', 'chu in hoa', 'bat chu hoa', 'go chu hoa')){ setSignCase('upper'); return true; }
+    if(is('chu thuong', 'viet thuong', 'chu in thuong', 'tat chu hoa', 'go chu thuong')){ setSignCase('lower'); return true; }
+    if(SG.on && is('che do dieu khien', 'dieu khien', 'chuyen sang dieu khien')){ setSignMode('command'); return true; }
+    if(SG.on && is('che do go chu', 'go chu', 'quay lai go chu', 'chuyen sang go chu')){ setSignMode('typing'); return true; }
+    if(VK.on && is('so', 'go so', 'ban phim so', 'chu cai', 'go chu cai')){ if((n.indexOf('so') !== -1) !== VK.nums) vkAction('nums'); return true; }
+    return false;
   }
   /* Vẽ khung xương bàn tay lên hình camera để học sinh / thầy cô thấy máy đang "nhìn" tay thế nào */
   const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
@@ -9211,12 +10482,22 @@ const WHO2007 = {
   }
 
   /* Tương thích: các lệnh cũ "đóng bàn phím" → đóng gõ ký hiệu tay */
-  function closeKeyboard(silent){ closeSign(silent); }
+  function closeKeyboard(silent){ closeSign(silent); closeVK(silent); }
   function updatePreview(){
     const api = A(); const st = api.spellState ? api.spellState() : null;
-    ['fsPreview'].forEach(id => { const p = document.getElementById(id); if(p) p.textContent = st ? (st.text || '\u00a0') : '\u00a0'; });
+    ['fsPreview', 'vkPreview'].forEach(id => {
+      const p = document.getElementById(id); if(!p) return;
+      const el = st && st.el;
+      const t = st ? (el && el.type === 'password' ? '•'.repeat((st.text || '').length) : st.text) : '';
+      p.textContent = t || '\u00a0';
+    });
   }
-  window.FingerNav = {start, stop, openKeyboard:openSign, closeKeyboard, openSign, closeSign, updatePreview, runFn, helpText, SELECT_MS,
+  function resetInputState(el){
+    if(el && SG.el !== el) return;
+    SG.block = SG.cand || SG.last; SG.hist = []; SG.cand = null; SG.last = null; SG.since = performance.now();
+  }
+  window.FingerNav = {start, stop, resetInputState, openKeyboard:openVK, openVK, closeVK, closeKeyboard, openSign, closeSign, updatePreview, runFn, helpText, SELECT_MS,
+    voice:voiceCmd, setCase:setSignCase, setMode:setSignMode, get signMode(){ return SG.mode; }, get caseMode(){ return SG.caseMode; }, get vkOpen(){ return VK.on; },
     _build:build, _classify:(lm) => classifySign(handModel(lm)), _model:handModel, get signOpen(){ return SG.on; }, get on(){ return F.on; }, get keyboardOpen(){ return SG.on; }, _feed:feed, _state:F};
 })();
 
