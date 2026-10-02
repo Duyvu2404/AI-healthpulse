@@ -1,0 +1,9365 @@
+
+/* ============================================================================
+ * AI HEALTHPULSE · SCRIPT.JS · MÃ XỬ LÝ
+ * CÁCH DÙNG: đặt index.html, styles.css và script.js trong cùng một thư mục.
+ * index.html nạp file này một lần ở cuối body, sau khi các phần tử HTML đã tồn tại.
+ * Giữ kiểu script thông thường: không thêm type="module", async hoặc bọc toàn bộ file trong hàm;
+ * các nút HTML và nội dung tạo động đang gọi các đối tượng như App, Settings, BMI, Hdtl.
+ * Thứ tự 14 phần được giữ theo file gốc để các mô-đun tìm thấy phần phụ thuộc.
+ * Tên file mô-đun trong chú thích cũ là tên tham khảo; tất cả mã JavaScript đó đã nằm trong file này.
+ * Một số HTML/style được tạo hoặc cập nhật khi chạy vẫn nằm trong hàm tương ứng.
+ * 
+ * MỤC LỤC · dùng Ctrl+F với mã mục:
+ * JS-01: BỘ BIỂU TƯỢNG SVG
+ * JS-02: MÀN HÌNH TẢI VÀ TIẾN ĐỘ KHỞI ĐỘNG
+ * JS-03: ỨNG DỤNG CHÍNH: AI, TÀI KHOẢN, KHẢO SÁT VÀ DASHBOARD
+ * JS-04: DỮ LIỆU THAM CHIẾU WHO2007
+ * JS-05: TÍNH BMI VÀ HIỂN THỊ KẾT QUẢ
+ * JS-06: KHO DỮ LIỆU SỨC KHỎE
+ * JS-07: QUÉT CHIỀU CAO BẰNG CAMERA
+ * JS-08: PIPER: TẠO GIỌNG NÓI TIẾNG VIỆT
+ * JS-09: CHUẨN HÓA NHẬP TIẾNG VIỆT
+ * JS-10: TRỢ NĂNG VÀ KHUNG ĐIỀU KHIỂN
+ * JS-11: TRỢ LÝ GIỌNG NÓI, MICRO VÀ ĐIỀU HƯỚNG
+ * JS-12: NHẬP CHỮ NỔI BRAILLE
+ * JS-13: ĐIỀU KHIỂN BẰNG TAY VÀ BÀN PHÍM TRỢ NĂNG
+ * JS-14: HIỆU ỨNG GIAO DIỆN
+ * 
+ * CHỖ THƯỜNG CẦN SỬA:
+ * SHEETS_API_URL: kết nối Apps Script · QUESTIONS: câu hỏi khảo sát.
+ * computeHdtl(): tính mức vận động · REGION_MAP: vùng đọc/điều hướng.
+ * SELECT_MS: thời gian giữ tay để chọn · BRAILLE/TONE: bảng ký tự chữ nổi.
+ * Các ghi chú bổ sung mô tả chức năng hiện có; không thay đổi thuật toán hoặc dữ liệu gốc.
+ * ========================================================================== */
+
+/* ============================================================================
+ * MỤC JS-01 · BỘ BIỂU TƯỢNG SVG
+ * Khai báo dữ liệu biểu tượng và window.lucide. createIcons() thay thẻ i[data-lucide] bằng SVG.
+ * Cần có trước các phần gọi refreshIcons() hoặc lucide.createIcons().
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — BIỂU TƯỢNG (chung/bieu-tuong.js)
+   Bộ biểu tượng Lucide (ISC) — CHỈ giữ các biểu tượng web dùng (~63 cái, ~20 KB thay vì 360 KB)
+   → mỗi trang tải nhanh hơn, không giật. Cần biểu tượng mới: thêm vào ICONS
+   (lấy dữ liệu ở https://lucide.dev). Cách dùng giữ nguyên: <i data-lucide="ten-bieu-tuong"></i>
+   ===================================================================== */
+(function(){
+  'use strict';
+  const ICONS = {"activity":[["path",{"d":"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"}]],"alert-triangle":[["path",{"d":"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}],["path",{"d":"M12 9v4"}],["path",{"d":"M12 17h.01"}]],"arrow-left-right":[["path",{"d":"M8 3 4 7l4 4"}],["path",{"d":"M4 7h16"}],["path",{"d":"m16 21 4-4-4-4"}],["path",{"d":"M20 17H4"}]],"arrow-right":[["path",{"d":"M5 12h14"}],["path",{"d":"m12 5 7 7-7 7"}]],"arrow-up-right":[["path",{"d":"M7 7h10v10"}],["path",{"d":"M7 17 17 7"}]],"bar-chart-3":[["path",{"d":"M3 3v16a2 2 0 0 0 2 2h16"}],["path",{"d":"M18 17V9"}],["path",{"d":"M13 17V5"}],["path",{"d":"M8 17v-3"}]],"book-open":[["path",{"d":"M12 7v14"}],["path",{"d":"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"}]],"bot":[["path",{"d":"M12 8V4H8"}],["rect",{"width":"16","height":"12","x":"4","y":"8","rx":"2"}],["path",{"d":"M2 14h2"}],["path",{"d":"M20 14h2"}],["path",{"d":"M15 13v2"}],["path",{"d":"M9 13v2"}]],"calculator":[["rect",{"width":"16","height":"20","x":"4","y":"2","rx":"2"}],["line",{"x1":"8","x2":"16","y1":"6","y2":"6"}],["line",{"x1":"16","x2":"16","y1":"14","y2":"18"}],["path",{"d":"M16 10h.01"}],["path",{"d":"M12 10h.01"}],["path",{"d":"M8 10h.01"}],["path",{"d":"M12 14h.01"}],["path",{"d":"M8 14h.01"}],["path",{"d":"M12 18h.01"}],["path",{"d":"M8 18h.01"}]],"calendar-check-2":[["path",{"d":"M8 2v4"}],["path",{"d":"M16 2v4"}],["path",{"d":"M21 14V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"}],["path",{"d":"M3 10h18"}],["path",{"d":"m16 20 2 2 4-4"}]],"camera":[["path",{"d":"M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"}],["circle",{"cx":"12","cy":"13","r":"3"}]],"check":[["path",{"d":"M20 6 9 17l-5-5"}]],"pencil":[["path",{"d":"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"}],["path",{"d":"m15 5 4 4"}]],"check-circle-2":[["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"m9 12 2 2 4-4"}]],"circle-check":[["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"m9 12 2 2 4-4"}]],"chevron-down":[["path",{"d":"m6 9 6 6 6-6"}]],"clipboard-check":[["rect",{"width":"8","height":"4","x":"8","y":"2","rx":"1","ry":"1"}],["path",{"d":"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"}],["path",{"d":"m9 14 2 2 4-4"}]],"crosshair":[["circle",{"cx":"12","cy":"12","r":"10"}],["line",{"x1":"22","x2":"18","y1":"12","y2":"12"}],["line",{"x1":"6","x2":"2","y1":"12","y2":"12"}],["line",{"x1":"12","x2":"12","y1":"6","y2":"2"}],["line",{"x1":"12","x2":"12","y1":"22","y2":"18"}]],"ear":[["path",{"d":"M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"}],["path",{"d":"M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"}]],"eye":[["path",{"d":"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"}],["circle",{"cx":"12","cy":"12","r":"3"}]],"filter":[["polygon",{"points":"22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"}]],"graduation-cap":[["path",{"d":"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"}],["path",{"d":"M22 10v6"}],["path",{"d":"M6 12.5V16a6 3 0 0 0 12 0v-3.5"}]],"hand":[["path",{"d":"M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"}],["path",{"d":"M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"}],["path",{"d":"M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"}],["path",{"d":"M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"}]],"hard-drive":[["line",{"x1":"22","x2":"2","y1":"12","y2":"12"}],["path",{"d":"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"}],["line",{"x1":"6","x2":"6.01","y1":"16","y2":"16"}],["line",{"x1":"10","x2":"10.01","y1":"16","y2":"16"}]],"heart-handshake":[["path",{"d":"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"}],["path",{"d":"M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"}],["path",{"d":"m18 15-2-2"}],["path",{"d":"m15 18-2-2"}]],"heart-pulse":[["path",{"d":"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"}],["path",{"d":"M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"}]],"history":[["path",{"d":"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"}],["path",{"d":"M3 3v5h5"}],["path",{"d":"M12 7v5l4 2"}]],"info":[["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"M12 16v-4"}],["path",{"d":"M12 8h.01"}]],"layout-dashboard":[["rect",{"width":"7","height":"9","x":"3","y":"3","rx":"1"}],["rect",{"width":"7","height":"5","x":"14","y":"3","rx":"1"}],["rect",{"width":"7","height":"9","x":"14","y":"12","rx":"1"}],["rect",{"width":"7","height":"5","x":"3","y":"16","rx":"1"}]],"layout-grid":[["rect",{"width":"7","height":"7","x":"3","y":"3","rx":"1"}],["rect",{"width":"7","height":"7","x":"14","y":"3","rx":"1"}],["rect",{"width":"7","height":"7","x":"14","y":"14","rx":"1"}],["rect",{"width":"7","height":"7","x":"3","y":"14","rx":"1"}]],"lock-keyhole":[["circle",{"cx":"12","cy":"16","r":"1"}],["rect",{"x":"3","y":"10","width":"18","height":"12","rx":"2"}],["path",{"d":"M7 10V7a5 5 0 0 1 10 0v3"}]],"log-in":[["path",{"d":"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"}],["polyline",{"points":"10 17 15 12 10 7"}],["line",{"x1":"15","x2":"3","y1":"12","y2":"12"}]],"log-out":[["path",{"d":"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"}],["polyline",{"points":"16 17 21 12 16 7"}],["line",{"x1":"21","x2":"9","y1":"12","y2":"12"}]],"message-circle":[["path",{"d":"M7.9 20A9 9 0 1 0 4 16.1L2 22Z"}]],"message-circle-heart":[["path",{"d":"M7.9 20A9 9 0 1 0 4 16.1L2 22Z"}],["path",{"d":"M15.8 9.2a2.5 2.5 0 0 0-3.5 0l-.3.4-.35-.3a2.42 2.42 0 1 0-3.2 3.6l3.6 3.5 3.6-3.5c1.2-1.2 1.1-2.7.2-3.7"}]],"mic":[["path",{"d":"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"}],["path",{"d":"M19 10v2a7 7 0 0 1-14 0v-2"}],["line",{"x1":"12","x2":"12","y1":"19","y2":"22"}]],"pill":[["path",{"d":"m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"}],["path",{"d":"m8.5 8.5 7 7"}]],"plus":[["path",{"d":"M5 12h14"}],["path",{"d":"M12 5v14"}]],"plus-circle":[["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"M8 12h8"}],["path",{"d":"M12 8v8"}]],"pointer":[["path",{"d":"M22 14a8 8 0 0 1-8 8"}],["path",{"d":"M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2"}],["path",{"d":"M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"}],["path",{"d":"M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10"}],["path",{"d":"M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"}]],"radio":[["path",{"d":"M4.9 19.1C1 15.2 1 8.8 4.9 4.9"}],["path",{"d":"M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"}],["circle",{"cx":"12","cy":"12","r":"2"}],["path",{"d":"M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"}],["path",{"d":"M19.1 4.9C23 8.8 23 15.1 19.1 19"}]],"refresh-cw":[["path",{"d":"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"}],["path",{"d":"M21 3v5h-5"}],["path",{"d":"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"}],["path",{"d":"M8 16H3v5"}]],"repeat":[["path",{"d":"m17 2 4 4-4 4"}],["path",{"d":"M3 11v-1a4 4 0 0 1 4-4h14"}],["path",{"d":"m7 22-4-4 4-4"}],["path",{"d":"M21 13v1a4 4 0 0 1-4 4H3"}]],"rotate-ccw":[["path",{"d":"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"}],["path",{"d":"M3 3v5h5"}]],"ruler":[["path",{"d":"M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"}],["path",{"d":"m14.5 12.5 2-2"}],["path",{"d":"m11.5 9.5 2-2"}],["path",{"d":"m8.5 6.5 2-2"}],["path",{"d":"m17.5 15.5 2-2"}]],"scan-line":[["path",{"d":"M3 7V5a2 2 0 0 1 2-2h2"}],["path",{"d":"M17 3h2a2 2 0 0 1 2 2v2"}],["path",{"d":"M21 17v2a2 2 0 0 1-2 2h-2"}],["path",{"d":"M7 21H5a2 2 0 0 1-2-2v-2"}],["path",{"d":"M7 12h10"}]],"settings":[["path",{"d":"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"}],["circle",{"cx":"12","cy":"12","r":"3"}]],"shield-check":[["path",{"d":"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"}],["path",{"d":"m9 12 2 2 4-4"}]],"sparkles":[["path",{"d":"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"}],["path",{"d":"M20 3v4"}],["path",{"d":"M22 5h-4"}],["path",{"d":"M4 17v2"}],["path",{"d":"M5 18H3"}]],"stethoscope":[["path",{"d":"M11 2v2"}],["path",{"d":"M5 2v2"}],["path",{"d":"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"}],["path",{"d":"M8 15a6 6 0 0 0 12 0v-3"}],["circle",{"cx":"20","cy":"10","r":"2"}]],"table":[["path",{"d":"M12 3v18"}],["rect",{"width":"18","height":"18","x":"3","y":"3","rx":"2"}],["path",{"d":"M3 9h18"}],["path",{"d":"M3 15h18"}]],"table-2":[["path",{"d":"M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"}]],"target":[["circle",{"cx":"12","cy":"12","r":"10"}],["circle",{"cx":"12","cy":"12","r":"6"}],["circle",{"cx":"12","cy":"12","r":"2"}]],"trash-2":[["path",{"d":"M3 6h18"}],["path",{"d":"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"}],["path",{"d":"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"}],["line",{"x1":"10","x2":"10","y1":"11","y2":"17"}],["line",{"x1":"14","x2":"14","y1":"11","y2":"17"}]],"trending-up":[["polyline",{"points":"22 7 13.5 15.5 8.5 10.5 2 17"}],["polyline",{"points":"16 7 22 7 22 13"}]],"users-round":[["path",{"d":"M18 21a8 8 0 0 0-16 0"}],["circle",{"cx":"10","cy":"8","r":"5"}],["path",{"d":"M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"}]],"utensils":[["path",{"d":"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"}],["path",{"d":"M7 2v20"}],["path",{"d":"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"}]],"volume-2":[["path",{"d":"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"}],["path",{"d":"M16 9a5 5 0 0 1 0 6"}],["path",{"d":"M19.364 18.364a9 9 0 0 0 0-12.728"}]],"x":[["path",{"d":"M18 6 6 18"}],["path",{"d":"m6 6 12 12"}]],"mic-off":[["line",{"x1":"2","x2":"22","y1":"2","y2":"22"}],["path",{"d":"M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"}],["path",{"d":"M5 10v2a7 7 0 0 0 12 5"}],["path",{"d":"M15 9.34V5a3 3 0 0 0-5.68-1.33"}],["path",{"d":"M9 9v3a3 3 0 0 0 5.12 2.12"}],["line",{"x1":"12","x2":"12","y1":"19","y2":"22"}]],"volume-x":[["path",{"d":"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"}],["line",{"x1":"22","x2":"16","y1":"9","y2":"15"}],["line",{"x1":"16","x2":"22","y1":"9","y2":"15"}]],"hand-metal":[["path",{"d":"M18 12.5V10a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1.4"}],["path",{"d":"M14 11V9a2 2 0 1 0-4 0v2"}],["path",{"d":"M10 10.5V5a2 2 0 1 0-4 0v9"}],["path",{"d":"m7 15-1.76-1.76a2 2 0 0 0-2.83 2.82l3.6 3.6C7.5 21.14 9.2 22 12 22h2a8 8 0 0 0 8-8V7a2 2 0 1 0-4 0v5"}]],"keyboard":[["path",{"d":"M10 8h.01"}],["path",{"d":"M12 12h.01"}],["path",{"d":"M14 8h.01"}],["path",{"d":"M16 12h.01"}],["path",{"d":"M18 8h.01"}],["path",{"d":"M6 8h.01"}],["path",{"d":"M7 16h10"}],["path",{"d":"M8 12h.01"}],["rect",{"width":"20","height":"16","x":"2","y":"4","rx":"2"}]],"cloud-check":[["path",{"d":"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"}]],"chevron-up":[["path",{"d":"m18 15-6-6-6 6"}]],"chevron-left":[["path",{"d":"m15 18-6-6 6-6"}]],"chevron-right":[["path",{"d":"m9 18 6-6-6-6"}]],"ellipsis":[["circle",{"cx":"12","cy":"12","r":"1"}],["circle",{"cx":"19","cy":"12","r":"1"}],["circle",{"cx":"5","cy":"12","r":"1"}]],"power":[["path",{"d":"M12 2v10"}],["path",{"d":"M18.4 6.6a9 9 0 1 1-12.77.04"}]],"mouse-pointer":[["path",{"d":"M12.586 12.586 19 19"}],["path",{"d":"M3.688 3.037a.497.497 0 0 0-.651.651l6.5 15.999a.501.501 0 0 0 .947-.062l1.569-6.083a2 2 0 0 1 1.448-1.479l6.124-1.579a.5.5 0 0 0 .063-.947z"}]],"captions":[["rect",{"width":"18","height":"14","x":"3","y":"5","rx":"2","ry":"2"}],["path",{"d":"M7 15h4M15 15h2M7 11h2M13 11h4"}]],"square":[["rect",{"width":"18","height":"18","x":"3","y":"3","rx":"2"}]],"thumbs-down":[["path",{"d":"M17 14V2"}],["path",{"d":"M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"}]],"accessibility":[["circle",{"cx":"16","cy":"4","r":"1"}],["path",{"d":"m18 19 1-7-6 1"}],["path",{"d":"m5 8 3-3 5.5 3-2.36 3.5"}],["path",{"d":"M4.24 14.5a5 5 0 0 0 6.88 6"}],["path",{"d":"M13.76 17.5a5 5 0 0 0-6.88-6"}]],"database":[["ellipse",{"cx":"12","cy":"5","rx":"9","ry":"3"}],["path",{"d":"M3 5V19A9 3 0 0 0 21 19V5"}],["path",{"d":"M3 12A9 3 0 0 0 21 12"}]],"download":[["path",{"d":"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}],["polyline",{"points":"7 10 12 15 17 10"}],["line",{"x1":"12","x2":"12","y1":"15","y2":"3"}]]};
+  const NS = 'http://www.w3.org/2000/svg';
+  function make(name, src){
+    const nodes = ICONS[name]; if(!nodes) return null;
+    const svg = document.createElementNS(NS, 'svg');
+    const base = {xmlns:NS, width:24, height:24, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', 'stroke-width':2, 'stroke-linecap':'round', 'stroke-linejoin':'round'};
+    Object.keys(base).forEach(k => svg.setAttribute(k, base[k]));
+    [...src.attributes].forEach(a => { if(a.name !== 'class') svg.setAttribute(a.name, a.value); });
+    svg.setAttribute('class', ('lucide lucide-' + name + ' ' + (src.getAttribute('class') || '')).trim());
+    svg.setAttribute('aria-hidden', src.getAttribute('aria-hidden') || 'true');
+    nodes.forEach(([tag, attrs]) => { const e = document.createElementNS(NS, tag); Object.keys(attrs).forEach(k => e.setAttribute(k, attrs[k])); svg.appendChild(e); });
+    return svg;
+  }
+  function createIcons(opts){
+    const root = (opts && opts.root) || document;
+    root.querySelectorAll('i[data-lucide]').forEach(el => { const s = make(el.getAttribute('data-lucide'), el); if(s) el.replaceWith(s); });
+  }
+  window.lucide = {createIcons, icons:ICONS};
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-02 · MÀN HÌNH TẢI VÀ TIẾN ĐỘ KHỞI ĐỘNG
+ * HPLoader theo dõi bốn phần: trang, dữ liệu, giọng đọc và micro.
+ * set() cập nhật tiến độ; ready() đăng ký việc cần làm khi màn hình tải kết thúc.
+ * ========================================================================== */
+
+/* Màn hình tải: mỗi phần báo tiến độ bằng HPLoader.set(phần, 0..1, ghi chú). Đủ cả 4 phần → ẩn, gọi HPLoader.ready(...) */
+window.HPLoader = (function(){
+  var W = {page:0.25, data:0.3, voice:0.3, mic:0.15}, P = {page:0, data:0, voice:0, mic:0}, cbs = [], done = false, shown = 0, t0 = Date.now();
+  var el = document.getElementById('hpLoader'), fill = document.getElementById('hpLdFill'), pct = document.getElementById('hpLdPct'), note = document.getElementById('hpLdNote');
+  function render(msg){
+    var tot = 0; for(var k in W) tot += W[k] * Math.min(1, P[k]);
+    shown = Math.max(shown, tot);
+    fill.style.transform = 'scaleX(' + Math.max(0.02, shown).toFixed(3) + ')';
+    var v = Math.round(shown * 100); pct.textContent = v + '%'; el.setAttribute('aria-valuenow', v);
+    if(msg) note.textContent = msg;
+    var lis = el.querySelectorAll('li');
+    for(var i = 0; i < lis.length; i++){ var p = P[lis[i].getAttribute('data-k')]; lis[i].className = p >= 1 ? 'ok' : (p > 0 ? 'go' : ''); }
+    if(tot >= 0.999) finish();
+  }
+  function finish(){
+    if(done) return; done = true;
+    note.textContent = 'Sẵn sàng — mở màn hình chọn chế độ…';
+    var wait = Math.max(0, 900 - (Date.now() - t0));        // hiện ít nhất ~0,9 giây cho khỏi nháy
+    setTimeout(function(){
+      el.classList.add('hp-ld-out');
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 500);
+      var f; while((f = cbs.shift())) try{ f(); }catch(e){ console.warn(e); }
+    }, wait);
+  }
+  document.addEventListener('DOMContentLoaded', function(){ P.page = Math.max(P.page, 0.85); render(); });
+  window.addEventListener('load', function(){ P.page = 1; render(); });
+  setTimeout(function(){ if(!done){ for(var k in P) P[k] = 1; render('Sẵn sàng'); } }, 15000);   // an toàn: tối đa 15 giây
+  P.page = 0.15; render();
+  return {
+    set: function(k, v, msg){ if(done || !(k in P)) return; P[k] = Math.max(P[k], v); render(msg); },
+    ready: function(f){ if(done && !document.getElementById('hpLoader')) f(); else if(done) setTimeout(f, 950); else cbs.push(f); },
+    get done(){ return done; }
+  };
+})();
+
+
+/* ============================================================================
+ * MỤC JS-03 · ỨNG DỤNG CHÍNH: AI, TÀI KHOẢN, KHẢO SÁT VÀ DASHBOARD
+ * Chứa kết nối Google Sheets/AI, đăng nhập, điều hướng, trò chuyện và thống kê.
+ * Các mục JS-03.xx bên dưới giải thích từng nhóm. SHEETS_API_URL là địa chỉ Apps Script hiện tại.
+ * ========================================================================== */
+
+const HP_NAVIGATION_TYPE = (()=>{
+  try{
+    const entry = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if(entry && entry.type) return entry.type;
+    return performance.navigation && performance.navigation.type === 1 ? 'reload' : 'navigate';
+  }catch(e){ return 'navigate'; }
+})();
+const HP_IS_RELOAD = HP_NAVIGATION_TYPE === 'reload';
+
+/* ============================================================================
+ * JS-03.01 · KẾT NỐI GOOGLE SHEETS
+ * SHEETS_API_URL là URL triển khai Apps Script. sheetsCollection() tạo các thao tác đọc, thêm, sửa, xóa và theo dõi bản ghi.
+ * ========================================================================== */
+const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycby3etu9J1o-lY_V5xIXKrD59vYA21Cq4Z0tg-rST3hCI7KDu5HRL5uraFAr-K58X7Aw/exec";
+  window.__SHEETS_READY = !!SHEETS_API_URL && !SHEETS_API_URL.startsWith("ĐIỀN_");
+
+  function sheetsCollection(path){
+    const base = SHEETS_API_URL;
+    async function post(body){
+      const res = await fetch(base, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(body) });
+      if(!res.ok) throw new Error('Google Sheets HTTP '+res.status);
+      const result = await res.json();
+      if(result && result.error) throw new Error(String(result.error));
+      return result;
+    }
+    async function listDocs(){
+      const res = await fetch(base + '?action=list&collection=' + encodeURIComponent(path));
+      if(!res.ok) throw new Error('Google Sheets HTTP '+res.status);
+      const j = await res.json();
+      if(j && j.error) throw new Error(String(j.error));
+      return (j.docs || []).map(d=>({ id:String(d.id), data: ()=>d.data }));
+    }
+    const api = {
+      doc(id){
+        id = id || (Date.now() + '_' + Math.random().toString(36).slice(2,8));
+        return {
+          id,
+          async get(){
+            const res = await fetch(base + '?action=get&collection=' + encodeURIComponent(path) + '&id=' + encodeURIComponent(id));
+            if(!res.ok) throw new Error('Google Sheets HTTP '+res.status);
+            const j = await res.json();
+            if(j && j.error) throw new Error(String(j.error));
+            return { id, exists: !!j.exists, data: ()=>j.data };
+          },
+          async set(data){ return await post({ action:'set', collection:path, id, data }); },
+          async update(patch){ return await post({ action:'update', collection:path, id, data:patch }); },
+          async delete(){ await post({ action:'delete', collection:path, id }); }
+        };
+      },
+      async add(data){
+        const j = await post({ action:'add', collection:path, data });
+        return api.doc(j.id);
+      },
+      async get(){
+        const docs = await listDocs();
+        return { docs, empty: docs.length===0 };
+      },
+      async refresh(){
+        const docs = await listDocs();
+        return { docs, empty: docs.length===0 };
+      },
+      onSnapshot(next, err){
+        let stopped = false;
+        const run = async ()=>{ if(stopped) return; try{ next(await api.get()); }catch(e){ if(err) err(e); } };
+        run();
+        const interval = setInterval(run, 4000);
+        return ()=>{ stopped = true; clearInterval(interval); };
+      }
+    };
+    return api;
+  }
+
+
+/* ============================================================================
+ * JS-03.02 · BỘ KẾT NỐI AI
+ * AIBackend chọn backend, lấy khóa theo tài khoản, dò mô hình, gửi yêu cầu AI và xử lý lỗi/chuyển mô hình.
+ * ========================================================================== */
+/* =================== AI backend (Claude / Gemini) =================== */
+let sampleFn = null, dbFn = null;
+function blobToBase64(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(blob); }); }
+
+const AIBackend = {
+  mode:'none', geminiKey:null, models:[], activeModel:null, modelRoute:[], modelDiscoveryError:null,
+  fallbackModels:['models/gemini-2.5-flash','models/gemini-2.0-flash','models/gemini-1.5-flash'],
+  async init(){
+    if(sampleFn){ this.mode='claude'; this.geminiKey=null; return; }
+    // API keys are loaded after the student account is restored. Do not use a
+    // single global browser key: that would leak one student's key to another.
+    this.geminiKey = null;
+    this.models = [];
+    this.activeModel = null;
+    this.modelRoute = [];
+    this.modelDiscoveryError = null;
+    this.mode = 'none';
+  },
+  useAccountKey(account){
+    if(sampleFn){ this.mode='claude'; this.geminiKey=null; return; }
+    const accountKey = account && (account.geminiApiKey || account.apiKey || account.geminiKey);
+    const cacheKey = account && account.username ? 'hp_gemini_key:' + (account.role === 'admin' ? 'admin:' : '') + account.username : null;
+    const legacyStudentKey = account && account.role === 'student' && account.username ? localStorage.getItem('hp_gemini_key:'+account.username) : null;
+    const cachedKey = cacheKey ? localStorage.getItem(cacheKey) : legacyStudentKey;
+    this.geminiKey = accountKey || cachedKey || null;
+    this.models = [];
+    this.activeModel = null;
+    this.modelRoute = [];
+    this.modelDiscoveryError = null;
+    this.mode = this.geminiKey ? 'gemini' : 'none';
+    if(this.geminiKey && cacheKey){
+      localStorage.setItem(cacheKey, this.geminiKey);
+    }
+  },
+  useStudentKey(student){ this.useAccountKey(student ? Object.assign({role:'student'}, student) : null); },
+  async discoverModels(){
+    if(this.mode!=='gemini') return [];
+    return await this._listModels();
+  },
+  async json(prompt){
+    if(this.mode==='claude') return await sampleFn.json(prompt, {modelTier:'quick'});
+    if(this.mode==='gemini'){
+      return await this._callGeminiModels(prompt + '\n\nChỉ trả JSON hợp lệ, không kèm chữ nào khác, không dùng markdown code fence.', raw=>{
+        const clean = String(raw || '').replace(/```json|```/gi,'').trim();
+        try{ return JSON.parse(clean); }catch(e){}
+        const objectMatch = clean.match(/\{[\s\S]*\}/);
+        if(objectMatch){ try{ return JSON.parse(objectMatch[0]); }catch(e){} }
+        return null;
+      });
+    }
+    throw {code:'no_ai'};
+  },
+  async text(prompt){
+    if(this.mode==='claude'){ const r = await sampleFn(prompt, {modelTier:'default'}); return r.text; }
+    if(this.mode==='gemini') return await this._callGeminiModels(prompt, raw=>String(raw || '').trim() || null);
+    throw {code:'no_ai'};
+  },
+  _normaliseModelName(name){
+    const value = String(name || '').trim();
+    if(!value) return '';
+    return value.startsWith('models/') ? value : 'models/' + value;
+  },
+  _modelScore(name){
+    const id = String(name || '').replace(/^models\//i,'').toLowerCase();
+    let score = 0;
+    if(id.includes('flash')) score += 100;
+    if(id.includes('pro')) score += 45;
+    if(id.includes('lite')) score += 10;
+    if(id.includes('2.5')) score += 20;
+    else if(id.includes('2.0')) score += 12;
+    else if(id.includes('1.5')) score += 5;
+    if(/preview|experimental|exp/.test(id)) score -= 35;
+    return score;
+  },
+  _isUsableTextModel(model){
+    if(!model || !model.name) return false;
+    const id = String(model.name).toLowerCase();
+    const methods = model.supportedGenerationMethods;
+    if(Array.isArray(methods) && !methods.includes('generateContent')) return false;
+    return !/(embedding|imagen|veo|aqa|tts|image-generation|robotics)/i.test(id);
+  },
+  async _readHttpError(res, prefix, model){
+    let detail = '';
+    try{
+      const body = await res.json();
+      detail = body && body.error && body.error.message ? String(body.error.message) : '';
+    }catch(e){}
+    return {code:prefix + res.status, status:res.status, model:model || null, detail};
+  },
+  async _listModels(){
+    if(this.models.length) return this.models;
+    if(!this.geminiKey) throw {code:'no_ai'};
+    const found = [];
+    let pageToken = '';
+    try{
+      for(let page = 0; page < 10; page++){
+        let url = 'https://generativelanguage.googleapis.com/v1beta/models?key=' + encodeURIComponent(this.geminiKey);
+        if(pageToken) url += '&pageToken=' + encodeURIComponent(pageToken);
+        const res = await fetch(url);
+        if(!res.ok) throw await this._readHttpError(res, 'gemini_models_http_');
+        const data = await res.json();
+        (data.models || []).filter(model=>this._isUsableTextModel(model)).forEach(model=>{
+          const name = this._normaliseModelName(model.name);
+          if(name && !found.includes(name)) found.push(name);
+        });
+        pageToken = data.nextPageToken || '';
+        if(!pageToken) break;
+      }
+      this.models = found.sort((a,b)=>this._modelScore(b)-this._modelScore(a) || a.localeCompare(b));
+      if(!this.models.length) throw {code:'gemini_no_text_models'};
+    }catch(err){
+      // Nếu endpoint liệt kê tạm lỗi, vẫn thử các model văn bản phổ biến để
+      // không làm chatbot dừng chỉ vì một lỗi tạm thời của endpoint /models.
+      this.modelDiscoveryError = err;
+      this.models = this.fallbackModels.slice();
+    }
+    return this.models;
+  },
+  async _generateWithModel(model, prompt){
+    const modelPath = this._normaliseModelName(model);
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/' + modelPath + ':generateContent?key=' + encodeURIComponent(this.geminiKey), {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+    });
+    if(!res.ok) throw await this._readHttpError(res, 'gemini_http_', modelPath);
+    const data = await res.json();
+    const raw = ((data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || []).map(p=>p.text||'').join('').trim();
+    if(!raw) throw {code:'gemini_empty_response', model:modelPath, finishReason:data.candidates && data.candidates[0] && data.candidates[0].finishReason || ''};
+    return raw;
+  },
+  async _callGeminiModels(prompt, transform){
+    const models = await this._listModels();
+    const failures = [];
+    for(const model of models){
+      try{
+        const raw = await this._generateWithModel(model, prompt);
+        const value = transform(raw);
+        if(value !== null && value !== undefined){
+          this.activeModel = model;
+          this.modelRoute = models.slice(0, models.indexOf(model) + 1);
+          return value;
+        }
+        failures.push({model, code:'invalid_response'});
+      }catch(err){
+        failures.push({model, code:err && err.code || 'gemini_request_failed', status:err && err.status || null, detail:err && err.detail || ''});
+      }
+    }
+    throw {code:'gemini_all_models_failed', models:models.slice(), errors:failures, discoveryError:this.modelDiscoveryError || null};
+  },
+  errorMessage(err){
+    if(this.mode==='none') return 'AI chưa được kết nối trong chế độ xem này.';
+    const errors = err && Array.isArray(err.errors) ? err.errors : [];
+    const statuses = errors.map(item=>Number(item.status)).filter(Boolean);
+    if(statuses.includes(401) || statuses.includes(403)) return 'API key này chưa có quyền dùng các mô hình văn bản khả dụng — cậu kiểm tra lại khóa Gemini nhé.';
+    if(statuses.includes(429)) return 'Các mô hình của API key này đang hết hạn mức tạm thời — cậu thử lại sau một chút nhé.';
+    if(err && err.code==='gemini_no_text_models') return 'API key này chưa có mô hình hỗ trợ trả lời văn bản.';
+    if(err && err.code==='gemini_all_models_failed') return 'Mình đã thử các mô hình mà API key này cho phép nhưng chưa nhận được câu trả lời — cậu kiểm tra hạn mức hoặc API key rồi thử lại nhé.';
+    return 'Mình chưa kết nối được với mô hình AI — cậu kiểm tra API key rồi thử lại nhé.';
+  }
+};
+
+
+/* ============================================================================
+ * JS-03.03 · LỚP TRUY CẬP DỮ LIỆU
+ * localCollection() mô phỏng collection bằng localStorage. DB chọn nguồn Claude, Google Sheets hoặc dữ liệu trên máy.
+ * ========================================================================== */
+/* =================== DB backend (Claude db / localStorage fallback) =================== */
+function localCollection(path){
+  const read = ()=>{ try{ return JSON.parse(localStorage.getItem('hpdb:'+path) || '{}'); }catch(e){ return {}; } };
+  const write = (obj)=> localStorage.setItem('hpdb:'+path, JSON.stringify(obj));
+  const api = {
+    doc(id){ id = id || ('id_'+Date.now()+'_'+Math.random().toString(36).slice(2,8));
+      return { id,
+        async set(data){ const all=read(); all[id]=data; write(all); },
+        async update(patch){ const all=read(); all[id]=Object.assign({}, all[id] || {}, patch); write(all); },
+        async get(){ const all=read(); return {id, exists: !!all[id], data:()=>all[id]}; },
+        async delete(){ const all=read(); delete all[id]; write(all); }
+      };
+    },
+    async add(data){ const ref = api.doc(); await ref.set(data); return ref; },
+    async get(){ const all = read(); const docs = Object.keys(all).map(id=>({id, data:()=>all[id]})); return {docs, empty:docs.length===0}; },
+    onSnapshot(next, err){
+      let stopped=false;
+      const run=async()=>{ if(stopped) return; try{ next(await api.get()); }catch(e){ if(err) err(e); } };
+      run();
+      const handler=(e)=>{ if(e.key==='hpdb:'+path) run(); };
+      window.addEventListener('storage', handler);
+      return ()=>{ stopped=true; window.removeEventListener('storage', handler); };
+    }
+  };
+  return api;
+}
+const DB = {
+  mode:'none',
+  init(){
+    if(dbFn) this.mode='claude';
+    else if(window.__SHEETS_READY) this.mode='sheets';
+    else this.mode='local';
+  },
+  collection(path){
+    if(this.mode==='claude') return dbFn.collection(path);
+    if(this.mode==='sheets') return sheetsCollection(path);
+    return localCollection(path);
+  }
+};
+
+
+/* ============================================================================
+ * JS-03.04 · TIỆN ÍCH GIAO DIỆN
+ * $() tìm phần tử theo id; toast() hiện thông báo; refreshIcons() dựng biểu tượng; escapeHtml() biến văn bản thành nội dung HTML an toàn.
+ * ========================================================================== */
+function $(id){return document.getElementById(id);}
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); if(window.VoiceRobot) VoiceRobot.onToast(msg); }
+function refreshIcons(){ try{ lucide.createIcons(); }catch(e){} }
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+/* Kiểm tra Apps Script đã được triển khai bản "Trang tính1" chưa (bản cũ tự tạo tab students/conversations…) */
+async function checkSheetsVersion(){
+  if(DB.mode !== 'sheets') return;
+  try{
+    const r = await fetch(SHEETS_API_URL + '?action=ping');
+    const j = await r.json();
+    window.__SHEETS_OLD = !(j && j.sheet && j.version);
+  }catch(e){ window.__SHEETS_OLD = null; }
+  if(window.__SHEETS_OLD) console.warn('[AI HealthPulse] Apps Script đang chạy bản CŨ (ghi ra nhiều tab). Dán Code.gs mới, xóa file .gs cũ, rồi Triển khai → Quản lý các bản triển khai → Sửa → Phiên bản mới.');
+}
+
+/* ============================================================================
+ * JS-03.05 · KHỞI TẠO AI VÀ KHÔI PHỤC PHIÊN
+ * bootAI() khởi tạo backend, mở dữ liệu, khôi phục tài khoản, bật đồng bộ và báo tiến độ cho HPLoader.
+ * ========================================================================== */
+async function bootAI(){
+  const L = (v, note) => { if(window.HPLoader) HPLoader.set('data', v, note); };
+  L(0.15, 'Đang kết nối AI và dữ liệu…');
+  try{
+    if(window.claude && window.claude.use){ sampleFn = await window.claude.use('sample'); dbFn = await window.claude.use('db'); }
+  }catch(e){}
+  try{ await AIBackend.init(); }catch(e){}
+  DB.init();
+  checkSheetsVersion();
+  L(0.4, DB.mode === 'sheets' ? 'Đang tải dữ liệu từ Google Sheets…' : 'Đang mở dữ liệu trên máy…');
+  setSchoolFields('school', '');
+  setSchoolFields('adminSchool', '');
+  setSchoolFields('studentSchool', '');
+  refreshIcons();
+  try{ await AdminAuth.tryRestore(); }catch(e){}
+  L(0.7, 'Đang khôi phục tài khoản…');
+  if(!state.admin){ try{ await StudentAuth.tryRestore(); }catch(e){} }
+  if(window.HealthStore && getActiveAccount()) try{ await HealthStore.load(); }catch(e){}
+  CloudSync.start();
+  L(1, getActiveAccount() ? 'Đã khôi phục tài khoản ' + getActiveAccount().displayName : 'Dữ liệu sẵn sàng');
+  if(HP_IS_RELOAD && getActiveAccount() && hpReadStorage(sessionStorage,'hp_last_view',null)==='view-chat') App.goChat();
+}
+
+/* ============================================================================
+ * JS-03.06 · HỘP CÀI ĐẶT AI
+ * Settings dựng nội dung hộp cài đặt, mở/đóng hộp và lưu hoặc xóa khóa Gemini theo tài khoản đang dùng.
+ * ========================================================================== */
+/* =================== Cài đặt AI (khi chạy ngoài Claude) =================== */
+const Settings = {
+  open(options={}){
+    const auto = options.auto === true;
+    const body = $('settingsBody');
+    let html = '';
+    if(AIBackend.mode==='claude'){
+      html += '<p>Trang đang chạy bên trong Claude — AI hoạt động sẵn, không cần nhập gì thêm.</p>';
+    } else if(!getActiveAccount()){
+      html += '<p>Cậu cần đăng nhập tài khoản trước khi lưu API Key Gemini.</p>';
+    } else {
+      const account = getActiveAccount();
+      const accountLabel = account.role === 'admin' ? 'quản trị viên' : 'học sinh';
+      const masked = AIBackend.geminiKey ? (AIBackend.geminiKey.slice(0,6) + '••••••••') : '';
+      if(auto && !masked){
+        html += '<div class="api-auto-note"><strong>Tài khoản này chưa có API Key.</strong><span>Cậu dán API Key Gemini một lần; hệ thống sẽ lưu theo tài khoản '+accountLabel+' để lần sau đăng nhập ở máy khác vẫn dùng được.</span></div>';
+      } else {
+        html += '<p>Để chatbot hoạt động thông minh, cậu cần một API Key Gemini. Khóa sẽ được lưu theo tài khoản '+accountLabel+' này, không dùng chung với tài khoản khác. Sau khi lưu, hệ thống tự dò các mô hình được phép dùng và tự chuyển sang mô hình khác nếu mô hình đang gọi bị lỗi.</p>';
+      }
+      html +=
+        '<p style="margin-top:8px;">1. Mở <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> và đăng nhập Google<br/>2. Bấm "Create API key", sao chép khóa<br/>3. Dán vào ô bên dưới</p>' +
+        (masked ? '<div class="field" style="margin-top:12px;"><label class="field-label">Khóa hiện tại</label><input type="text" value="'+masked+'" disabled /></div>' : '') +
+        '<div class="field" style="margin-top:12px;"><label class="field-label">Dán API Key Gemini</label><input type="password" id="geminiKeyInput" placeholder="AIza..." /></div>' +
+        '<div style="display:flex;gap:10px;margin-top:6px;">' +
+        '<button class="btn btn-primary btn-sm" onclick="Settings.save()">Lưu khóa</button>' +
+        (AIBackend.geminiKey ? '<button class="btn btn-ghost btn-sm" onclick="Settings.clear()">Xóa khóa</button>' : '') + '</div>';
+    }
+    const dbLabel = {claude:'Claude (dùng chung, sẵn có)', sheets:'Google Sheets (dùng chung thật, đã kết nối)', local:'Chỉ lưu trên trình duyệt này — CHƯA dùng chung được giữa nhiều máy'}[DB.mode];
+    html += '<div class="status-line"><span class="status-dot '+(DB.mode==='local'?'off':'on')+'"></span>Dữ liệu: '+dbLabel+'</div>';
+    if(DB.mode==='local'){
+      html += '<div class="status-line" style="margin-top:4px;">Để dữ liệu dùng chung thật giữa nhiều học sinh/thiết bị, cần kết nối Google Sheets — nhờ thầy/cô phụ trách kỹ thuật điền URL Apps Script vào file trang web.</div>';
+    }
+    body.innerHTML = html;
+    $('settingsModal').classList.remove('hidden');
+    const input = $('geminiKeyInput');
+    if(input) setTimeout(()=>input.focus(), 50);
+  },
+  maybeOpenForStudent(){
+    if(!state.student) return;
+    this.maybeOpenForAccount();
+  },
+  maybeOpenForAccount(){
+    const account = getActiveAccount();
+    if(AIBackend.mode==='claude' || !account || AIBackend.geminiKey) return;
+    setTimeout(()=>{
+      if(account.role === 'admin') toast('Tài khoản admin chưa kích hoạt API Gemini.');
+      this.open({auto:true});
+    }, 180);
+  },
+  close(){ $('settingsModal').classList.add('hidden'); },
+  async save(){
+    const input = $('geminiKeyInput');
+    const v = input ? input.value.trim() : '';
+    if(!v){ toast('Dán API key vào trước nhé'); return; }
+    const account = getActiveAccount();
+    if(!account){ toast('Cậu đăng nhập tài khoản trước nhé'); return; }
+    try{
+      const collection = account.role === 'admin' ? 'admins' : 'students';
+      await DB.collection(collection).doc(account.username).update({ geminiApiKey:v, apiKeyUpdatedAt:Date.now() });
+      account.data.geminiApiKey = v;
+      AIBackend.useAccountKey(account.data);
+      try{ await AIBackend.discoverModels(); }catch(e){}
+      toast('Đã lưu API theo tài khoản — đã dò mô hình AI!');
+      Settings.close();
+    }catch(e){ toast('Chưa lưu được API, cậu thử lại nhé'); }
+  },
+  async clear(){
+    const account = getActiveAccount();
+    if(!account) return;
+    try{
+      const collection = account.role === 'admin' ? 'admins' : 'students';
+      await DB.collection(collection).doc(account.username).update({ geminiApiKey:null, apiKeyUpdatedAt:Date.now() });
+      account.data.geminiApiKey = null;
+      localStorage.removeItem('hp_gemini_key:' + (account.role === 'admin' ? 'admin:' : '') + account.username);
+      AIBackend.useAccountKey(account.data);
+      toast('Đã xóa API khỏi tài khoản'); Settings.close();
+    }catch(e){ toast('Chưa xóa được API, cậu thử lại nhé'); }
+  }
+};
+
+
+/* ============================================================================
+ * JS-03.07 · ĐIỀU HƯỚNG GIỮA CÁC MÀN HÌNH
+ * STEPS định nghĩa các bước; renderSteps() vẽ thanh điều hướng; showView() đổi section đang hiển thị.
+ * ========================================================================== */
+/* =================== steps nav =================== */
+const STEPS = [
+  {id:'view-landing', label:'Home'},
+  {id:'view-chat', label:'Chatbot'},
+  {id:'view-bmi', label:'BMI'}
+];
+function getNavigationSteps(){
+  const steps = STEPS.slice();
+  if(state.admin) steps.push({id:'view-adminHome', label:'Dashboard'});
+  return steps;
+}
+function renderSteps(activeId){
+  const nav = $('stepNav'); nav.innerHTML = '';
+  const steps = getNavigationSteps();
+  const activeIdx = steps.findIndex(x=>x.id===activeId);
+  steps.forEach((s,i)=>{
+    if(i>0){ const c=document.createElement('div'); c.className='step-connector'+(i<=activeIdx?' done':''); nav.appendChild(c); }
+    const el = document.createElement('button');
+    el.type = 'button';
+    let cls='step'; if(s.id===activeId) cls+=' active'; else if(i<activeIdx) cls+=' done';
+    el.className = cls;
+    el.innerHTML = '<span class="dot"></span><span class="step-label">'+s.label+'</span>';
+    el.addEventListener('click', ()=>{
+      if(s.id === 'view-chat') App.goChat();
+      else if(s.id === 'view-bmi' && App.goBmi) App.goBmi();
+      else if(s.id === 'view-adminHome'){
+        if(!state.admin) return App.goAdminAuth();
+        showView('view-adminHome');
+        if(typeof AdminNav !== 'undefined') AdminNav.switchTab('overview');
+      }else App.goLanding();
+    });
+    nav.appendChild(el);
+  });
+}
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const view = $(id); if(!view) return;
+  view.classList.add('active');
+  if(id==='view-landing' || id==='view-chat') hpWriteStorage(sessionStorage,'hp_last_view',id);
+  renderSteps(id);
+  const settingsBtn = $('settingsBtn');
+  if(settingsBtn) settingsBtn.classList.toggle('hidden', id!=='view-chat');
+  if(typeof StudentAuth !== 'undefined' && StudentAuth.renderSession) StudentAuth.renderSession();
+  window.scrollTo({top:0,behavior:(window.A11y ? A11y.scrollBehavior() : 'smooth')});
+  refreshIcons();
+  if(window.VoiceRobot) VoiceRobot.onView(id);
+}
+
+
+/* ============================================================================
+ * JS-03.08 · TRẠNG THÁI VÀ DANH TÍNH TÀI KHOẢN
+ * state lưu trạng thái dùng chung. Các hàm chuẩn hóa thống nhất tên hiển thị, vai trò và tài khoản hiện tại.
+ * ========================================================================== */
+/* =================== state =================== */
+const state = { khoi:null, pendingKhoi:null, pendingSchool:null, pendingSurvey:false, hdtl:{ qIndex:0, attempts:0, extracted:{}, computed:null, docRef:null }, admin:null, student:null };
+
+function resolveAccountDisplayName(data, fallback=''){
+  const candidates = ['displayName','fullName','full_name','realName','hoTen','hoten','ten','name'];
+  for(const key of candidates){
+    const value = data && data[key];
+    if(value !== undefined && value !== null && String(value).trim()) return String(value).trim();
+  }
+  return String(fallback || '').trim();
+}
+
+function normaliseAdminAccount(data, fallbackUsername=''){
+  const username = String((data && data.username) || fallbackUsername || '').trim().toLowerCase();
+  const displayName = resolveAccountDisplayName(data, username);
+  return Object.assign({}, data || {}, normaliseSchool(data), { username, displayName, role:'admin' });
+}
+
+function getActiveAccount(){
+  if(state.admin){
+    const username = String(state.admin.username || '').trim();
+    return Object.assign({ role:'admin', username, displayName:resolveAccountDisplayName(state.admin, username), khoi:'', data:state.admin }, normaliseSchool(state.admin));
+  }
+  if(state.student) return Object.assign({ role:'student', username:state.student.username, displayName:state.student.displayName || state.student.username, khoi:state.student.khoi || '', data:state.student }, normaliseSchool(state.student));
+  return null;
+}
+
+function normaliseIdentity(value){
+  return String(value || '').trim().replace(/\s+/g,' ').toLocaleLowerCase('vi-VN');
+}
+
+
+/* ============================================================================
+ * JS-03.09 · THÔNG TIN TRƯỜNG HỌC
+ * Chuẩn hóa và kiểm tra tên/cấp trường, địa bàn; đọc/điền biểu mẫu và so khớp trường để xác định phạm vi dữ liệu.
+ * ========================================================================== */
+/* =================== thông tin trường học & phạm vi dữ liệu =================== */
+function stripSchoolDiacritics(value){
+  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D');
+}
+function schoolKey(value){
+  return stripSchoolDiacritics(value).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,100);
+}
+function detectSchoolLevel(value){
+  const text = stripSchoolDiacritics(value).toLowerCase();
+  const hasThcs = /\bthcs\b|trung hoc co so/.test(text);
+  const hasThpt = /\bthpt\b|trung hoc pho thong/.test(text);
+  if(hasThcs && hasThpt) return 'THCS-THPT';
+  if(hasThpt) return 'THPT';
+  if(hasThcs) return 'THCS';
+  return '';
+}
+function firstSchoolValue(source, keys){
+  for(const key of keys){
+    if(source && source[key] !== undefined && source[key] !== null && String(source[key]).trim()) return source[key];
+  }
+  return '';
+}
+function normaliseSchool(data, fallbackName=''){
+  const source = typeof data === 'string' ? {schoolName:data} : (data || {});
+  const schoolName = String(firstSchoolValue(source, ['officialName','official_name','tenChinhThuc','schoolName','school_name','school','truongHoc','truong','name']) || fallbackName || '').trim().replace(/\s+/g,' ');
+  const wardName = String(firstSchoolValue(source, ['wardName','ward_name','phuongName','phuong_name','tenPhuong','ten_phuong','xaName','xa_name','tenXa','ten_xa','phuongXa','phuong_xa','ward','commune','communeName','commune_name','phuong','xa']) || '').trim().replace(/\s+/g,' ');
+  const provinceName = String(firstSchoolValue(source, ['provinceName','province_name','tinhThanh','tinh_thanh','tinhThanhPho','tinh_thanh_pho','cityName','city_name','tinh','thanhPho','thanh_pho','province','city']) || '').trim().replace(/\s+/g,' ');
+  const districtName = String(firstSchoolValue(source, ['districtName','district_name','quanHuyen','quan_huyen','huyen','quan','district']) || '').trim().replace(/\s+/g,' ');
+  const provinceCode = String(firstSchoolValue(source, ['provinceCode','province_code','maTinh','ma_tinh','tinhCode','tinh_code']) || '').trim();
+  const wardCode = String(firstSchoolValue(source, ['wardCode','ward_code','maPhuong','ma_phuong','maXa','ma_xa','xaCode','xa_code']) || '').trim();
+  const address = String(firstSchoolValue(source, ['address','diaChi','dia_chi','địa chỉ']) || '').trim().replace(/\s+/g,' ');
+  const locationKey = [schoolName, wardName, districtName, provinceName].filter(Boolean).join('-');
+  const schoolId = String(firstSchoolValue(source, ['schoolId','school_id','schoolCode','school_code','unitCode','unit_code','maTruong','ma_truong','maDonVi','ma_don_vi','code','id']) || (locationKey ? schoolKey(locationKey) : '')).trim();
+  const rawLevel = String(firstSchoolValue(source, ['schoolLevel','school_level','level','cap','capHoc','cap_hoc','loaiHinh','loai_hinh']) || '').trim().toUpperCase();
+  let schoolLevel = rawLevel === 'THCS-THPT' || rawLevel === 'THCS' || rawLevel === 'THPT' ? rawLevel : '';
+  if(!schoolLevel && /^(2|II)$/.test(rawLevel)) schoolLevel = 'THCS';
+  if(!schoolLevel && /^(3|III)$/.test(rawLevel)) schoolLevel = 'THPT';
+  if(!schoolLevel) schoolLevel = detectSchoolLevel(rawLevel + ' ' + schoolName);
+  return { schoolId, schoolName, schoolLevel, wardName, districtName, provinceName, provinceCode, wardCode, address };
+}
+function schoolLabel(data){
+  const school = normaliseSchool(data);
+  const location = [school.wardName, school.districtName, school.provinceName].filter(Boolean).join(', ');
+  return school.schoolName + (location ? ' — ' + location : '');
+}
+function isCompleteSchool(data){
+  const school = normaliseSchool(data);
+  return !!(school.schoolId && school.schoolName && school.schoolLevel && school.wardName && school.districtName && school.provinceName);
+}
+function schoolMatches(left, right){
+  const a = normaliseSchool(left); const b = normaliseSchool(right);
+  if(!a.schoolName || !b.schoolName) return false;
+  if(a.schoolId && b.schoolId && a.schoolId === b.schoolId) return true;
+  if(normaliseIdentity(a.schoolName) !== normaliseIdentity(b.schoolName)) return false;
+  const hasLocation = a.wardName || a.districtName || a.provinceName || b.wardName || b.districtName || b.provinceName;
+  if(hasLocation){
+    return !!a.wardName && !!b.wardName && !!a.districtName && !!b.districtName && !!a.provinceName && !!b.provinceName &&
+      normaliseIdentity(a.wardName) === normaliseIdentity(b.wardName) &&
+      normaliseIdentity(a.districtName) === normaliseIdentity(b.districtName) &&
+      normaliseIdentity(a.provinceName) === normaliseIdentity(b.provinceName);
+  }
+  return true;
+}
+function schoolValidationMessage(school){
+  if(!school || !school.schoolName) return 'Cậu nhập tên trường học nhé.';
+  if(!school.schoolLevel) return 'Cậu chọn cấp học THCS/THPT nhé.';
+  if(!school.wardName) return 'Cậu nhập phường/xã của trường nhé.';
+  if(!school.districtName) return 'Cậu nhập quận/huyện của trường nhé.';
+  if(!school.provinceName) return 'Cậu nhập tỉnh/thành phố của trường nhé.';
+  if(!school.schoolId) return 'Thông tin trường chưa hợp lệ, cậu kiểm tra lại nhé.';
+  return '';
+}
+function schoolFieldPrefix(value){
+  return String(value || '').replace(/Select$/,'');
+}
+function schoolFromFields(prefix){
+  const base = schoolFieldPrefix(prefix);
+  const value = id => $(id) ? $(id).value : '';
+  return normaliseSchool({
+    schoolName:value(base+'Name'),
+    schoolLevel:value(base+'Level'),
+    wardName:value(base+'Ward'),
+    districtName:value(base+'District'),
+    provinceName:value(base+'Province')
+  });
+}
+function setSchoolFields(prefix, data){
+  const base = schoolFieldPrefix(prefix);
+  const school = normaliseSchool(data || '');
+  const set = (id, value) => { const el=$(id); if(el) el.value = value || ''; };
+  set(base+'Name', school.schoolName);
+  set(base+'Level', school.schoolLevel);
+  set(base+'Ward', school.wardName);
+  set(base+'District', school.districtName);
+  set(base+'Province', school.provinceName);
+}
+
+const SchoolDirectory = {
+  schools:[], loaded:true, loading:null, lastUpdatedAt:0, loadError:null,
+  async load(){ return this.schools; },
+  async refresh(){ return this.schools; },
+  has(data){ return isCompleteSchool(data); },
+  async populate(prefix, selected){ setSchoolFields(prefix, selected || ''); return this.schools; }
+};
+
+
+/* ============================================================================
+ * JS-03.10 · ĐỒNG BỘ DỮ LIỆU
+ * CloudSync kiểm tra định kỳ thay đổi trên backend và cập nhật thông tin tài khoản trong phiên hiện tại.
+ * ========================================================================== */
+/* =================== Đồng bộ hai chiều với Google Sheets ===================
+ *
+ * Mỗi thao tác set/update từ web đã ghi ngay vào Apps Script/Google Sheet.
+ * Chiều ngược lại được kiểm tra định kỳ: nếu admin sửa JSON trong Sheet,
+ * phiên đăng nhập hiện tại nhận bản mới mà không cần đóng trang. Dashboard
+ * vẫn có polling riêng để cập nhật các bản ghi kết quả.
+ */
+const CloudSync = {
+  accountTimer:null,
+  busy:false,
+  start(){
+    if(DB.mode !== 'sheets') return;
+    if(!this.accountTimer) this.accountTimer = setInterval(()=>this.refreshAccount(), 15000);
+  },
+  async refreshAccount(){
+    if(this.busy || (typeof Profile !== 'undefined' && Profile.saving)) return;
+    const account = getActiveAccount();
+    if(!account || !account.username) return;
+    this.busy = true;
+    try{
+      const collection = account.role === 'admin' ? 'admins' : 'students';
+      const snap = await DB.collection(collection).doc(account.username).get();
+      if(!snap.exists){
+        toast('Tài khoản này đã bị xóa khỏi Google Sheet. Cậu sẽ được đăng xuất.');
+        if(account.role === 'admin') AdminAuth.logout(); else StudentAuth.logout();
+        return;
+      }
+      const data = snap.data() || {};
+      if(data.status === 'inactive' || data.active === false){
+        toast('Tài khoản này đang bị tạm khóa trên Google Sheet.');
+        if(account.role === 'admin') AdminAuth.logout(); else StudentAuth.logout();
+        return;
+      }
+      const incomingSchool = normaliseSchool(data);
+      const currentSchool = normaliseSchool(account);
+      const changed = String(data.updatedAt || '') !== String(account.updatedAt || '') ||
+        resolveAccountDisplayName(data, '') !== resolveAccountDisplayName(account, '') ||
+        !schoolMatches(incomingSchool, currentSchool) ||
+        String(data.khoi || '') !== String(account.khoi || '') ||
+        String(data.geminiApiKey || '') !== String(account.geminiApiKey || '');
+      if(!changed) return;
+      if(account.role === 'admin'){
+        state.admin = normaliseAdminAccount(data, account.username);
+        AIBackend.useAccountKey(state.admin);
+        const name = resolveAccountDisplayName(state.admin, state.admin.username);
+        if($('adminNameChip')) $('adminNameChip').textContent = name;
+        if($('adminSchoolChip')) $('adminSchoolChip').textContent = schoolLabel(state.admin);
+        setSchoolFields('school', state.admin);
+        setSchoolFields('adminSchool', state.admin);
+        AccountMenu.render();
+        if(Dashboard.started) Dashboard.applyFilter();
+      }else{
+        StudentAuth.setStudent(data, account.username);
+        StudentAuth.renderSession();
+        AccountMenu.render();
+      }
+      // thầy cô vừa sửa trên Google Sheet mà học sinh/admin đang mở trang Cập nhật thông tin → hiện bản mới
+      if(typeof Profile !== 'undefined') Profile.refreshFromSheet();
+    }catch(e){
+      // Mạng chập chờn không được làm mất phiên đang dùng; lần kiểm tra sau sẽ thử lại.
+    }finally{
+      this.busy = false;
+    }
+  }
+};
+
+
+/* ============================================================================
+ * JS-03.11 · HÀM BĂM CHUỖI
+ * sha256() trả chuỗi băm SHA-256 từ dữ liệu đầu vào; các luồng tài khoản gọi lại tiện ích này.
+ * ========================================================================== */
+async function sha256(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+
+/* ============================================================================
+ * JS-03.12 · CÁC HÀNH ĐỘNG CHÍNH CỦA TRANG
+ * App mở trang chủ, tư liệu, BMI, dữ liệu, chatbot hoặc luồng khảo sát; kiểm tra trạng thái tài khoản trước khi chuyển.
+ * ========================================================================== */
+const App = {
+  goLanding(){
+    state.pendingKhoi = null;
+    state.pendingSchool = null;
+    state.pendingSurvey = false;
+    showView('view-landing');
+    const account = getActiveAccount();
+    setSchoolFields('school', account || '');
+    if(typeof AccountMenu !== 'undefined') AccountMenu.render();
+  },
+  goChat(){
+    if(!getActiveAccount()){ this.goStudentAuth('login'); return; }
+    showView('view-chat');
+    if(typeof ChatHistory !== 'undefined') ChatHistory.openCurrent({adminFreeform:!!state.admin});
+    if(typeof Settings !== 'undefined') Settings.maybeOpenForAccount();
+  },
+  goLibrary(){ showView('view-library'); Library.load(); },
+  goProfile(){ if(typeof Profile !== 'undefined') Profile.open(); },
+  goAdminAuth(){ if(state.admin){ AdminAuth.onLoggedIn(); } else { showView('view-adminAuth'); AdminAuth.switchTab('login'); AdminAuth.prefillSchool(); } },
+  goStudentAuth(mode){
+    StudentAuth.switchTab(mode || 'login');
+    showView('view-studentAuth');
+    StudentAuth.prefillGrade();
+    StudentAuth.prefillSchool();
+  },
+  startSurvey(){
+    const khoi = $('khoiSelect').value;
+    const chosenSchool = schoolFromFields('school');
+    const accountSchool = getActiveAccount();
+    const school = isCompleteSchool(chosenSchool) ? chosenSchool : normaliseSchool(accountSchool || '');
+    if(!khoi){ $('startErr').textContent = 'Cậu chọn khối lớp giúp mình nhé.'; return; }
+    const schoolError = schoolValidationMessage(school);
+    if(schoolError){ $('startErr').textContent = schoolError; return; }
+    $('startErr').textContent = '';
+    state.pendingKhoi = khoi;
+    state.pendingSchool = school;
+    if(accountSchool && isCompleteSchool(accountSchool) && chosenSchool.schoolId && !schoolMatches(accountSchool, chosenSchool)){
+      $('startErr').textContent = 'Tài khoản này thuộc '+schoolLabel(accountSchool)+'. Cậu không thể chọn trường khác.';
+      return;
+    }
+    if(state.admin && !state.student){
+      toast('Tài khoản admin có thể trò chuyện trực tiếp với Chatbot.');
+      App.goChat();
+      return;
+    }
+    if(!state.student){
+      state.pendingSurvey = true;
+      App.goStudentAuth('login');
+      return;
+    }
+    App.beginSurvey();
+  },
+  beginSurvey(){
+    const khoi = state.pendingKhoi || $('khoiSelect').value || (state.student && state.student.khoi);
+    if(!khoi){ showView('view-landing'); $('startErr').textContent = 'Cậu chọn khối lớp giúp mình nhé.'; return; }
+    const accountSchool = getActiveAccount();
+    const school = accountSchool && isCompleteSchool(accountSchool) ? normaliseSchool(accountSchool) : (state.pendingSchool || normaliseSchool(accountSchool || ''));
+    const schoolError = schoolValidationMessage(school);
+    if(schoolError){ showView('view-landing'); $('startErr').textContent = schoolError; return; }
+    state.khoi = khoi;
+    state.pendingSchool = school;
+    state.pendingKhoi = null;
+    state.pendingSurvey = false;
+    if(typeof ChatHistory !== 'undefined') ChatHistory.ensureCurrent(khoi, {newIfCompleted:true});
+    showView('view-chat');
+    Hdtl.start();
+    Settings.maybeOpenForStudent();
+  }
+};
+
+
+/* ============================================================================
+ * JS-03.13 · MENU TÀI KHOẢN
+ * AccountMenu hiển thị danh tính, đóng/mở menu, điều hướng đăng nhập và xử lý đăng xuất.
+ * ========================================================================== */
+/* =================== menu tài khoản trên thanh điều hướng =================== */
+const PROFILE_BTN = '<button type="button" class="account-profile-btn" id="accountProfileBtn" onclick="AccountMenu.close();App.goProfile()"><i data-lucide="pencil" style="width:14px;height:14px;"></i> Cập nhật thông tin</button>';
+const AccountMenu = {
+  toggle(){
+    const menu = $('accountMenu');
+    const btn = $('accountMenuBtn');
+    if(!menu || !btn) return;
+    const willOpen = menu.classList.contains('hidden');
+    menu.classList.toggle('hidden', !willOpen);
+    btn.setAttribute('aria-expanded', String(willOpen));
+    if(willOpen) refreshIcons();
+  },
+  close(){
+    const menu = $('accountMenu');
+    const btn = $('accountMenuBtn');
+    if(menu) menu.classList.add('hidden');
+    if(btn) btn.setAttribute('aria-expanded','false');
+  },
+  openStudent(){ this.close(); App.goStudentAuth('login'); },
+  openTeacher(){ this.close(); App.goAdminAuth(); },
+  logout(){
+    const account = getActiveAccount();
+    if(account && account.role === 'student') StudentAuth.logout();
+    else if(account && account.role === 'admin') AdminAuth.logout();
+    this.close();
+  },
+  render(){
+    const label = $('accountMenuLabel');
+    const session = $('accountMenuSession');
+    const logoutBtn = $('topbarLogoutBtn');
+    if(!label || !session) return;
+    const account = getActiveAccount();
+    if(account && account.role === 'student'){
+      label.textContent = account.displayName;
+      session.classList.remove('hidden');
+      session.innerHTML = '<strong>Đang dùng tài khoản học sinh: '+escapeHtml(account.username)+'</strong><small>'+escapeHtml(account.displayName)+(account.khoi ? ' · Khối '+escapeHtml(account.khoi) : '')+' · '+escapeHtml(isCompleteSchool(account) ? schoolLabel(account) : 'Chưa cập nhật trường')+'</small>'+PROFILE_BTN;
+      if(logoutBtn){ logoutBtn.classList.remove('hidden'); logoutBtn.onclick = ()=>this.logout(); }
+    }else if(account && account.role === 'admin'){
+      label.textContent = 'GV: ' + account.displayName;
+      session.classList.remove('hidden');
+      session.innerHTML = '<strong>'+escapeHtml(account.displayName)+'</strong><small>Tài khoản: '+escapeHtml(account.username)+' · '+escapeHtml(isCompleteSchool(account) ? schoolLabel(account) : 'Chưa cập nhật trường')+'</small>'+PROFILE_BTN;
+      if(logoutBtn){ logoutBtn.classList.remove('hidden'); logoutBtn.onclick = ()=>this.logout(); }
+    }else{
+      label.textContent = 'Đăng nhập';
+      session.classList.add('hidden');
+      session.innerHTML = '';
+      if(logoutBtn){ logoutBtn.classList.add('hidden'); logoutBtn.onclick = null; }
+    }
+    refreshIcons();
+  }
+};
+
+document.addEventListener('click', (event)=>{
+  if(!event.target.closest('.account-menu-wrap')) AccountMenu.close();
+});
+
+
+/* ============================================================================
+ * JS-03.14 · CHỈNH SỬA HỒ SƠ
+ * Profile điền dữ liệu hiện có, kiểm tra thay đổi, lưu hồ sơ/mật khẩu và cập nhật các bản ghi liên quan.
+ * ========================================================================== */
+/* =================== cập nhật thông tin tài khoản (học sinh + admin) ===================
+ * Sửa họ tên, khối lớp (học sinh), trường học, mật khẩu. Tên đăng nhập là khóa nên giữ nguyên.
+ * Đổi trường / đổi mật khẩu cần nhập mật khẩu hiện tại (trường quyết định phạm vi dữ liệu admin được xem). */
+const Profile = {
+  back:'view-landing',
+  open(){
+    const account = getActiveAccount();
+    if(!account){ toast('Cậu đăng nhập trước rồi mới cập nhật được thông tin nhé.'); App.goStudentAuth('login'); return; }
+    const cur = document.querySelector('.view.active');
+    if(cur && cur.id !== 'view-profile') this.back = cur.id;
+    this.fill(account);
+    showView('view-profile');
+    this.syncNote();
+  },
+  fill(account){
+    const isStudent = account.role === 'student';
+    $('profileKicker').textContent = isStudent ? 'Tài khoản học sinh' : 'Tài khoản giáo viên / BGH';
+    $('profileUsername').value = account.username;
+    $('profileName').value = account.displayName || '';
+    $('profileGradeField').classList.toggle('hidden', !isStudent);
+    $('profileGrade').value = isStudent ? String(account.khoi || '') : '';
+    $('profileSchoolLabel').textContent = isStudent ? 'Tên trường' : 'Tên trường quản lý';
+    setSchoolFields('profileSchool', account);
+    ['profileOldPass','profileNewPass','profileNewPass2'].forEach(id => { $(id).value = ''; });
+    $('profilePassBox').open = false;
+    $('profileErr').textContent = '';
+  },
+  /** Dòng trạng thái: lưu ở đâu */
+  syncNote(text, kind){
+    const el = $('profileSync'); if(!el) return;
+    el.dataset.kind = kind || '';
+    el.textContent = text || (DB.mode === 'sheets'
+      ? 'Thông tin được lưu và đồng bộ ngay với Google Sheet (Trang tính1). Thầy cô sửa trên Sheet thì trang này tự cập nhật sau ít giây.'
+      : 'Chưa kết nối Google Sheet — thông tin chỉ lưu trên máy này.');
+  },
+  refreshFromSheet(){
+    const v = $('view-profile');
+    if(!v || !v.classList.contains('active') || this.saving) return;
+    if(v.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName)) return;   // đang gõ thì không ghi đè
+    const account = getActiveAccount(); if(!account) return;
+    this.fill(account);
+    this.syncNote('Đã nhận thông tin mới từ Google Sheet lúc ' + new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}) + '.', 'ok');
+  },
+  /** Không có Google Sheet: tự sửa các bản ghi liên quan trên máy (khi có Sheet, Apps Script làm việc này) */
+  async cascadeLocal(account, fields){
+    if(DB.mode !== 'local') return 0;
+    let n = 0;
+    for(const coll of ['results','healthDaily','healthPeriods','conversations']){
+      try{
+        const snap = await DB.collection(coll).get();
+        for(const d of snap.docs){
+          const data = d.data() || {};
+          const owner = String(data.username || '').replace(/^admin:/, '');
+          const role = data.role || (String(data.username || '').indexOf('admin:') === 0 ? 'admin' : 'student');
+          if(owner !== account.username || role !== account.role) continue;
+          await DB.collection(coll).doc(d.id).update(fields); n++;
+        }
+      }catch(e){}
+    }
+    return n;
+  },
+  cancel(){
+    const back = this.back && $(this.back) ? this.back : 'view-landing';
+    if(back === 'view-adminHome' && state.admin) showView('view-adminHome');
+    else if(back === 'view-landing') App.goLanding();
+    else showView(back);
+  },
+  async save(){
+    const account = getActiveAccount();
+    const err = $('profileErr'); err.textContent = '';
+    if(!account){ err.textContent = 'Cậu chưa đăng nhập.'; return; }
+    const isStudent = account.role === 'student';
+    const coll = isStudent ? 'students' : 'admins';
+    const name = $('profileName').value.trim().replace(/\s+/g,' ');
+    const khoi = $('profileGrade').value;
+    const school = schoolFromFields('profileSchool');
+    const oldPass = $('profileOldPass').value;
+    const newPass = $('profileNewPass').value, newPass2 = $('profileNewPass2').value;
+    if(name.length < 2){ err.textContent = 'Cậu nhập họ và tên nhé.'; $('profileName').focus(); return; }
+    if(isStudent && !khoi){ err.textContent = 'Cậu chọn khối lớp nhé.'; $('profileGrade').focus(); return; }
+    const schoolError = schoolValidationMessage(school);
+    if(schoolError){ err.textContent = schoolError; $('profileSchoolName').focus(); return; }
+    const schoolChanged = !isCompleteSchool(account) || !schoolMatches(account, school) ||
+      ['schoolLevel'].some(k => (normaliseSchool(account)[k] || '') !== (school[k] || ''));
+    const passChanged = !!(newPass || newPass2);
+    if(passChanged){
+      if(newPass.length < 6){ err.textContent = 'Mật khẩu mới cần ít nhất 6 ký tự.'; $('profileNewPass').focus(); return; }
+      if(newPass !== newPass2){ err.textContent = 'Hai lần nhập mật khẩu mới chưa giống nhau.'; $('profileNewPass2').focus(); return; }
+    }
+    const btn = $('profileSaveBtn'); btn.disabled = true;
+    this.saving = true;
+    this.syncNote(DB.mode === 'sheets' ? 'Đang lưu lên Google Sheet…' : 'Đang lưu…', 'busy');
+    try{
+      const snap = await DB.collection(coll).doc(account.username).get();
+      const stored = snap.exists ? (snap.data() || {}) : {};
+      if((schoolChanged && isCompleteSchool(account)) || passChanged){
+        if(!oldPass){ err.textContent = 'Đổi trường hoặc mật khẩu cần nhập mật khẩu hiện tại.'; $('profileOldPass').focus(); return; }
+        if(stored.passwordHash && await sha256(oldPass) !== stored.passwordHash){ err.textContent = 'Mật khẩu hiện tại chưa đúng.'; $('profileOldPass').focus(); return; }
+      }
+      const now = Date.now();
+      const changes = { displayName:name, fullName:name, updatedAt:now };
+      if(isStudent) changes.khoi = khoi;
+      if(schoolChanged) Object.assign(changes, school, {schoolUpdatedAt:now});
+      if(passChanged){ changes.passwordHash = await sha256(newPass); changes.passwordUpdatedAt = now; }
+      const res = await DB.collection(coll).doc(account.username).update(changes);
+      // đồng bộ họ tên / trường sang kết quả, kho dữ liệu, lịch sử trò chuyện của chính tài khoản này
+      const shared = {};
+      if(name !== account.displayName) shared.displayName = name;
+      if(schoolChanged) Object.assign(shared, school);
+      let cascaded = res && typeof res.cascaded === 'number' ? res.cascaded : 0;
+      if(Object.keys(shared).length){
+        if(DB.mode !== 'sheets') cascaded = await this.cascadeLocal(account, shared);
+        if(typeof HealthStore !== 'undefined' && HealthStore.patchAccount) HealthStore.patchAccount(shared);
+      }
+      // kiểm tra lại trên Google Sheet cho chắc
+      let synced = DB.mode !== 'sheets';
+      if(DB.mode === 'sheets'){
+        try{
+          const check = await DB.collection(coll).doc(account.username).get();
+          const cd = check.exists ? (check.data() || {}) : {};
+          synced = resolveAccountDisplayName(cd, '') === name && (!isStudent || String(cd.khoi || '') === String(khoi)) && (!schoolChanged || schoolMatches(cd, school));
+        }catch(e){ synced = false; }
+      }
+      const merged = Object.assign({}, stored, account.data || {}, changes);
+      delete merged.passwordHash;
+      if(isStudent){
+        StudentAuth.setStudent(merged, account.username);
+        if(state.khoi) state.khoi = khoi;
+      }else{
+        state.admin = normaliseAdminAccount(Object.assign({}, state.admin, changes, {passwordHash:undefined}), account.username);
+        if($('adminNameChip')) $('adminNameChip').textContent = name;
+        if($('adminSchoolChip')) $('adminSchoolChip').textContent = schoolLabel(state.admin);
+      }
+      AccountMenu.render();
+      if(typeof HealthStore !== 'undefined' && HealthStore.load) try{ HealthStore.load(); }catch(e){}
+      ['profileOldPass','profileNewPass','profileNewPass2'].forEach(id => { $(id).value = ''; });
+      const parts = ['họ tên'];
+      if(isStudent) parts.push('khối ' + khoi);
+      if(schoolChanged) parts.push('trường');
+      if(passChanged) parts.push('mật khẩu');
+      const msg = 'Đã lưu thông tin: ' + parts.join(', ') + '.';
+      toast(msg);
+      this.syncNote(DB.mode === 'sheets'
+        ? (synced ? '✓ Đã đồng bộ lên Google Sheet' + (cascaded ? ' và cập nhật ' + cascaded + ' bản ghi liên quan (kết quả, kho dữ liệu, trò chuyện)' : '') + '.'
+                  : 'Đã gửi lên Google Sheet nhưng chưa kiểm tra lại được. Cậu tải lại trang sau ít phút để chắc chắn nhé.')
+        : 'Đã lưu trên máy' + (cascaded ? ', cập nhật ' + cascaded + ' bản ghi liên quan' : '') + '.', synced ? 'ok' : 'warn');
+    }catch(e){
+      err.textContent = DB.mode === 'sheets' ? 'Chưa kết nối được Google Sheet nên chưa lưu. Cậu kiểm tra mạng rồi bấm Lưu lại nhé.' : 'Chưa lưu được thông tin, cậu thử lại nhé.';
+      this.syncNote('Chưa lưu.', 'warn');
+    }finally{ btn.disabled = false; this.saving = false; const sn = $('profileSync'); if(sn && sn.dataset.kind === 'busy') this.syncNote(); }
+  }
+};
+
+
+/* ============================================================================
+ * JS-03.15 · DANH SÁCH TƯ LIỆU CÔNG KHAI
+ * Tạo thẻ tài liệu với tên, mô tả, miền liên kết và nút thao tác phù hợp quyền của người đang xem.
+ * ========================================================================== */
+/* =================== tư liệu tham khảo (công khai) =================== */
+function domainOf(url){ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; } }
+function libCardHtml(doc, id, withDelete){
+  const safeUrl = escapeHtml(doc.url||'#');
+  let html = '<div class="lib-card">' +
+    '<div class="lib-title"><i data-lucide="book-open" style="width:17px;height:17px;"></i>'+escapeHtml(doc.title||'')+'</div>';
+  if(doc.desc) html += '<div class="lib-desc">'+escapeHtml(doc.desc)+'</div>';
+  html += '<span class="lib-domain">'+escapeHtml(domainOf(doc.url||''))+'</span>' +
+    '<a class="lib-link" href="'+safeUrl+'" target="_blank" rel="noopener">Xem tài liệu <i data-lucide="arrow-up-right" style="width:13px;height:13px;"></i></a>';
+  if(withDelete) html += '<button class="lib-del" onclick="AdminLibrary.remove(\''+id+'\')">Xóa tài liệu này</button>';
+  html += '</div>';
+  return html;
+}
+const Library = {
+  async load(){
+    const box = $('libraryList');
+    box.innerHTML = '<div class="empty-lib">Đang tải…</div>';
+    try{
+      const snap = await DB.collection('references').get();
+      if(snap.empty){ box.innerHTML = '<div class="empty-lib">Chưa có tư liệu nào được đăng.</div>'; return; }
+      const docs = snap.docs.map(d=>({id:d.id, data:d.data()})).sort((a,b)=>(b.data.addedAt||0)-(a.data.addedAt||0));
+      box.innerHTML = docs.map(d=>libCardHtml(d.data, d.id, false)).join('');
+      refreshIcons();
+    }catch(e){ box.innerHTML = '<div class="empty-lib">Không thể tải tư liệu lúc này.</div>'; }
+  }
+};
+
+
+/* ============================================================================
+ * JS-03.16 · TÀI KHOẢN QUẢN TRỊ
+ * AdminAuth xử lý các tab đăng nhập/đăng ký/quên mật khẩu, kiểm tra dữ liệu và khôi phục phiên quản trị.
+ * ========================================================================== */
+/* =================== admin: đăng nhập & quản lý tư liệu =================== */
+const AdminAuth = {
+  switchTab(tab){
+    const isRegister = tab === 'register';
+    const isForgot = tab === 'forgot';
+    const fullNameField = $('adminFullNameField');
+    const confirmField = $('adminConfirmField');
+    if(fullNameField) fullNameField.classList.toggle('hidden', !(isRegister || isForgot));
+    if(confirmField) confirmField.classList.toggle('hidden', !(isRegister || isForgot));
+    if($('adminTabLogin')) $('adminTabLogin').classList.toggle('active', !isRegister);
+    if($('adminTabRegister')) $('adminTabRegister').classList.toggle('active', isRegister);
+    if($('adminAuthTitle')) $('adminAuthTitle').textContent = isRegister ? 'Tạo tài khoản quản trị' : (isForgot ? 'Quên tài khoản quản trị' : 'Đăng nhập quản trị');
+    if($('adminAuthSubtitle')) $('adminAuthSubtitle').textContent = isRegister
+      ? 'Tạo tài khoản cho giáo viên/BGH và gắn tài khoản với đúng trường.'
+      : (isForgot ? 'Nhập họ tên và trường để tìm tài khoản, sau đó đặt lại mật khẩu.' : 'Dành cho giáo viên/BGH quản lý khu vực tư liệu tham khảo.');
+    if($('adminSubmitBtn')){
+      $('adminSubmitBtn').dataset.mode = tab;
+      $('adminSubmitBtn').textContent = isRegister ? 'Tạo tài khoản admin' : (isForgot ? 'Khôi phục tài khoản' : 'Đăng nhập');
+    }
+    if($('adminPasswordLabel')) $('adminPasswordLabel').textContent = isForgot ? 'Mật khẩu mới' : 'Mật khẩu';
+    if($('adminPasswordConfirmLabel')) $('adminPasswordConfirmLabel').textContent = isForgot ? 'Nhập lại mật khẩu mới' : 'Nhập lại mật khẩu';
+    if($('adminPassword')){
+      $('adminPassword').setAttribute('autocomplete', isRegister || isForgot ? 'new-password' : 'current-password');
+      $('adminPassword').placeholder = isRegister || isForgot ? 'ít nhất 6 ký tự' : 'mật khẩu của cậu';
+    }
+    if($('adminUsername')) $('adminUsername').placeholder = isForgot ? 'Có thể bỏ trống nếu không nhớ' : '3–32 ký tự, không dấu';
+    if($('adminAuthSwitch')) $('adminAuthSwitch').innerHTML = isRegister
+      ? 'Đã có tài khoản? <button onclick="AdminAuth.switchTab(\'login\')">Đăng nhập</button> · <button onclick="AdminAuth.switchTab(\'forgot\')">Quên tài khoản?</button>'
+      : (isForgot
+        ? '<button onclick="AdminAuth.switchTab(\'login\')">Quay lại đăng nhập</button>'
+        : 'Chưa có tài khoản? <button onclick="AdminAuth.switchTab(\'register\')">Tạo tài khoản admin</button> · <button onclick="AdminAuth.switchTab(\'forgot\')">Quên tài khoản?</button>');
+    if($('adminErr')) $('adminErr').textContent = '';
+    if(isRegister || isForgot) this.prefillSchool();
+    refreshIcons();
+  },
+  async submit(){
+    const mode = $('adminSubmitBtn').dataset.mode || 'login';
+    if(mode === 'register') return this.register();
+    if(mode === 'forgot') return this.recover();
+
+    const username = $('adminUsername').value.trim().toLowerCase();
+    const password = $('adminPassword').value;
+    const err = $('adminErr'); err.textContent = '';
+    if(!username || password.length < 4){ err.textContent = 'Tên đăng nhập và mật khẩu (≥4 ký tự) là bắt buộc.'; return; }
+    if(!/^[a-z0-9._-]{3,32}$/.test(username)){ err.textContent = 'Tên đăng nhập không hợp lệ.'; return; }
+    try{
+      const snap = await DB.collection('admins').doc(username).get();
+      if(!snap.exists){ err.textContent = 'Không tìm thấy tài khoản quản trị này.'; return; }
+      let data = snap.data();
+      if(data.builtin === true && !resolveAccountDisplayName(data, '')){
+        err.textContent = 'Tài khoản quản trị mẫu đã được tắt. Hãy dùng tài khoản admin thật.'; return;
+      }
+      if(data.status === 'inactive' || data.active === false){ err.textContent = 'Tài khoản quản trị này đang bị tạm khóa.'; return; }
+      if(data.role && data.role !== 'admin'){ err.textContent = 'Tài khoản này không thuộc khu vực quản trị.'; return; }
+      if(await sha256(password) !== data.passwordHash){ err.textContent = 'Sai mật khẩu.'; return; }
+      const storedSchool = normaliseSchool(data);
+      const enteredSchool = schoolFromFields('adminSchool');
+      if(isCompleteSchool(storedSchool) && enteredSchool.schoolId && !schoolMatches(storedSchool, enteredSchool)){
+        err.textContent = 'Tài khoản này đã được gán cho '+schoolLabel(storedSchool)+'.'; return;
+      }
+      const school = isCompleteSchool(storedSchool) ? storedSchool : enteredSchool;
+      if(!isCompleteSchool(storedSchool)){
+        const schoolError = schoolValidationMessage(school);
+        if(schoolError){ err.textContent = 'Tài khoản admin cần được gán trường trước khi vào Dashboard. '+schoolError; return; }
+        await DB.collection('admins').doc(username).update(Object.assign({}, school, {schoolUpdatedAt:Date.now()}));
+        data = Object.assign({}, data, school);
+      }
+      state.admin = normaliseAdminAccount(data, username);
+      localStorage.setItem('hp_admin_session', state.admin.username);
+      try{ await DB.collection('admins').doc(username).update({lastLoginAt:Date.now()}); }catch(e){}
+      await AdminAuth.onLoggedIn();
+    }catch(e){ err.textContent = 'Có lỗi khi đăng nhập, thử lại nhé.'; }
+  },
+  async register(){
+    const fullName = $('adminFullName').value.trim();
+    const username = $('adminUsername').value.trim().toLowerCase();
+    const password = $('adminPassword').value;
+    const confirm = $('adminPasswordConfirm').value;
+    const school = schoolFromFields('adminSchool');
+    const err = $('adminErr'); err.textContent = '';
+    if(fullName.length < 2){ err.textContent = 'Cậu nhập họ và tên nhé.'; return; }
+    if(!/^[a-z0-9._-]{3,32}$/.test(username)){ err.textContent = 'Tên đăng nhập cần 3–32 ký tự không dấu (chữ, số, ., _ hoặc -).'; return; }
+    if(password.length < 6){ err.textContent = 'Mật khẩu cần ít nhất 6 ký tự.'; return; }
+    if(password !== confirm){ err.textContent = 'Hai lần nhập mật khẩu chưa giống nhau.'; return; }
+    const schoolError = schoolValidationMessage(school);
+    if(schoolError){ err.textContent = schoolError; return; }
+    try{
+      const existing = await DB.collection('admins').doc(username).get();
+      if(existing.exists){ err.textContent = 'Tên đăng nhập admin này đã tồn tại. Cậu chọn tên khác nhé.'; return; }
+      const data = {
+        username, displayName:fullName, fullName, role:'admin', status:'active',
+        schoolId:school.schoolId, schoolName:school.schoolName, schoolLevel:school.schoolLevel,
+        wardName:school.wardName, districtName:school.districtName, provinceName:school.provinceName,
+        provinceCode:school.provinceCode, wardCode:school.wardCode, address:school.address,
+        passwordHash:await sha256(password), geminiApiKey:null, builtin:false,
+        createdAt:Date.now(), lastLoginAt:null
+      };
+      await DB.collection('admins').doc(username).set(data);
+      state.admin = normaliseAdminAccount(data, username);
+      localStorage.setItem('hp_admin_session', username);
+      await this.onLoggedIn();
+    }catch(e){ err.textContent = 'Chưa tạo được tài khoản admin, cậu thử lại nhé.'; }
+  },
+  async recover(){
+    const fullName = $('adminFullName').value.trim();
+    const username = $('adminUsername').value.trim().toLowerCase();
+    const password = $('adminPassword').value;
+    const confirm = $('adminPasswordConfirm').value;
+    const school = schoolFromFields('adminSchool');
+    const err = $('adminErr'); err.textContent = '';
+    if(fullName.length < 2){ err.textContent = 'Cậu nhập họ và tên đã dùng khi tạo tài khoản nhé.'; return; }
+    if(username && !/^[a-z0-9._-]{3,32}$/.test(username)){ err.textContent = 'Tên đăng nhập không hợp lệ.'; return; }
+    if(password.length < 6){ err.textContent = 'Mật khẩu mới cần ít nhất 6 ký tự.'; return; }
+    if(password !== confirm){ err.textContent = 'Hai lần nhập mật khẩu mới chưa giống nhau.'; return; }
+    const schoolError = schoolValidationMessage(school);
+    if(schoolError){ err.textContent = schoolError; return; }
+    try{
+      let candidates = [];
+      if(username){
+        const snap = await DB.collection('admins').doc(username).get();
+        if(snap.exists) candidates = [{id:username, data:snap.data() || {}}];
+      }else{
+        const snap = await DB.collection('admins').get();
+        candidates = (snap.docs || []).map(doc=>({id:doc.id, data:doc.data() || {}}));
+      }
+      candidates = candidates.filter(item=>{
+        const data = item.data;
+        return data.status !== 'inactive' && data.active !== false &&
+          normaliseIdentity(resolveAccountDisplayName(data, '')) === normaliseIdentity(fullName) &&
+          schoolMatches(data, school);
+      });
+      if(!candidates.length){ err.textContent = 'Không tìm thấy tài khoản phù hợp với họ tên và trường đã chọn.'; return; }
+      if(candidates.length > 1){ err.textContent = 'Có nhiều tài khoản trùng thông tin. Cậu nhập thêm tên đăng nhập để khôi phục đúng tài khoản.'; return; }
+      const target = candidates[0];
+      await DB.collection('admins').doc(target.id).update({passwordHash:await sha256(password), passwordUpdatedAt:Date.now(), status:'active'});
+      this.switchTab('login');
+      $('adminUsername').value = String(target.data.username || target.id).toLowerCase();
+      $('adminPassword').value = '';
+      $('adminPasswordConfirm').value = '';
+      $('adminFullName').value = '';
+      toast('Đã khôi phục tài khoản '+$('adminUsername').value+'. Cậu đăng nhập lại nhé.');
+    }catch(e){ err.textContent = 'Chưa khôi phục được tài khoản, cậu thử lại nhé.'; }
+  },
+  async onLoggedIn(){
+    state.admin = normaliseAdminAccount(state.admin, state.admin && state.admin.username);
+    if(!isCompleteSchool(state.admin)){
+      this.prefillSchool();
+      showView('view-adminAuth');
+      $('adminErr').textContent = 'Tài khoản admin chưa được gán trường. Cậu chọn trường rồi đăng nhập lại nhé.';
+      return;
+    }
+    if(state.student){
+      state.student = null;
+      AIBackend.useStudentKey(null);
+      localStorage.removeItem('hp_student_session');
+    }
+    AIBackend.useAccountKey(state.admin);
+    if(typeof ChatHistory !== 'undefined') await ChatHistory.restoreForAccount();
+    const adminName = resolveAccountDisplayName(state.admin, state.admin.username);
+    $('adminNameChip').textContent = adminName;
+    $('adminSchoolChip').textContent = schoolLabel(state.admin);
+    AccountMenu.render();
+    toast(window.__SHEETS_OLD ? 'Google Sheet đang chạy Apps Script bản cũ (tự tạo nhiều tab). Thầy cô dán Code.gs mới và tạo Phiên bản mới khi triển khai nhé.' : 'Xin chào, ' + adminName + '!');
+    showView('view-adminHome');
+    AdminNav.switchTab('overview');
+  },
+  logout(){
+    if(typeof ChatHistory !== 'undefined') ChatHistory.forgetSession();
+    state.admin = null; localStorage.removeItem('hp_admin_session');
+    AccountMenu.render();
+    showView('view-landing');
+  },
+  async tryRestore(){
+    const saved = localStorage.getItem('hp_admin_session');
+    if(!saved) return;
+    try{
+      const snap = await DB.collection('admins').doc(saved).get();
+      if(snap.exists){
+        const data = snap.data();
+        if(data.status === 'inactive' || data.active === false){
+          localStorage.removeItem('hp_admin_session');
+          return;
+        }
+        if(data.builtin === true && !resolveAccountDisplayName(data, '')){
+          localStorage.removeItem('hp_admin_session');
+          return;
+        }
+        state.admin = normaliseAdminAccount(data, saved);
+        if(!isCompleteSchool(state.admin)){
+          this.prefillSchool();
+          showView('view-adminAuth');
+          $('adminErr').textContent = 'Tài khoản admin cũ chưa có trường. Cậu đăng nhập lại và chọn trường để tiếp tục nhé.';
+          return;
+        }
+        AIBackend.useAccountKey(state.admin);
+        AccountMenu.render();
+        renderSteps('view-landing');
+        if(typeof ChatHistory !== 'undefined') await ChatHistory.restoreForAccount();
+      }else localStorage.removeItem('hp_admin_session');
+    }catch(e){}
+  },
+  prefillSchool(){
+    setSchoolFields('adminSchool', state.admin || '');
+  }
+};
+
+
+/* ============================================================================
+ * JS-03.17 · TÀI KHOẢN HỌC SINH
+ * StudentAuth xử lý đăng nhập, đăng ký, kiểm tra trường/khối lớp và khôi phục phiên học sinh.
+ * ========================================================================== */
+/* =================== học sinh: đăng nhập & tạo tài khoản =================== */
+const StudentAuth = {
+  setStudent(data, fallbackUsername){
+    const username = data.username || fallbackUsername;
+    const school = normaliseSchool(data);
+    state.student = {
+      username,
+      displayName:data.displayName || username,
+      khoi:data.khoi || '',
+      schoolId:school.schoolId,
+      schoolName:school.schoolName,
+      schoolLevel:school.schoolLevel,
+      wardName:school.wardName,
+      districtName:school.districtName,
+      provinceName:school.provinceName,
+      provinceCode:school.provinceCode,
+      wardCode:school.wardCode,
+      address:school.address,
+      role:'student',
+      createdAt:data.createdAt || null,
+      updatedAt:data.updatedAt || null,
+      status:data.status || 'active',
+      geminiApiKey:data.geminiApiKey || data.apiKey || data.geminiKey || null
+    };
+    AIBackend.useStudentKey(state.student);
+  },
+  hasSchool(data){ return isCompleteSchool(data); },
+  openSchoolSetup(){
+    this.switchTab('school');
+    showView('view-studentAuth');
+    this.prefillSchool();
+  },
+  switchTab(tab){
+    const isRegister = tab === 'register';
+    const isForgot = tab === 'forgot';
+    const isSchoolSetup = tab === 'school';
+    $('studentAuthTabs').classList.toggle('hidden', isForgot || isSchoolSetup);
+    $('studentTabLogin').classList.toggle('active', !isRegister);
+    $('studentTabRegister').classList.toggle('active', isRegister);
+    $('studentNameField').classList.toggle('hidden', !(isRegister || isForgot));
+    $('studentGradeField').classList.toggle('hidden', !(isRegister || isForgot));
+    $('studentSchoolField').classList.toggle('hidden', !(isRegister || isForgot || isSchoolSetup));
+    $('studentUsernameField').classList.toggle('hidden', isSchoolSetup);
+    $('studentPasswordField').classList.toggle('hidden', isSchoolSetup);
+    $('studentConfirmField').classList.toggle('hidden', !(isRegister || isForgot));
+    $('studentAuthTitle').textContent = isRegister ? 'Tạo tài khoản học sinh' : (isForgot ? 'Quên mật khẩu học sinh' : (isSchoolSetup ? 'Bổ sung trường học' : 'Đăng nhập học sinh'));
+    $('studentAuthSubtitle').textContent = isRegister ? 'Tạo tài khoản để bắt đầu khảo sát hoạt động thể lực.' : (isForgot ? 'Nhập đúng thông tin đã dùng khi tạo tài khoản để đặt mật khẩu mới.' : (isSchoolSetup ? 'Tài khoản cũ chưa có trường. Cậu bổ sung một lần để hệ thống phân loại đúng dữ liệu của trường nhé.' : 'Đăng nhập để bắt đầu khảo sát hoạt động thể lực.'));
+    $('studentSubmitBtn').textContent = isRegister ? 'Tạo tài khoản học sinh' : (isForgot ? 'Đặt lại mật khẩu' : (isSchoolSetup ? 'Lưu trường học' : 'Đăng nhập'));
+    $('studentSubmitBtn').dataset.mode = tab;
+    const passwordLabel = $('studentPasswordLabel');
+    const confirmLabel = $('studentPasswordConfirmLabel');
+    if(passwordLabel) passwordLabel.textContent = isForgot ? 'Mật khẩu mới' : 'Mật khẩu';
+    if(confirmLabel) confirmLabel.textContent = isForgot ? 'Nhập lại mật khẩu mới' : 'Nhập lại mật khẩu';
+    $('studentPassword').setAttribute('autocomplete', isRegister || isForgot ? 'new-password' : 'current-password');
+    $('studentAuthSwitch').innerHTML = isSchoolSetup
+      ? '<button onclick="StudentAuth.switchTab(\'login\')">Quay lại đăng nhập</button>'
+      : (isRegister
+      ? 'Đã có tài khoản? <button onclick="StudentAuth.switchTab(\'login\')">Đăng nhập</button>'
+      : (isForgot
+        ? '<button onclick="StudentAuth.switchTab(\'login\')">Quay lại đăng nhập</button>'
+        : 'Chưa có tài khoản? <button onclick="StudentAuth.switchTab(\'register\')">Tạo tài khoản học sinh</button> · <button onclick="StudentAuth.switchTab(\'forgot\')">Quên mật khẩu?</button>'));
+    $('studentErr').textContent = '';
+    if(isRegister || isForgot) this.prefillGrade();
+    if(isRegister || isForgot || isSchoolSetup) this.prefillSchool();
+    refreshIcons();
+  },
+  prefillGrade(){
+    const preferred = state.pendingKhoi || $('khoiSelect').value || '';
+    if(preferred && $('studentGrade')) $('studentGrade').value = preferred;
+  },
+  prefillSchool(){
+    const preferred = state.pendingSchool || state.student || schoolFromFields('school');
+    setSchoolFields('studentSchool', preferred || '');
+  },
+  async submit(){
+    const mode = $('studentSubmitBtn').dataset.mode || 'login';
+    const isRegister = mode === 'register';
+    const isForgot = mode === 'forgot';
+    const isSchoolSetup = mode === 'school';
+    if(isSchoolSetup){
+      const school = schoolFromFields('studentSchool');
+      const schoolError = schoolValidationMessage(school);
+      const err = $('studentErr'); err.textContent = '';
+      if(!state.student){ err.textContent = 'Cậu đăng nhập tài khoản trước nhé.'; return; }
+      if(schoolError){ err.textContent = schoolError; return; }
+      try{
+        await DB.collection('students').doc(state.student.username).update(Object.assign({}, school, {schoolUpdatedAt:Date.now()}));
+        state.student = Object.assign({}, state.student, school);
+        state.pendingSchool = school;
+        this.switchTab('login');
+        toast('Đã lưu trường học cho tài khoản.');
+        await this.finishLoggedIn();
+      }catch(e){ err.textContent = 'Chưa lưu được trường học, cậu thử lại nhé.'; }
+      return;
+    }
+    const username = $('studentUsername').value.trim().toLowerCase();
+    const password = $('studentPassword').value;
+    const err = $('studentErr'); err.textContent = '';
+    if(!/^[a-z0-9._-]{3,24}$/.test(username)){
+      err.textContent = 'Tên đăng nhập cần 3–24 ký tự không dấu (chữ, số, ., _ hoặc -).'; return;
+    }
+    if(password.length < 6){ err.textContent = 'Mật khẩu cần ít nhất 6 ký tự.'; return; }
+    if(isRegister || isForgot){
+      const displayName = $('studentName').value.trim();
+      const khoi = $('studentGrade').value;
+      const school = schoolFromFields('studentSchool');
+      const confirm = $('studentPasswordConfirm').value;
+      if(displayName.length < 2){ err.textContent = 'Cậu nhập họ và tên nhé.'; return; }
+      if(!khoi){ err.textContent = 'Cậu chọn khối lớp nhé.'; return; }
+      const schoolError = schoolValidationMessage(school);
+      if(schoolError){ err.textContent = schoolError; return; }
+      if(password !== confirm){ err.textContent = 'Hai lần nhập mật khẩu chưa giống nhau.'; return; }
+      try{
+        const existing = await DB.collection('students').doc(username).get();
+        if(isForgot){
+          if(!existing.exists){ err.textContent = 'Thông tin xác thực chưa khớp với tài khoản học sinh.'; return; }
+          const account = existing.data();
+          if(normaliseIdentity(account.displayName) !== normaliseIdentity(displayName) || String(account.khoi || '') !== String(khoi) || !schoolMatches(account, school)){
+            err.textContent = 'Thông tin xác thực chưa khớp với tài khoản học sinh.'; return;
+          }
+          await DB.collection('students').doc(username).update({ passwordHash:await sha256(password), passwordUpdatedAt:Date.now() });
+          this.switchTab('login');
+          $('studentUsername').value = username;
+          $('studentPassword').value = '';
+          $('studentPasswordConfirm').value = '';
+          $('studentName').value = '';
+          $('studentGrade').value = '';
+          setSchoolFields('studentSchool', '');
+          toast('Cập nhật mật khẩu thành công. Cậu đăng nhập lại nhé.');
+          return;
+        }
+        if(existing.exists){ err.textContent = 'Tài khoản đăng nhập này đã tồn tại. Cậu chọn tên đăng nhập khác nhé.'; return; }
+        const doc = { username, displayName, khoi, role:'student', schoolId:school.schoolId, schoolName:school.schoolName, schoolLevel:school.schoolLevel, wardName:school.wardName, districtName:school.districtName, provinceName:school.provinceName, provinceCode:school.provinceCode, wardCode:school.wardCode, address:school.address, passwordHash: await sha256(password), geminiApiKey:null, createdAt: Date.now() };
+        await DB.collection('students').doc(username).set(doc);
+        this.setStudent(doc, username);
+        state.pendingSchool = school;
+        localStorage.setItem('hp_student_session', username);
+        await this.onLoggedIn();
+      }catch(e){ err.textContent = 'Có lỗi khi tạo tài khoản, thử lại nhé.'; }
+      return;
+    }
+    try{
+      const snap = await DB.collection('students').doc(username).get();
+      if(!snap.exists){ err.textContent = 'Không tìm thấy tài khoản học sinh này.'; return; }
+      const data = snap.data();
+      if(data.role && data.role !== 'student'){ err.textContent = 'Tài khoản này không thuộc khu vực học sinh.'; return; }
+      if(await sha256(password) !== data.passwordHash){ err.textContent = 'Sai mật khẩu.'; return; }
+      this.setStudent(data, username);
+      localStorage.setItem('hp_student_session', username);
+      await this.onLoggedIn();
+    }catch(e){ err.textContent = 'Có lỗi khi đăng nhập, thử lại nhé.'; }
+  },
+  async onLoggedIn(){
+    if(state.admin){
+      state.admin = null;
+      localStorage.removeItem('hp_admin_session');
+    }
+    this.renderSession();
+    if(!this.hasSchool(state.student)){
+      this.openSchoolSetup();
+      $('studentErr').textContent = 'Tài khoản này chưa có trường. Cậu chọn trường để tiếp tục nhé.';
+      return;
+    }
+    await this.finishLoggedIn();
+  },
+  async finishLoggedIn(options={}){
+    this.renderSession();
+    if(!options.silent) toast('Xin chào, ' + state.student.displayName + '!');
+    if(window.HealthStore) try{ await HealthStore.load(); }catch(e){}
+    if(typeof ChatHistory !== 'undefined') await ChatHistory.restoreForStudent();
+    if(state.pendingSurvey){ App.beginSurvey(); }
+    else { App.goLanding(); Settings.maybeOpenForStudent(); }
+  },
+  renderSession(){
+    if(!state.student){ AccountMenu.render(); return; }
+    if(state.student.khoi && $('khoiSelect') && !state.pendingKhoi) $('khoiSelect').value = state.student.khoi;
+    setSchoolFields('school', state.student);
+    AccountMenu.render();
+  },
+  logout(){
+    if(typeof ChatHistory !== 'undefined') ChatHistory.forgetSession();
+    state.student = null;
+    AIBackend.useStudentKey(null);
+    localStorage.removeItem('hp_student_session');
+    state.pendingKhoi = null; state.pendingSchool = null; state.pendingSurvey = false;
+    AccountMenu.render();
+    toast('Đã đăng xuất tài khoản học sinh.');
+    App.goLanding();
+  },
+  async tryRestore(){
+    const saved = localStorage.getItem('hp_student_session');
+    if(!saved) return;
+    try{
+      const snap = await DB.collection('students').doc(saved).get();
+      if(snap.exists){
+        const data = snap.data();
+        if(!data.role || data.role === 'student') this.setStudent(data, saved);
+      }
+    }catch(e){}
+    this.renderSession();
+    if(state.student){
+      if(!this.hasSchool(state.student)){
+        this.openSchoolSetup();
+        return;
+      }
+      if(typeof ChatHistory !== 'undefined') await ChatHistory.restoreForStudent();
+      this.maybeOpenAccountApi();
+    }
+  },
+  maybeOpenAccountApi(){
+    if(typeof Settings !== 'undefined') Settings.maybeOpenForStudent();
+  }
+};
+
+/* ============================================================================
+ * JS-03.18 · QUẢN LÝ TƯ LIỆU
+ * AdminLibrary nhận nội dung biểu mẫu, thêm tài liệu, xóa tài liệu và cập nhật danh sách trong khu vực quản trị.
+ * ========================================================================== */
+const AdminLibrary = {
+  async add(){
+    const title = $('refTitle').value.trim();
+    const desc = $('refDesc').value.trim();
+    const url = $('refUrl').value.trim();
+    const err = $('refErr'); err.textContent = '';
+    if(!title || !url){ err.textContent = 'Cần nhập tiêu đề và đường dẫn.'; return; }
+    if(!/^https?:\/\//i.test(url)){ err.textContent = 'Link cần bắt đầu bằng http:// hoặc https://'; return; }
+    try{
+      await DB.collection('references').add({ title, desc, url, addedAt: Date.now(), addedBy: state.admin.username });
+      $('refTitle').value=''; $('refDesc').value=''; $('refUrl').value='';
+      toast('Đã thêm tư liệu!');
+      AdminLibrary.load();
+    }catch(e){ err.textContent = 'Không thêm được lúc này, thử lại nhé.'; }
+  },
+  async load(){
+    const box = $('adminLibraryList');
+    box.innerHTML = '<div class="empty-lib">Đang tải…</div>';
+    try{
+      const snap = await DB.collection('references').get();
+      if(snap.empty){ box.innerHTML = '<div class="empty-lib">Chưa có tư liệu nào.</div>'; return; }
+      const docs = snap.docs.map(d=>({id:d.id, data:d.data()})).sort((a,b)=>(b.data.addedAt||0)-(a.data.addedAt||0));
+      box.innerHTML = docs.map(d=>libCardHtml(d.data, d.id, true)).join('');
+      refreshIcons();
+    }catch(e){ box.innerHTML = '<div class="empty-lib">Không thể tải danh sách lúc này.</div>'; }
+  },
+  async remove(id){
+    try{ await DB.collection('references').doc(id).delete(); toast('Đã xóa tư liệu'); AdminLibrary.load(); }catch(e){ toast('Không xóa được lúc này'); }
+  }
+};
+
+
+/* ============================================================================
+ * JS-03.19 · LỊCH SỬ TRÒ CHUYỆN
+ * ChatHistory lưu, mở, tạo mới và xóa cuộc trò chuyện theo tài khoản; các tiện ích đọc/ghi storage hỗ trợ khôi phục dữ liệu.
+ * ========================================================================== */
+/* =================== lịch sử trò chuyện theo tài khoản =================== */
+function hpReadStorage(storage, key, fallback){
+  try{
+    const value = storage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  }catch(e){ return fallback; }
+}
+function hpWriteStorage(storage, key, value){
+  try{ storage.setItem(key, JSON.stringify(value)); }catch(e){}
+}
+function chatDate(ts){
+  if(!ts) return '';
+  try{
+    return new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(ts));
+  }catch(e){ return ''; }
+}
+
+const ChatHistory = {
+  current:null,
+  conversations:[],
+  persistTimer:null,
+  account(){ return getActiveAccount(); },
+  storageKey(account){
+    const key = typeof account === 'string' ? account : (account && account.role === 'admin' ? 'admin:' + account.username : account && account.username);
+    return 'hp_chat_history:' + (key || 'anonymous');
+  },
+  activeKey(account){
+    const key = typeof account === 'string' ? account : (account && account.role === 'admin' ? 'admin:' + account.username : account && account.username);
+    return 'hp_active_chat:' + (key || 'anonymous');
+  },
+  remoteId(account){ return account && account.role === 'admin' ? 'admin:' + account.username : account && account.username; },
+  _create(khoi, account){
+    const now = Date.now();
+    return {
+      id:'chat_' + now + '_' + Math.random().toString(36).slice(2,8),
+      title:'Cuộc trò chuyện mới',
+      startedAt:now,
+      updatedAt:now,
+      status:'active',
+      khoi:khoi || '',
+      ownerRole:account && account.role || '',
+      ownerUsername:account && account.username || '',
+      ownerSchoolId:account && account.schoolId || '',
+      ownerSchoolName:account && account.schoolName || '',
+      ownerSchoolWardName:account && account.wardName || '',
+      ownerSchoolProvinceName:account && account.provinceName || '',
+      messages:[],
+      survey:{qIndex:0, attempts:0, extracted:{}, computed:null, completed:false}
+    };
+  },
+  _normalise(item){
+    if(!item || !item.id) return null;
+    return Object.assign({
+      title:'Cuộc trò chuyện mới', startedAt:Date.now(), updatedAt:Date.now(), status:'active',
+      khoi:'', messages:[], survey:{qIndex:0, attempts:0, extracted:{}, computed:null, completed:false}
+    }, item, {
+      messages:Array.isArray(item.messages) ? item.messages : [],
+      survey:Object.assign({qIndex:0, attempts:0, extracted:{}, computed:null, completed:false}, item.survey || {})
+    });
+  },
+  _merge(localItems, remoteItems){
+    const map = new Map();
+    [...(localItems||[]), ...(remoteItems||[])].forEach(item=>{
+      const c = this._normalise(item); if(!c) return;
+      const old = map.get(c.id);
+      if(!old || (c.updatedAt||0) >= (old.updatedAt||0)) map.set(c.id,c);
+    });
+    return Array.from(map.values()).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).slice(0,60);
+  },
+  _sort(){ this.conversations.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)); },
+  _saveLocal(){
+    const account = this.account();
+    if(!account) return;
+    hpWriteStorage(localStorage, this.storageKey(account), this.conversations);
+  },
+  queuePersist(){
+    clearTimeout(this.persistTimer);
+    this.persistTimer = setTimeout(()=>this.persistNow(), 350);
+  },
+  async persistNow(){
+    const account = this.account();
+    if(!account || !this.conversations.length) return;
+    try{
+      await DB.collection('conversations').doc(this.remoteId(account)).set({
+        username:account.username,
+        role:account.role,
+        schoolId:account.schoolId || '',
+        schoolName:account.schoolName || '',
+        wardName:account.wardName || '',
+        provinceName:account.provinceName || '',
+        updatedAt:Date.now(),
+        conversations:this.conversations.slice(0,60)
+      });
+      const status = $('chatStatus');
+      if(status){ status.classList.remove('offline'); status.innerHTML = '<i data-lucide="cloud-check" style="width:12px;height:12px;"></i> Đã lưu'; refreshIcons(); }
+    }catch(e){
+      const status = $('chatStatus');
+      if(status){ status.classList.add('offline'); status.innerHTML = '<i data-lucide="hard-drive" style="width:12px;height:12px;"></i> Đã lưu trên máy'; refreshIcons(); }
+    }
+  },
+  async restoreForAccount(){
+    const account = this.account();
+    if(!account) return;
+    const localItems = hpReadStorage(localStorage, this.storageKey(account), []);
+    let remoteItems = [];
+    try{
+      const snap = await DB.collection('conversations').doc(this.remoteId(account)).get();
+      const data = snap.exists ? snap.data() : null;
+      if(data && Array.isArray(data.conversations)) remoteItems = data.conversations;
+    }catch(e){}
+    this.conversations = this._merge(localItems, remoteItems);
+
+    let active = null;
+    const activeId = hpReadStorage(sessionStorage, this.activeKey(account), null);
+    if(HP_IS_RELOAD && activeId) active = this.conversations.find(c=>c.id===activeId) || null;
+    if(!active){
+      active = this._create(account.khoi || '', account);
+      this.conversations.unshift(active);
+    }
+    this.current = active;
+    hpWriteStorage(sessionStorage, this.activeKey(account), active.id);
+    this._sort();
+    this._saveLocal();
+    this.renderList();
+    this.renderHeader();
+    if(!HP_IS_RELOAD) this.queuePersist();
+  },
+  async restoreForStudent(){ return this.restoreForAccount(); },
+  ensureCurrent(khoi, options={}){
+    const account = this.account();
+    if(!account) return null;
+    if(!this.current) this.current = this._create(khoi || account.khoi || '', account);
+    if(options.forceNew || (options.newIfCompleted && this.current.status === 'completed')) this.startNew(khoi);
+    if(khoi && !this.current.khoi) this.current.khoi = khoi;
+    this._saveLocal();
+    return this.current;
+  },
+  startNew(khoi){
+    const account = this.account();
+    if(!account) return null;
+    if(this.current && this.current.messages.length && this.current.status === 'active') this.current.status = 'closed';
+    const next = this._create(khoi || account.khoi || '', account);
+    this.current = next;
+    this.conversations = [next, ...this.conversations.filter(c=>c.id!==next.id)].slice(0,60);
+    hpWriteStorage(sessionStorage, this.activeKey(account), next.id);
+    this._saveLocal();
+    this.queuePersist();
+    this.renderList();
+    this.renderHeader();
+    return next;
+  },
+  newConversation(){
+    const account = this.account();
+    if(!account){ toast('Cậu đăng nhập tài khoản trước nhé'); App.goStudentAuth('login'); return; }
+    this.startNew(account.role === 'admin' ? '' : (state.khoi || account.khoi || ''));
+    showView('view-chat');
+    Hdtl.restoreCurrent({adminFreeform:account.role === 'admin'});
+  },
+  open(id){
+    const found = this.conversations.find(c=>c.id===id);
+    if(!found) return this.openCurrent();
+    this.current = found;
+    const account = this.account();
+    if(account) hpWriteStorage(sessionStorage, this.activeKey(account), found.id);
+    showView('view-chat');
+    Hdtl.restoreCurrent({adminFreeform:account && account.role === 'admin'});
+  },
+  openCurrent(options={}){
+    const account = this.account();
+    if(!account){ App.goStudentAuth('login'); return; }
+    if(!this.current) this.ensureCurrent(account.khoi || '');
+    showView('view-chat');
+    Hdtl.restoreCurrent(options);
+  },
+  forgetSession(){
+    const account = this.account();
+    if(account) sessionStorage.removeItem(this.activeKey(account));
+    clearTimeout(this.persistTimer);
+    this.current = null;
+    this.conversations = [];
+  },
+  clearMoodMemory(conversationId){
+    const account = this.account();
+    if(!account) return;
+    const keys = ['hp_mood_memory:' + account.role + ':' + account.username];
+    if(account.role === 'student') keys.push('hp_mood_memory:' + account.username);
+    keys.forEach(key=>{
+      const memory = hpReadStorage(localStorage, key, {});
+      if(memory && Object.prototype.hasOwnProperty.call(memory, conversationId)){
+        delete memory[conversationId];
+        hpWriteStorage(localStorage, key, memory);
+      }
+    });
+  },
+  deleteConversation(id){
+    const account = this.account();
+    if(!account) return;
+    const target = this.conversations.find(c=>c.id===id);
+    if(!target) return;
+    const ok = typeof window === 'undefined' || typeof window.confirm !== 'function' || window.confirm('Xóa cuộc trò chuyện này? Nội dung tâm trạng trong cuộc trò chuyện cũng sẽ bị xóa và không dùng để ghi nhớ nữa.');
+    if(!ok) return;
+    const wasCurrent = this.current && this.current.id === id;
+    this.clearMoodMemory(id);
+    this.conversations = this.conversations.filter(c=>c.id!==id);
+    if(wasCurrent){
+      this.current = this.conversations[0] || this._create(account.khoi || '', account);
+      if(!this.conversations.length) this.conversations = [this.current];
+      hpWriteStorage(sessionStorage, this.activeKey(account), this.current.id);
+    }
+    this._saveLocal();
+    this.queuePersist();
+    this.renderList();
+    this.renderHeader();
+    if(wasCurrent){ showView('view-chat'); Hdtl.restoreCurrent(); }
+    toast('Đã xóa trò chuyện và dữ liệu tâm trạng liên quan.');
+  },
+  addMessage(role, text){
+    if(!this.current || !text) return;
+    this.current.messages = Array.isArray(this.current.messages) ? this.current.messages : [];
+    this.current.messages.push({role, text:String(text), ts:Date.now()});
+    if(role === 'user' && this.current.title === 'Cuộc trò chuyện mới'){
+      const clean = String(text).replace(/\s+/g,' ').trim();
+      if(clean) this.current.title = clean.length > 42 ? clean.slice(0,42) + '…' : clean;
+    }
+    this.current.updatedAt = Date.now();
+    this._sort();
+    this._saveLocal();
+    this.queuePersist();
+    this.renderList();
+    this.renderHeader();
+  },
+  updateSurvey(patch){
+    if(!this.current) return;
+    this.current.survey = Object.assign({}, this.current.survey || {}, patch || {});
+    if(patch && patch.khoi) this.current.khoi = patch.khoi;
+    this.current.updatedAt = Date.now();
+    this._saveLocal();
+    this.queuePersist();
+    this.renderList();
+  },
+  renderMessages(){
+    const log = $('chatLog');
+    if(!log) return;
+    log.innerHTML = '';
+    if(!this.current) return;
+    (this.current.messages || []).forEach(message=>appendMsgElement(message.role, message.text));
+    const weeklySummary = getWeeklySummaryForConversation(this.current);
+    if(weeklySummary) renderWeeklySummaryCard(weeklySummary);
+    log.scrollTop = log.scrollHeight;
+  },
+  renderHeader(){
+    const title = $('chatTitle');
+    const count = $('conversationCount');
+    const hint = $('conversationAccountHint');
+    if(title) title.textContent = this.current ? this.current.title : 'Cuộc trò chuyện mới';
+    if(count) count.textContent = String(this.conversations.length);
+    const account = this.account();
+    if(hint) hint.textContent = account ? 'Tài khoản: '+account.username+' · lịch sử chỉ hiển thị với tài khoản này.' : 'Đăng nhập để lưu lịch sử trò chuyện riêng.';
+  },
+  renderList(){
+    const box = $('conversationList');
+    if(!box) return;
+    this._sort();
+    if(!this.account() || !this.conversations.length){ box.innerHTML = '<div class="conversation-empty">Đăng nhập tài khoản để bắt đầu lưu lịch sử.</div>'; this.renderHeader(); return; }
+    box.innerHTML = this.conversations.map(c=>{
+      const active = this.current && c.id===this.current.id ? ' active' : '';
+      const status = c.status==='completed' ? 'Đã xong' : (c.status==='closed' ? 'Đã lưu' : 'Đang mở');
+      const safeId = escapeHtml(c.id);
+      return '<div class="conversation-item'+active+'">' +
+        '<button class="conversation-open" onclick="ChatHistory.open(\''+safeId+'\')">' +
+          '<span class="conversation-item-title">'+escapeHtml(c.title || 'Cuộc trò chuyện mới')+'</span>' +
+          '<span class="conversation-item-meta"><span>'+chatDate(c.updatedAt)+'</span><span class="conversation-item-status">'+status+'</span></span>' +
+        '</button>' +
+        '<button class="conversation-delete" onclick="event.stopPropagation();ChatHistory.deleteConversation(\''+safeId+'\')" title="Xóa cuộc trò chuyện" aria-label="Xóa cuộc trò chuyện"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>' +
+        '</div>';
+    }).join('');
+    this.renderHeader();
+    refreshIcons();
+  },
+  buildContext(maxChars=8500){
+    if(!this.current) return 'Chưa có lịch sử trò chuyện.';
+    const account = this.account();
+    const userLabel = account && account.role === 'admin' ? 'Người dùng' : 'Học sinh';
+    const current = (this.current.messages || []).slice(-16).map(m=>(m.role==='user'?userLabel:'Chatbot')+': '+m.text).join('\n');
+    const summary = getWeeklySummaryForConversation(this.current);
+    const summaryContext = summary
+      ? '\n\nTỔNG KẾT TUẦN GẦN NHẤT: mức '+summary.level+', khoảng '+summary.minutes+' phút/tuần. Gợi ý: '+summary.recommendation+'. Đã thử: '+(summary.tried ? 'có' : 'chưa')
+      : '';
+    const previous = this.conversations.filter(c=>c.id!==this.current.id && c.messages && c.messages.length).slice(0,4).map(c=>{
+      const last = c.messages.slice(-3).map(m=>(m.role==='user'?userLabel:'Chatbot')+': '+m.text).join(' | ');
+      return '- '+(c.title||'Cuộc trò chuyện trước')+' ('+chatDate(c.updatedAt)+'): '+last;
+    }).join('\n');
+    return ('LỊCH SỬ CUỘC TRÒ CHUYỆN HIỆN TẠI:\n'+current+summaryContext+'\n\nTÓM TẮT CÁC CUỘC TRÒ CHUYỆN TRƯỚC CÙNG TÀI KHOẢN:\n'+previous).slice(-maxChars);
+  }
+};
+
+
+
+/* ============================================================================
+ * JS-03.20 · BỘ CÂU HỎI VÀ PHÂN LOẠI
+ * QUESTIONS chứa câu hỏi, câu hỏi làm rõ và trường dữ liệu cần lấy. LEVEL_META/LEVEL_COLOR chứa nhãn và màu kết quả.
+ * ========================================================================== */
+/* =================== 6 câu hỏi khảo sát (đúng Prompt Log, Mục 3.2) =================== */
+const QUESTIONS = [
+  { id:'dichuyen', field:'di_chuyen_phut_tuan',
+    ask:"Chào cậu! Mình cùng tìm hiểu xem một tuần cậu vận động thế nào nhé. Trước tiên, cậu có đi bộ hoặc đạp xe để đến trường không? Nếu có thì mỗi lần đi mất khoảng bao lâu, và mấy ngày một tuần cậu đi như vậy?",
+    clarify:'Cậu cho mình biết tổng số phút đi bộ hoặc đạp xe để di chuyển trong một tuần nhé (ví dụ: 150 phút/tuần). Nếu không có, cậu nói “không có” giúp mình.',
+    fields:'"di_chuyen_phut_tuan": số phút/tuần đi bộ hoặc đạp xe để di chuyển (0 nếu không có)' },
+  { id:'thethao', field:'the_thao_ngoai_gio_phut_tuan',
+    ask:"Trong tuần, cậu có tham gia môn thể thao nào ngoài giờ học không (đá bóng, cầu lông, bơi, nhảy...)? Mỗi tuần khoảng mấy buổi, mỗi buổi bao lâu?",
+    clarify:'Cậu cho mình biết tổng số phút chơi thể thao ngoài giờ trong một tuần và hoạt động đó ở mức vừa hay mạnh nhé. Nếu không có, cậu nói “không có” giúp mình.',
+    fields:'"the_thao_ngoai_gio_phut_tuan": tổng số phút/tuần chơi thể thao ngoài giờ học (0 nếu không có), "cuong_do": "vua" hoặc "manh" (dựa vào môn thể thao được nhắc tới)' },
+  { id:'truong', field:'van_dong_truong_hoc',
+    ask:"Vào giờ ra chơi hoặc giờ thể dục ở trường, cậu có vận động mạnh (chạy nhảy, chơi thể thao) hay chủ yếu ngồi/đứng nói chuyện?",
+    clarify:'Ở trường cậu vận động mạnh hay chỉ vận động nhẹ/ngồi nghỉ? Cậu chọn giúp mình một ý nhé.',
+    fields:'"van_dong_truong_hoc": "manh" | "nhe" | "khong_ro"' },
+  { id:'vieenha', field:'viec_nha_phut_tuan',
+    ask:"Ngoài giờ học, cậu có hay làm việc nhà vận động nhiều (quét dọn, làm vườn...) không? Khoảng bao nhiêu ngày/tuần, mỗi lần khoảng bao lâu?",
+    clarify:'Cậu cho mình biết tổng số phút làm việc nhà cần vận động trong một tuần nhé (ví dụ: 90 phút/tuần). Nếu không có, cậu nói “không có” giúp mình.',
+    fields:'"viec_nha_phut_tuan": số phút/tuần làm việc nhà cần vận động (0 nếu không có)' },
+  { id:'ngoi', field:'thoi_gian_ngoi_gio_ngay',
+    ask:"Một ngày bình thường, cậu ngồi học bài, xem điện thoại/máy tính, xem TV... tổng cộng khoảng bao nhiêu tiếng?",
+    clarify:'Cậu ước lượng giúp mình tổng số giờ ngồi tĩnh tại trong một ngày nhé (ví dụ: 6 giờ/ngày).',
+    fields:'"thoi_gian_ngoi_gio_ngay": số giờ/ngày ngồi tĩnh tại' },
+  { id:'cuoituan', field:'hoat_dong_cuoi_tuan_phut_tuan',
+    ask:"Cuối tuần cậu có hoạt động gì ngoài trời không (đi dạo, đạp xe, chơi thể thao cùng gia đình/bạn bè)? Khoảng bao nhiêu phút?",
+    clarify:'Cậu cho mình biết tổng số phút hoạt động ngoài trời vào cuối tuần nhé (ví dụ: 120 phút/tuần). Nếu không có, cậu nói “không có” giúp mình.',
+    fields:'"hoat_dong_cuoi_tuan_phut_tuan": tổng số phút hoạt động ngoài trời cuối tuần (0 nếu không có)' },
+];
+const LEVEL_META = {
+  'Không HĐTL': {cls:'lvl-khong', headline:'Cậu gần như chưa có thời gian vận động — mình bắt đầu từ điều nhỏ nhé!'},
+  'Không đủ':   {cls:'lvl-thieu', headline:'Cậu đã vận động, nhưng chưa chạm mốc khuyến cáo — chỉ cần thêm một chút!'},
+  'Đủ':         {cls:'lvl-du', headline:'Rất tốt — cậu đang vận động đúng mức khuyến cáo của Bộ Y tế!'},
+  'Cao':        {cls:'lvl-cao', headline:'Xuất sắc — cậu đang vận động ở mức cao, cứ duy trì nhé!'},
+};
+const LEVEL_COLOR = {'Không HĐTL':'var(--pulse)','Không đủ':'var(--amber)','Đủ':'var(--teal)','Cao':'var(--deep)'};
+
+
+/* ============================================================================
+ * JS-03.21 · LUỒNG CHATBOT KHẢO SÁT
+ * Hdtl nhận câu trả lời, gọi trích xuất, chuyển câu hỏi, hoàn tất khảo sát và lưu kết quả; xử lý cả yêu cầu thống kê.
+ * ========================================================================== */
+const Hdtl = {
+  restoreCurrent(options={}){
+    const conversation = ChatHistory.current;
+    if(!conversation) return;
+    const survey = conversation.survey || {};
+    const account = getActiveAccount();
+    const adminFreeform = !!options.adminFreeform && account && account.role === 'admin';
+    state.khoi = conversation.khoi || (account && account.role === 'student' ? (state.khoi || account.khoi) : '') || '';
+    state.hdtl = {
+      qIndex:Number(survey.qIndex)||0,
+      attempts:Number(survey.attempts)||0,
+      extracted:survey.extracted || {},
+      computed:survey.computed || null,
+      docRef:null,
+      completed:adminFreeform ? true : !!survey.completed,
+      finishing:adminFreeform ? false : !!survey.finishing,
+      adminChat:adminFreeform || !!survey.adminChat
+    };
+    if(adminFreeform && !survey.adminChat) ChatHistory.updateSurvey({completed:true, adminChat:true, finishing:false});
+    // Hôm nay tài khoản đã trả lời bộ câu hỏi mặc định → cuộc trò chuyện mới trong ngày KHÔNG hỏi lại, chỉ hỏi cậu cần giúp gì
+    const fresh = !conversation.messages.length && !state.hdtl.completed && !state.hdtl.finishing && !state.hdtl.adminChat && (!survey.qIndex);
+    const today = fresh && account && account.role === 'student' && window.HealthStore ? HealthStore.doneToday() : null;
+    if(today){
+      state.hdtl.completed = true;
+      ChatHistory.updateSurvey({completed:true, freeformToday:true, finishing:false});
+      conversation.title = 'Trò chuyện ' + chatDate(Date.now());
+    }
+    state.hdtl.freeformToday = !!(today || survey.freeformToday);
+    ChatHistory.renderMessages();
+    updateQCount();
+    updateComposer();
+    if(today){
+      const t = new Date(today.ts || Date.now());
+      addMsg('ai', 'Chào cậu! Hôm nay cậu đã trả lời bộ câu hỏi vận động rồi (lúc ' + String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0') +
+        (today.level ? ', mức ' + today.level + ', khoảng ' + today.quyDoi + ' phút/tuần' : '') + '), nên mình không hỏi lại nữa. ' +
+        'Cậu cần mình giúp gì nào? Ví dụ: xem thống kê tuần này, tháng này, so sánh với tuần trước, xuất dữ liệu ra file, hoặc đơn giản là tâm sự với mình.');
+      return;
+    }
+    if(fresh) addMsg('ai', QUESTIONS[0].ask);
+  },
+  start(){
+    ChatHistory.ensureCurrent(state.khoi, {newIfCompleted:true});
+    this.restoreCurrent({adminFreeform:false});
+  },
+  async sendAnswer(){
+    const input = $('chatInput');
+    const text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    if(state.hdtl.completed || state.hdtl.qIndex >= QUESTIONS.length) return this.sendFreeform(text);
+    if(state.hdtl.finishing) return;
+    if(window.HealthStore && HealthStore.isStatsRequest(text)){
+      addMsg('user', text); this.answerStats(text);
+      addMsg('ai', 'Giờ mình hỏi tiếp câu đang dở nhé: ' + QUESTIONS[state.hdtl.qIndex].ask);
+      return;
+    }
+    $('sendBtn').disabled = true;
+    addMsg('user', text);
+    const q = QUESTIONS[state.hdtl.qIndex];
+    showThinking();
+    try{
+      const result = await extractField(q, text);
+      removeThinking();
+      if(result.can_hoi_lai){
+        state.hdtl.attempts++;
+        ChatHistory.updateSurvey({qIndex:state.hdtl.qIndex, attempts:state.hdtl.attempts, extracted:state.hdtl.extracted});
+        addMsg('ai', result.cau_hoi_lai || q.clarify);
+      } else {
+        state.hdtl.extracted[q.id] = result;
+        state.hdtl.attempts = 0;
+        state.hdtl.qIndex++;
+        ChatHistory.updateSurvey({qIndex:state.hdtl.qIndex, attempts:0, extracted:state.hdtl.extracted});
+        if(state.hdtl.qIndex < QUESTIONS.length){
+          updateQCount();
+          addMsg('ai', QUESTIONS[state.hdtl.qIndex].ask);
+        } else {
+          state.hdtl.finishing = true;
+          ChatHistory.updateSurvey({qIndex:state.hdtl.qIndex, extracted:state.hdtl.extracted, finishing:true});
+          updateQCount();
+          addMsg('ai', 'Cảm ơn cậu! Mình tổng hợp kết quả nhé…');
+          setTimeout(Hdtl.finish, 500);
+        }
+      }
+    }catch(err){
+      removeThinking();
+      const msg = AIBackend.errorMessage(err);
+      addMsg('ai', msg);
+    }
+    $('sendBtn').disabled = false;
+  },
+  /** Trả lời yêu cầu thống kê từ Kho dữ liệu (không cần AI → số liệu luôn chính xác) */
+  answerStats(text){
+    const r = HealthStore.answer(text);
+    addMsg('ai', r.text);
+    if(r.csv && r.csv.length) addMsgActions(r.csv.map(c=>({label:c.label, run:()=>HealthStore.download(c.kind)})).concat([{label:'Mở Kho dữ liệu', run:()=>App.goData && App.goData(/thang|tháng/i.test(text) ? 'months' : 'weeks')}]));
+  },
+  async sendFreeform(text){
+    if(!text) return;
+    if(window.HealthStore && HealthStore.isStatsRequest(text)){ addMsg('user', text); this.answerStats(text); return; }
+    $('sendBtn').disabled = true;
+    addMsg('user', text);
+    showThinking();
+    try{
+      const reply = await generateCompanionReply(text);
+      removeThinking();
+      addMsg('ai', reply);
+    }catch(err){
+      removeThinking();
+      addMsg('ai', 'Mình vẫn đang lắng nghe cậu. Cậu có thể kể thêm điều đang làm cậu thấy nặng lòng không?');
+    }
+    $('sendBtn').disabled = false;
+  },
+  async finish(){
+    if(state.hdtl.completed) return;
+    const computed = computeHdtl(state.hdtl.extracted);
+    state.hdtl.computed = computed;
+    state.hdtl.completed = true;
+    state.hdtl.finishing = false;
+    const account = getActiveAccount();
+    const studentName = (state.student && state.student.displayName) || (account && account.displayName) || (account && account.username) || '';
+    const school = normaliseSchool(account || state.student || '');
+    const resultDoc = { username:account && account.username || (state.student && state.student.username) || null, displayName:studentName, schoolId:school.schoolId, schoolName:school.schoolName, schoolLevel:school.schoolLevel, wardName:school.wardName, districtName:school.districtName, provinceName:school.provinceName, provinceCode:school.provinceCode, wardCode:school.wardCode, address:school.address, khoi: state.khoi, level: computed.level, quyDoi: computed.quyDoi, committed:false, weekKey:getWeekKey(), ts: Date.now() };
+    try{ state.hdtl.docRef = await DB.collection('results').add(resultDoc); }catch(e){ state.hdtl.docRef = null; }
+    const fb = await generateHdtlFeedback(computed);
+    const summary = buildWeeklySummary(computed, fb);
+    if(state.hdtl.docRef && state.hdtl.docRef.id) summary.resultId = state.hdtl.docRef.id;
+    ChatHistory.updateSurvey({khoi:state.khoi, qIndex:QUESTIONS.length, extracted:state.hdtl.extracted, computed, summary, completed:true, finishing:false, completedAt:Date.now()});
+    addMsg('ai', 'Mình đã tổng hợp kết quả tuần này cho cậu ở thẻ bên dưới nhé.');
+    renderWeeklySummaryCard(summary);
+    // lưu vào Kho dữ liệu + tự thống kê tuần (7 ngày) / tháng (30 ngày)
+    if(window.HealthStore && account && account.role === 'student'){
+      try{
+        const saved = await HealthStore.recordSurvey(computed, state.hdtl.extracted, ChatHistory.current && ChatHistory.current.id);
+        if(saved && saved.week){
+          addMsg('ai', 'Mình đã lưu kết quả hôm nay vào Kho dữ liệu.\n' + HealthStore.periodText(saved.week) + (saved.month ? '\n' + HealthStore.periodText(saved.month) : '') +
+            '\nCậu có thể hỏi mình: thống kê tuần này, tháng này, so sánh tuần trước, hoặc xuất dữ liệu.');
+          addMsgActions([{label:'Mở Kho dữ liệu', run:()=>App.goData && App.goData('overview')}]);
+        }
+      }catch(e){}
+    }
+    if(window.VoiceRobot) VoiceRobot.onSummary(summary);
+    if(ChatHistory.current){ ChatHistory.current.status='completed'; ChatHistory.current.updatedAt=Date.now(); ChatHistory._saveLocal(); ChatHistory.queuePersist(); }
+    updateQCount();
+    updateComposer();
+    ChatHistory.renderList();
+  },
+  async markSummaryTried(){
+    const conversation = ChatHistory.current;
+    const summary = getWeeklySummaryForConversation(conversation);
+    if(!conversation || !summary || summary.tried) return;
+    const triedAt = Date.now();
+    const updatedSummary = Object.assign({}, summary, {tried:true, triedAt});
+    ChatHistory.updateSurvey({summary:updatedSummary});
+    renderWeeklySummaryCard(updatedSummary);
+    if(updatedSummary.resultId){
+      try{ await DB.collection('results').doc(updatedSummary.resultId).update({committed:true, committedAt:triedAt}); }catch(e){}
+    }
+    toast('Đã ghi nhận cậu sẽ thử hoạt động này trong tuần.');
+  }
+};
+
+/* ============================================================================
+ * JS-03.22 · HIỂN THỊ TIN NHẮN
+ * Cập nhật số câu hỏi và ô nhập; thêm tin nhắn/nút hành động, hiện hoặc xóa trạng thái đang suy nghĩ.
+ * ========================================================================== */
+function updateQCount(){
+  const box = $('qcount'); if(!box) return;
+  if(state.hdtl && state.hdtl.finishing) box.textContent = 'Đang tổng hợp câu trả lời…';
+  else if(state.hdtl && state.hdtl.adminChat) box.textContent = 'Chatbot sẵn sàng · cậu có thể bắt đầu trò chuyện';
+  else if(state.hdtl && state.hdtl.freeformToday) box.textContent = 'Hôm nay cậu đã trả lời bộ câu hỏi · hỏi mình thống kê hoặc trò chuyện tự do';
+  else if(state.hdtl && state.hdtl.completed) box.textContent = 'Khảo sát đã hoàn tất · hỏi mình thống kê tuần/tháng, hoặc tiếp tục tâm sự';
+  else box.textContent = 'Câu ' + ((state.hdtl && state.hdtl.qIndex || 0)+1) + ' / ' + QUESTIONS.length;
+}
+function updateComposer(){
+  const input = $('chatInput'); const send = $('sendBtn');
+  if(!input || !send) return;
+  const freeform = state.hdtl && state.hdtl.completed;
+  input.placeholder = freeform ? 'Chia sẻ điều cậu đang nghĩ...' : 'Trả lời câu hỏi của cậu...';
+  input.disabled = !!(state.hdtl && state.hdtl.finishing);
+  send.disabled = !!(state.hdtl && state.hdtl.finishing);
+}
+function appendMsgElement(role, text){
+  const log = $('chatLog');
+  if(!log) return;
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + role;
+  const avatar = role==='ai' ? '<div class="avatar-ai"></div>' : '';
+  row.innerHTML = avatar + '<div class="msg '+role+'">'+escapeHtml(text)+'</div>';
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+}
+function addMsg(role, text){
+  appendMsgElement(role, text);
+  ChatHistory.addMessage(role, text);
+  if(role==='ai' && window.VoiceRobot) VoiceRobot.onAiMessage(text);
+  window.scrollTo({top:document.body.scrollHeight, behavior:(window.A11y ? A11y.scrollBehavior() : 'smooth')});
+}
+/** Hàng nút bấm ngay dưới tin nhắn mới nhất của Chatbot (VD: tải file CSV, mở Kho dữ liệu) */
+function addMsgActions(actions){
+  const log = $('chatLog'); if(!log || !actions || !actions.length) return;
+  const row = document.createElement('div');
+  row.className = 'msg-actions';
+  actions.forEach(a=>{
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn btn-ghost btn-sm'; b.textContent = a.label;
+    b.addEventListener('click', a.run);
+    row.appendChild(b);
+  });
+  log.appendChild(row); log.scrollTop = log.scrollHeight;
+}
+function showThinking(){
+  const log = $('chatLog');
+  const row = document.createElement('div');
+  row.className='msg-row ai'; row.id='thinkingBubble';
+  row.innerHTML = '<div class="avatar-ai"></div><div class="msg thinking"><span class="dot-flash"></span><span class="dot-flash"></span><span class="dot-flash"></span></div>';
+  log.appendChild(row); log.scrollTop = log.scrollHeight;
+}
+function removeThinking(){ const b=$('thinkingBubble'); if(b) b.remove(); }
+
+
+/* ============================================================================
+ * JS-03.23 · TÓM TẮT VÀ TRÒ CHUYỆN TIẾP
+ * Dựng tóm tắt khảo sát, thẻ tổng kết tuần và ngữ cảnh cho câu trả lời đồng hành sau khảo sát.
+ * ========================================================================== */
+function buildSurveySummary(computed){
+  const meta = LEVEL_META[computed.level];
+  return meta.headline + '\n\nMức hiện tại: ' + computed.level + '\nVận động quy đổi: khoảng ' + computed.quyDoi + ' phút/tuần\nThời gian ngồi tĩnh tại: khoảng ' + computed.gioNgoiNgay + ' giờ/ngày';
+}
+
+function getWeekKey(ts=Date.now()){
+  const date = new Date(ts);
+  const start = new Date(date.getFullYear(), 0, 1);
+  const day = Math.floor((date - start) / 86400000);
+  return date.getFullYear() + '-W' + String(Math.floor((day + start.getDay()) / 7) + 1).padStart(2, '0');
+}
+
+function buildWeeklySummary(computed, feedback=''){
+  const level = LEVEL_META[computed.level] ? computed.level : 'Không đủ';
+  const descriptions = {
+    'Không HĐTL':'Tuần này cậu gần như chưa có hoạt động vận động. Mình bắt đầu từ một mục tiêu nhỏ, vừa sức nhé.',
+    'Không đủ':'Cậu đã có một số hoạt động trong tuần nhưng vẫn còn thiếu so với mức khuyến cáo.',
+    'Đủ':'Cậu đang duy trì mức vận động phù hợp với mức khuyến cáo. Tiếp tục giữ nhịp này nhé!',
+    'Cao':'Tuần này cậu vận động ở mức cao. Hãy tiếp tục duy trì nhưng nhớ xen kẽ thời gian nghỉ ngơi.'
+  };
+  const recommendations = {
+    'Không HĐTL':'Đi bộ nhanh 10 phút sau giờ học, 4 ngày/tuần.',
+    'Không đủ':'Đi bộ nhanh 15 phút sau giờ học, 4 ngày/tuần.',
+    'Đủ':'Duy trì hoạt động vừa đến mạnh khoảng 30 phút, 5 ngày/tuần.',
+    'Cao':'Tiếp tục lịch hiện tại, uống đủ nước và xen kẽ ngày nghỉ để cơ thể hồi phục.'
+  };
+  return {
+    title:'Tổng kết tuần',
+    weekKey:getWeekKey(),
+    createdAt:Date.now(),
+    level,
+    minutes:Math.max(0, Math.round(Number(computed.quyDoi)||0)),
+    sittingHours:Math.max(0, Number(computed.gioNgoiNgay)||0),
+    description:descriptions[level],
+    recommendationTitle:'Thử trong tuần này',
+    recommendation:recommendations[level],
+    feedback:String(feedback || ''),
+    tried:false,
+    triedAt:null
+  };
+}
+
+function getWeeklySummaryForConversation(conversation){
+  if(!conversation) return null;
+  const survey = conversation.survey || {};
+  if(survey.summary && survey.summary.level){
+    const base = survey.computed ? buildWeeklySummary(survey.computed, survey.summary.feedback || '') : {};
+    return Object.assign(base, survey.summary);
+  }
+  if(survey.completed && survey.computed) return buildWeeklySummary(survey.computed, '');
+  return null;
+}
+
+function renderWeeklySummaryCard(summary){
+  const log = $('chatLog');
+  if(!log || !summary) return;
+  const old = log.querySelector('.weekly-summary-row');
+  if(old) old.remove();
+  const meta = LEVEL_META[summary.level] || LEVEL_META['Không đủ'];
+  const minutes = Math.max(0, Math.round(Number(summary.minutes)||0));
+  const tried = !!summary.tried;
+  const feedback = String(summary.feedback || '').trim();
+  const row = document.createElement('div');
+  row.className = 'weekly-summary-row';
+  row.innerHTML = '<article class="result-wrap weekly-summary-card" aria-label="Tổng kết vận động tuần này">' +
+    '<div class="level-badge '+meta.cls+'"><span class="dot"></span>'+escapeHtml(String(summary.level).toUpperCase())+'</div>' +
+    '<div class="weekly-minutes">'+minutes+'<span> phút/tuần</span></div>' +
+    '<p class="weekly-summary-description">'+escapeHtml(summary.description || '')+'</p>' +
+    '<div class="weekly-suggestion"><div class="weekly-suggestion-title"><i data-lucide="target"></i><strong>'+escapeHtml(summary.recommendationTitle || 'Thử trong tuần này')+'</strong></div><p>'+escapeHtml(summary.recommendation || '')+'</p></div>' +
+    (feedback ? '<div class="weekly-summary-feedback"><i data-lucide="message-circle-heart"></i><span>'+escapeHtml(feedback)+'</span></div>' : '') +
+    '<div class="commit-row"><button type="button" class="btn btn-primary weekly-summary-try" data-summary-action '+(tried?'disabled':'')+'><i data-lucide="'+(tried?'check':'circle-check')+'"></i> '+(tried?'Đã thử':'Mình đã thử')+'</button>'+(tried?'<span class="committed-note show"><i data-lucide="check-circle-2"></i> Đã ghi nhận cho tuần này</span>':'')+'</div>' +
+    '</article>';
+  log.appendChild(row);
+  const button = row.querySelector('[data-summary-action]');
+  if(button && !tried) button.addEventListener('click', ()=>Hdtl.markSummaryTried());
+  refreshIcons();
+  log.scrollTop = log.scrollHeight;
+}
+
+async function generateCompanionReply(userText){
+  const account = getActiveAccount();
+  const isAdmin = account && account.role === 'admin';
+  const fallback = isAdmin
+    ? 'Mình đã nghe cậu. Cậu hãy kể thêm điều đang quan tâm; mình sẽ cùng cậu sắp xếp suy nghĩ và tìm một hướng xử lý thực tế nhé.'
+    : 'Mình đã nghe cậu. Cậu thử nói chậm lại một chút về điều đang khiến cậu mệt hoặc lo lắng; mình sẽ cùng cậu tìm một bước nhỏ, thực tế để xử lý nhé.';
+  if(AIBackend.mode==='none') return fallback;
+  const audience = isAdmin ? 'giáo viên hoặc quản trị viên' : 'học sinh';
+  const prompt = 'Bạn là một người bạn đồng hành AI thân thiện của '+audience+'. Quy tắc xưng hô bắt buộc: xưng "mình" và gọi người dùng là "cậu"; không dùng cách gọi "em" hoặc "bạn". Hãy đọc lịch sử trò chuyện của đúng tài khoản này để nhận ra cảm xúc, mối quan tâm và cách trả lời phù hợp, rồi trả lời tin nhắn mới một cách ấm áp, cụ thể và không phán xét. Không chẩn đoán bệnh, không khẳng định chắc chắn về tâm lý. Nếu có dấu hiệu tự làm hại bản thân, nguy hiểm hoặc vấn đề y tế nghiêm trọng, hãy khuyên người dùng báo ngay cho người lớn đáng tin cậy và nhân viên y tế/dịch vụ khẩn cấp tại nơi họ sống. Trả lời bằng tiếng Việt, ngắn gọn 2–5 đoạn, ưu tiên một hoặc hai gợi ý có thể làm ngay.\n\n' +
+    ChatHistory.buildContext() + (window.HealthStore ? '\n\n' + HealthStore.contextLine() : '') + '\n\nTIN NHẮN MỚI NHẤT CỦA NGƯỜI DÙNG:\n' + userText;
+  try{ return await AIBackend.text(prompt); }catch(e){ return fallback; }
+}
+
+
+/* ============================================================================
+ * JS-03.24 · TRÍCH XUẤT CÂU TRẢ LỜI
+ * Chuẩn hóa kết quả AI thành số/cường độ; kiểm tra dữ liệu thiếu và áp dụng cách hiểu dự phòng khi cần hỏi lại.
+ * ========================================================================== */
+/* =================== AI xử lý dữ liệu phía sau (đúng Prompt Log, Mục 3.1) =================== */
+function toFiniteNumber(value){
+  if(typeof value === 'number' && Number.isFinite(value)) return value;
+  if(typeof value === 'string' && /^\s*\d+(?:[.,]\d+)?\s*$/.test(value)) return Number(value.trim().replace(',', '.'));
+  return null;
+}
+
+function normaliseIntensity(value){
+  const text = String(value || '').trim().toLocaleLowerCase('vi-VN');
+  if(text === 'manh' || text.includes('mạnh')) return 'manh';
+  if(text === 'vua' || text.includes('vừa') || text.includes('trung bình')) return 'vua';
+  return '';
+}
+
+function clarificationResult(q){
+  return {can_hoi_lai:true, cau_hoi_lai:q.clarify};
+}
+
+function normaliseExtraction(q, raw){
+  const result = raw && typeof raw === 'object' ? raw : {};
+  const asksAgain = result.can_hoi_lai === true || String(result.can_hoi_lai || '').trim().toLowerCase() === 'true';
+  if(asksAgain) return clarificationResult(q);
+
+  if(q.id === 'truong'){
+    const level = String(result.van_dong_truong_hoc || '').trim().toLocaleLowerCase('vi-VN');
+    if(level === 'manh' || level.includes('mạnh')) return Object.assign({}, result, {van_dong_truong_hoc:'manh', can_hoi_lai:false});
+    if(level === 'nhe' || level.includes('nhẹ')) return Object.assign({}, result, {van_dong_truong_hoc:'nhe', can_hoi_lai:false});
+    return clarificationResult(q);
+  }
+
+  const value = toFiniteNumber(result[q.field]);
+  const max = q.id === 'ngoi' ? 24 : 10080;
+  if(value === null || value < 0 || value > max) return clarificationResult(q);
+
+  const normalized = Object.assign({}, result, {[q.field]:value, can_hoi_lai:false});
+  if(q.id === 'thethao'){
+    const intensity = normaliseIntensity(result.cuong_do);
+    if(value > 0 && !intensity) return clarificationResult(q);
+    normalized.cuong_do = intensity || 'vua';
+  }
+  return normalized;
+}
+
+function isExplicitNoActivity(text){
+  return /^(không(?:\s+có)?|ko|chưa(?:\s+từng)?|không\s+(?:đi|chơi|tham gia|làm))(?:\s|[.!?,]|$)/i.test(text.trim());
+}
+
+function fallbackExtraction(q, userText){
+  const text = String(userText || '').trim().toLocaleLowerCase('vi-VN');
+  if(q.id === 'truong'){
+    if(/\b(?:mạnh|chạy|đá bóng|bóng đá|cầu lông|bơi|nhảy dây)\b/i.test(text)) return {van_dong_truong_hoc:'manh', can_hoi_lai:false};
+    if(/\b(?:nhẹ|ngồi|đứng|nói chuyện|không vận động|nghỉ)\b/i.test(text)) return {van_dong_truong_hoc:'nhe', can_hoi_lai:false};
+    return clarificationResult(q);
+  }
+  if(q.id !== 'ngoi' && isExplicitNoActivity(text)) return normaliseExtraction(q, Object.assign({can_hoi_lai:false}, {[q.field]:0, cuong_do:'vua'}));
+
+  const numbers = text.match(/\d+(?:[.,]\d+)?/g) || [];
+  const unitPattern = q.id === 'ngoi' ? /(?:giờ|tiếng|h)(?:\s*\/?\s*ngày)?/i : /phút\s*(?:\/|mỗi\s+)?\s*tuần|phút\/tuần/i;
+  const explicitZero = numbers[0] === '0' && q.id !== 'ngoi';
+  if(numbers.length !== 1 || (!explicitZero && !unitPattern.test(text))) return clarificationResult(q);
+
+  const raw = {can_hoi_lai:false, [q.field]:Number(numbers[0].replace(',', '.'))};
+  if(q.id === 'thethao'){
+    const intensity = normaliseIntensity(text);
+    if(raw[q.field] > 0 && !intensity) return clarificationResult(q);
+    raw.cuong_do = intensity || 'vua';
+  }
+  return normaliseExtraction(q, raw);
+}
+
+async function extractField(q, userText){
+  if(AIBackend.mode==='none') return fallbackExtraction(q, userText);
+  const prompt = 'Bạn là trợ lý AI phân tích mức độ hoạt động thể lực (HĐTL) của học sinh THPT, dựa trên hướng dẫn chính thức của Bộ Y tế Việt Nam (Cẩm nang HĐTL 2026, Phụ lục 2).\n\n' +
+    'Quy tắc xưng hô trong câu hỏi làm rõ: xưng "mình", gọi học sinh là "cậu".\n' +
+    'Câu hỏi đã hỏi: "' + q.ask + '"\nCâu trả lời của học sinh: "' + userText + '"\n\n' +
+    'Hãy trích xuất và trả về dưới dạng JSON đúng các trường sau: ' + q.fields + '.\n' +
+    'Các trường số phải là number không âm, đúng đơn vị được hỏi. Nếu câu trả lời nói không có hoạt động thì trả về 0.\n' +
+    'Nếu câu trả lời không có số liệu rõ ràng (ví dụ: "thỉnh thoảng", "ít", hoặc thiếu đơn vị), đặt "can_hoi_lai": true. Không tự đoán hoặc tự quy đổi khi chưa đủ dữ liệu.\n' +
+    'Nếu đã đủ rõ, trả về JSON phẳng gồm đúng các trường yêu cầu, cộng thêm "can_hoi_lai": false.\n' +
+    'Chỉ trả về JSON hợp lệ, không kèm chữ nào khác, không dùng markdown code fence.';
+  const raw = await AIBackend.json(prompt);
+  return normaliseExtraction(q, raw);
+}
+
+/* ============================================================================
+ * JS-03.25 · TÍNH MỨC HOẠT ĐỘNG THỂ LỰC
+ * computeHdtl() nhận dữ liệu khảo sát đã trích xuất, tính số phút quy đổi, mức hoạt động và thời gian ngồi theo logic hiện có.
+ * ========================================================================== */
+function computeHdtl(ex){
+  // Công thức chính thức tại Phụ lục 2, mục B (Cẩm nang HĐTL):
+  // Tổng phút HĐTL cường độ vừa/tuần = di_chuyen_phut_tuan + the_thao_ngoai_gio_phut_tuan (nếu vận động vừa) + viec_nha_phut_tuan
+  // Tổng phút HĐTL cường độ mạnh/tuần = the_thao_ngoai_gio_phut_tuan (nếu vận động mạnh) + hoạt động thể dục mạnh ở trường
+  // Quy đổi: 1 phút cường độ mạnh = 2 phút cường độ vừa
+  // (Hoạt động cuối tuần — câu hỏi 6 — là phần bổ sung ngoài schema gốc để phản ánh đầy đủ hơn, được cộng vào nhóm cường độ vừa.)
+  const di_chuyen = (ex.dichuyen && ex.dichuyen.di_chuyen_phut_tuan) || 0;
+  const the_thao = (ex.thethao && ex.thethao.the_thao_ngoai_gio_phut_tuan) || 0;
+  const the_thao_cuong_do = (ex.thethao && ex.thethao.cuong_do) || 'vua';
+  const truong_manh = ex.truong && ex.truong.van_dong_truong_hoc === 'manh';
+  const viec_nha = (ex.vieenha && ex.vieenha.viec_nha_phut_tuan) || 0;
+  const cuoi_tuan = (ex.cuoituan && ex.cuoituan.hoat_dong_cuoi_tuan_phut_tuan) || 0;
+  const gio_ngoi = (ex.ngoi && ex.ngoi.thoi_gian_ngoi_gio_ngay) || 0;
+
+  let phutVua = di_chuyen + viec_nha + cuoi_tuan;
+  let phutManh = 0;
+  if(the_thao_cuong_do === 'manh') phutManh += the_thao; else phutVua += the_thao;
+  if(truong_manh) phutManh += 45;
+
+  const quyDoi = phutVua + phutManh*2;
+  let level;
+  if(quyDoi === 0) level = 'Không HĐTL';
+  else if(quyDoi < 420) level = 'Không đủ';
+  else if(quyDoi <= 600) level = 'Đủ';
+  else level = 'Cao';
+  return {phutVua, phutManh, quyDoi, level, gioNgoiNgay: gio_ngoi};
+}
+
+/* ============================================================================
+ * JS-03.26 · SINH PHẢN HỒI SAU KHẢO SÁT
+ * generateHdtlFeedback() dùng kết quả đã tính để tạo lời phản hồi; có câu dự phòng khi AI chưa sẵn sàng.
+ * ========================================================================== */
+async function generateHdtlFeedback(computed){
+  const fallback = 'Cậu đang ở mức "' + computed.level + '". Cậu thử đi bộ nhanh 10 phút vào giờ ra chơi, 3 buổi/tuần nhé!';
+  if(AIBackend.mode==='none') return fallback;
+  const prompt = 'Bạn là trợ lý AI phân tích mức độ hoạt động thể lực (HĐTL) của học sinh THPT, dựa trên hướng dẫn chính thức của Bộ Y tế Việt Nam (Cẩm nang HĐTL 2026, Phụ lục 2).\n\n' +
+    'Học sinh vừa được phân loại: mức "' + computed.level + '", tổng thời gian vận động quy đổi khoảng ' + computed.quyDoi + ' phút/tuần (mốc khuyến cáo tối thiểu là 420 phút/tuần), thời gian ngồi tĩnh tại khoảng ' + computed.gioNgoiNgay + ' giờ/ngày.\n\n' +
+    'Viết lời khuyên ngắn gọn, gần gũi, KHÔNG dùng ngôn ngữ y tế khô khan. Phải bao gồm:\n' +
+    '1. Nhận xét ngắn về mức độ hiện tại (khích lệ, không chê trách)\n' +
+    '2. Đúng 1-2 gợi ý HÀNH ĐỘNG CỤ THỂ, khả thi trong tuần (VD: "Thử đi bộ nhanh 10 phút vào giờ ra chơi, 3 buổi/tuần"), dựa trên loại hình phù hợp lứa tuổi 5-17 (đi bộ nhanh, đạp xe, nhảy dây, bóng chuyền, cầu lông...)\n' +
+    '3. Không dùng thuật ngữ MET, không liệt kê số liệu phức tạp\n\n' +
+    'Giọng văn: thân thiện như một người anh/chị hướng dẫn, không phải bác sĩ. Bắt buộc xưng "mình", gọi học sinh là "cậu"; không dùng "em" hoặc "bạn". Chỉ trả về đoạn văn, không tiêu đề.\n\n' +
+    'Nếu phù hợp, tham khảo thêm lịch sử trò chuyện sau để lời khuyên hợp với cảm xúc của cậu:\n' + ChatHistory.buildContext(5000);
+  try{ return await AIBackend.text(prompt); }catch(e){ return fallback; }
+}
+
+
+/* ============================================================================
+ * JS-03.27 · DASHBOARD DÀNH CHO QUẢN TRỊ
+ * Đọc kết quả theo phạm vi tài khoản, lọc theo khối, dựng thống kê, biểu đồ cột, bảng tỷ lệ và kết quả từng học sinh.
+ * ========================================================================== */
+/* =================== 4. Dashboard (GV/BGH) =================== */
+const KHOI_ORDER = ['6','7','8','9','10','11','12'];
+const LEVEL_ICON_COLOR = {'Không HĐTL':'#FF5D5D','Không đủ':'#FFB74D','Đủ':'#2F8F7D','Cao':'#123C3B'};
+let allResults = [];
+let rawResults = [];
+let allStudents = [];
+const Dashboard = {
+  started:false,
+  resultsStop:null,
+  studentsStop:null,
+  load(){
+    if(this.started){ this.applyFilter(); return; }
+    this.started = true;
+    this.resultsStop = DB.collection('results').onSnapshot((snap)=>{
+      rawResults = snap.docs.map(d=>Object.assign({id:d.id}, d.data()));
+      Dashboard.rebuildResults();
+      Dashboard.applyFilter();
+    }, ()=>{ Dashboard.showLoadError(); });
+    this.studentsStop = DB.collection('students').onSnapshot((snap)=>{
+      allStudents = snap.docs.map(d=>Object.assign({id:d.id}, d.data()));
+      Dashboard.rebuildResults();
+      Dashboard.applyFilter();
+    }, ()=>{
+      // Vẫn hiển thị kết quả với tài khoản đã lưu nếu danh sách học sinh chưa tải được.
+      Dashboard.rebuildResults();
+      Dashboard.applyFilter();
+    });
+  },
+  rebuildResults(){
+    const byUsername = {};
+    allStudents.forEach(student=>{
+      const username = String(student.username || student.id || '').trim().toLowerCase();
+      if(username) byUsername[username] = student;
+    });
+    allResults = rawResults.map(result=>{
+      const username = String(result.username || '').trim();
+      const student = byUsername[username.toLowerCase()] || {};
+      const school = normaliseSchool({
+        schoolId:result.schoolId || student.schoolId,
+        schoolName:result.officialName || result.schoolName || student.officialName || student.schoolName || student.school || student.truongHoc,
+        schoolLevel:result.schoolLevel || student.schoolLevel,
+        wardName:result.wardName || student.wardName,
+        districtName:result.districtName || student.districtName,
+        provinceName:result.provinceName || student.provinceName,
+        provinceCode:result.provinceCode || student.provinceCode,
+        wardCode:result.wardCode || student.wardCode,
+        address:result.address || student.address
+      });
+      return Object.assign({}, result, {
+        username: username || String(student.username || student.id || '').trim(),
+        displayName: resolveAccountDisplayName(result, resolveAccountDisplayName(student, 'Chưa cập nhật')),
+        schoolId: school.schoolId,
+        schoolName: school.schoolName,
+        schoolLevel: school.schoolLevel,
+        wardName: school.wardName,
+        districtName: school.districtName,
+        provinceName: school.provinceName,
+        provinceCode: school.provinceCode,
+        wardCode: school.wardCode,
+        address: school.address,
+        khoi: result.khoi || student.khoi || ''
+      });
+    });
+  },
+  showLoadError(){
+    const message = '<div class="empty-dash">Không thể tải dữ liệu lúc này.</div>';
+    if($('dashBars')) $('dashBars').innerHTML = message;
+    if($('studentResultTable')) $('studentResultTable').innerHTML = message;
+    if($('studentResultCount')) $('studentResultCount').textContent = '';
+  },
+  applyFilter(){
+    const filter = $('khoiFilter');
+    if(!filter) return;
+    const account = getActiveAccount();
+    const adminSchool = normaliseSchool(account || '');
+    if(!isCompleteSchool(adminSchool)){
+      $('dashTotal').textContent = '0';
+      $('dashTopLevel').textContent = '—';
+      if($('dashBars')) $('dashBars').innerHTML = '<div class="empty-dash">Tài khoản admin chưa được gán trường nên chưa thể xem dữ liệu.</div>';
+      if($('pctTable')) $('pctTable').innerHTML = '<div class="empty-dash">Hãy đăng nhập lại và chọn đúng trường quản lý.</div>';
+      if($('studentResultTable')) $('studentResultTable').innerHTML = '<div class="empty-dash">Chưa có phạm vi trường để hiển thị dữ liệu.</div>';
+      if($('studentResultCount')) $('studentResultCount').textContent = '';
+      if($('highlightNote')) $('highlightNote').classList.add('hidden');
+      if($('dashWorstKhoi')) $('dashWorstKhoi').textContent = '—';
+      return;
+    }
+    const khoi = filter.value;
+    const schoolResults = allResults.filter(result=>schoolMatches(result, adminSchool));
+    $('dashTotal').textContent = schoolResults.length;
+    const filtered = khoi==='all' ? schoolResults : schoolResults.filter(r=>String(r.khoi||'')===String(khoi));
+    renderBars(filtered);
+    renderPctTable(schoolResults, khoi);
+    renderStudentResults(filtered);
+    Dashboard.renderSummaryStats(schoolResults);
+  },
+  renderSummaryStats(rows){
+    rows = rows || [];
+    if(rows.length===0){ $('dashTopLevel').textContent='—'; return; }
+    const counts = {'Không HĐTL':0,'Không đủ':0,'Đủ':0,'Cao':0};
+    rows.forEach(r=>{ if(counts[r.level]!==undefined) counts[r.level]++; });
+    const topLevel = Object.keys(counts).reduce((a,b)=> counts[a]>=counts[b] ? a : b);
+    $('dashTopLevel').textContent = topLevel;
+  }
+};
+const AdminNav = {
+  switchTab(tab){
+    document.querySelectorAll('.atab2').forEach(t=>t.classList.toggle('active', t.dataset.atab===tab));
+    document.querySelectorAll('.admin-panel').forEach(p=>p.classList.toggle('active', p.id==='ap-'+tab));
+    if(tab==='overview') Dashboard.load();
+    if(tab==='library') AdminLibrary.load();
+    refreshIcons();
+  }
+};
+function renderBars(rows){
+  const box = $('dashBars');
+  if(rows.length===0){ box.innerHTML = '<div class="empty-dash">Chưa có dữ liệu khảo sát.</div>'; return; }
+  const byKhoi = {}; KHOI_ORDER.forEach(k=>byKhoi[k]={'Không HĐTL':0,'Không đủ':0,'Đủ':0,'Cao':0});
+  rows.forEach(r=>{ const khoi = String(r.khoi || ''); if(!byKhoi[khoi]) byKhoi[khoi]={'Không HĐTL':0,'Không đủ':0,'Đủ':0,'Cao':0}; if(byKhoi[khoi][r.level]!==undefined) byKhoi[khoi][r.level]++; });
+  let html='';
+  KHOI_ORDER.forEach(k=>{
+    const c = byKhoi[k]; const total = Object.values(c).reduce((a,b)=>a+b,0);
+    if(total===0) return;
+    html += '<div class="bar-row"><div class="khoi-lbl">Khối '+k+'</div><div class="bar-track">';
+    Object.keys(c).forEach(l=>{ const pct=c[l]/total*100; if(pct>0) html += '<div class="bar-seg" style="width:'+pct.toFixed(1)+'%;background:'+LEVEL_COLOR[l]+';" title="'+l+': '+c[l]+'"></div>'; });
+    html += '</div><div class="cnt">'+total+'</div></div>';
+  });
+  box.innerHTML = html || '<div class="empty-dash">Chưa có dữ liệu khảo sát.</div>';
+}
+function renderPctTable(rows, selectedKhoi){
+  const wrap = $('pctTable'); const note = $('highlightNote');
+  if(rows.length===0){ wrap.innerHTML=''; note.classList.add('hidden'); return; }
+  const byKhoi = {}; KHOI_ORDER.forEach(k=>byKhoi[k]={'Không HĐTL':0,'Không đủ':0,'Đủ':0,'Cao':0});
+  rows.forEach(r=>{ const khoi = String(r.khoi || ''); if(!byKhoi[khoi]) byKhoi[khoi]={'Không HĐTL':0,'Không đủ':0,'Đủ':0,'Cao':0}; if(byKhoi[khoi][r.level]!==undefined) byKhoi[khoi][r.level]++; });
+  let html = '<table class="pct-table"><thead><tr><th>Khối</th><th>Không HĐTL</th><th>Không đủ</th><th>Đủ</th><th>Cao</th></tr></thead><tbody>';
+  let worstKhoi=null, worstPct=-1;
+  KHOI_ORDER.forEach(k=>{
+    const c = byKhoi[k]; const total = Object.values(c).reduce((a,b)=>a+b,0);
+    if(total===0) return;
+    const pct = (n)=> Math.round(n/total*100)+'%';
+    const thieuPct = (c['Không HĐTL']+c['Không đủ'])/total*100;
+    if(thieuPct > worstPct){ worstPct = thieuPct; worstKhoi = k; }
+    const style = selectedKhoi!=='all' && String(selectedKhoi)===String(k) ? ' style="background:var(--paper);"' : '';
+    html += '<tr'+style+'><td>Khối '+k+'</td><td>'+pct(c['Không HĐTL'])+'</td><td>'+pct(c['Không đủ'])+'</td><td>'+pct(c['Đủ'])+'</td><td>'+pct(c['Cao'])+'</td></tr>';
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+  if(worstKhoi){
+    note.classList.remove('hidden');
+    note.innerHTML = '<i data-lucide="alert-triangle" style="width:15px;height:15px;"></i><span>Khối '+worstKhoi+' đang có tỷ lệ thiếu vận động cao nhất — khoảng '+Math.round(worstPct)+'%. Nên ưu tiên tổ chức hoạt động thể chất cho khối này.</span>';
+    refreshIcons();
+    const wEl = $('dashWorstKhoi'); if(wEl) wEl.textContent = 'Khối ' + worstKhoi;
+  } else { note.classList.add('hidden'); const wEl = $('dashWorstKhoi'); if(wEl) wEl.textContent = '—'; }
+}
+
+function resultWeekLabel(result){
+  const week = String(result.weekKey || '').trim();
+  if(week) return week;
+  if(result.ts){
+    try{ return 'Tuần ' + getWeekKey(Number(result.ts)); }catch(e){}
+  }
+  return '—';
+}
+
+function resultLevelClass(level){
+  return {'Không HĐTL':'lvl-khong','Không đủ':'lvl-thieu','Đủ':'lvl-du','Cao':'lvl-cao'}[level] || 'lvl-thieu';
+}
+
+function renderStudentResults(rows){
+  const wrap = $('studentResultTable');
+  const count = $('studentResultCount');
+  if(!wrap) return;
+  const sorted = rows.slice().sort((a,b)=>(Number(b.ts)||0)-(Number(a.ts)||0));
+  const studentCount = new Set(sorted.map(r=>String(r.username||'').trim().toLowerCase()).filter(Boolean)).size;
+  if(count) count.textContent = sorted.length ? sorted.length + ' bản ghi · ' + studentCount + ' học sinh' : '';
+  if(!sorted.length){ wrap.innerHTML = '<div class="empty-dash">Chưa có kết quả khảo sát của học sinh.</div>'; return; }
+  let html = '<div class="student-results-table-wrap"><table class="student-results-table"><thead><tr><th>Tài khoản</th><th>Họ tên</th><th>Trường / địa bàn</th><th>Khối</th><th>Tuần</th><th>Số phút/tuần</th><th>Kết quả</th><th>Đã thử</th></tr></thead><tbody>';
+  sorted.forEach(result=>{
+    const minutes = Number(result.quyDoi);
+    const minuteLabel = Number.isFinite(minutes) ? Math.max(0, Math.round(minutes)) + ' phút' : '—';
+    const level = String(result.level || '—');
+    html += '<tr>' +
+      '<td class="student-username">' + escapeHtml(result.username || '—') + '</td>' +
+      '<td class="student-full-name">' + escapeHtml(result.displayName || 'Chưa cập nhật') + '</td>' +
+      '<td>' + escapeHtml(isCompleteSchool(result) ? schoolLabel(result) : (result.schoolName || 'Chưa cập nhật')) + '</td>' +
+      '<td>Khối ' + escapeHtml(result.khoi || '—') + '</td>' +
+      '<td>' + escapeHtml(resultWeekLabel(result)) + '</td>' +
+      '<td class="student-minutes">' + escapeHtml(minuteLabel) + '</td>' +
+      '<td><span class="student-level-chip ' + resultLevelClass(level) + '">' + escapeHtml(level) + '</span></td>' +
+      '<td><span class="student-commit ' + (result.committed ? 'yes' : '') + '">' + (result.committed ? 'Đã thử' : 'Chưa đánh dấu') + '</span></td>' +
+      '</tr>';
+  });
+  html += '</tbody></table></div>';
+  wrap.innerHTML = html;
+}
+
+
+/* ============================================================================
+ * JS-03.28 · BẮT ĐẦU ỨNG DỤNG
+ * Dựng thanh bước và biểu tượng, rồi gọi bootAI(). Tác vụ bất đồng bộ tiếp tục trong khi các mô-đun phía dưới được khai báo.
+ * ========================================================================== */
+/* init */
+renderSteps('view-landing');
+refreshIcons();
+bootAI();
+
+
+
+/* ============================================================================
+ * MỤC JS-04 · DỮ LIỆU THAM CHIẾU WHO2007
+ * Bảng số liệu theo tháng tuổi và giới tính dùng trong phần tính BMI/chiều cao.
+ * Đây là dữ liệu đầu vào của JS-05; giữ nguyên thứ tự và giá trị các hàng khi sửa bố cục mã.
+ * ========================================================================== */
+
+/* Bảng tham chiếu tăng trưởng WHO 2007 (5–19 tuổi), mỗi hàng = 1 tháng tuổi, bắt đầu từ 60 tháng.
+   Nguồn: WHO Growth Reference 5–19 years (2007) — https://www.who.int/tools/growth-reference-data-for-5to19-years
+   BMI: [L, M, S] · Chiều cao: [M, S] (L = 1) */
+const WHO2007 = {
+  start: 60,
+  bmi: { m: [[-0.7151,15.2679,0.08366],[-0.7387,15.2641,0.0839],[-0.7621,15.2616,0.08414],[-0.7856,15.2604,0.08439],[-0.8089,15.2605,0.08464],[-0.8322,15.2619,0.0849],[-0.8554,15.2645,0.08516],[-0.8785,15.2684,0.08543],[-0.9015,15.2737,0.0857],[-0.9243,15.2801,0.08597],[-0.9471,15.2877,0.08625],[-0.9697,15.2965,0.08653],[-0.9921,15.3062,0.08682],[-1.0144,15.3169,0.08711],[-1.0365,15.3285,0.08741],[-1.0584,15.3408,0.08771],[-1.0801,15.354,0.08802],[-1.1017,15.3679,0.08833],[-1.123,15.3825,0.08865],[-1.1441,15.3978,0.08898],[-1.1649,15.4137,0.08931],[-1.1856,15.4302,0.08964],[-1.206,15.4473,0.08998],[-1.2261,15.465,0.09033],[-1.246,15.4832,0.09068],[-1.2656,15.5019,0.09103],[-1.2849,15.521,0.09139],[-1.304,15.5407,0.09176],[-1.3228,15.5608,0.09213],[-1.3414,15.5814,0.09251],[-1.3596,15.6023,0.09289],[-1.3776,15.6237,0.09327],[-1.3953,15.6455,0.09366],[-1.4126,15.6677,0.09406],[-1.4297,15.6903,0.09445],[-1.4464,15.7133,0.09486],[-1.4629,15.7368,0.09526],[-1.479,15.7606,0.09567],[-1.4947,15.7848,0.09609],[-1.5101,15.8094,0.09651],[-1.5252,15.8344,0.09693],[-1.5399,15.8597,0.09735],[-1.5542,15.8855,0.09778],[-1.5681,15.9116,0.09821],[-1.5817,15.9381,0.09864],[-1.5948,15.9651,0.09907],[-1.6076,15.9925,0.09951],[-1.6199,16.0205,0.09994],[-1.6318,16.049,0.10038],[-1.6433,16.0781,0.10082],[-1.6544,16.1078,0.10126],[-1.6651,16.1381,0.1017],[-1.6753,16.1692,0.10214],[-1.6851,16.2009,0.10259],[-1.6944,16.2333,0.10303],[-1.7032,16.2665,0.10347],[-1.7116,16.3004,0.10391],[-1.7196,16.3351,0.10435],[-1.7271,16.3704,0.10478],[-1.7341,16.4065,0.10522],[-1.7407,16.4433,0.10566],[-1.7468,16.4807,0.10609],[-1.7525,16.5189,0.10652],[-1.7578,16.5578,0.10695],[-1.7626,16.5974,0.10738],[-1.767,16.6376,0.1078],[-1.771,16.6786,0.10823],[-1.7745,16.7203,0.10865],[-1.7777,16.7628,0.10906],[-1.7804,16.8059,0.10948],[-1.7828,16.8497,0.10989],[-1.7847,16.8941,0.1103],[-1.7862,16.9392,0.1107],[-1.7873,16.985,0.1111],[-1.7881,17.0314,0.1115],[-1.7884,17.0784,0.11189],[-1.7884,17.1262,0.11228],[-1.788,17.1746,0.11266],[-1.7873,17.2236,0.11304],[-1.7861,17.2734,0.11342],[-1.7846,17.324,0.11379],[-1.7828,17.3752,0.11415],[-1.7806,17.4272,0.11451],[-1.778,17.4799,0.11487],[-1.7751,17.5334,0.11522],[-1.7719,17.5877,0.11556],[-1.7684,17.6427,0.1159],[-1.7645,17.6985,0.11623],[-1.7604,17.7551,0.11656],[-1.7559,17.8124,0.11688],[-1.7511,17.8704,0.1172],[-1.7461,17.9292,0.11751],[-1.7408,17.9887,0.11781],[-1.7352,18.0488,0.11811],[-1.7293,18.1096,0.11841],[-1.7232,18.171,0.11869],[-1.7168,18.233,0.11898],[-1.7102,18.2955,0.11925],[-1.7033,18.3586,0.11952],[-1.6962,18.4221,0.11979],[-1.6888,18.486,0.12005],[-1.6811,18.5502,0.1203],[-1.6732,18.6148,0.12055],[-1.6651,18.6795,0.12079],[-1.6568,18.7445,0.12102],[-1.6482,18.8095,0.12125],[-1.6394,18.8746,0.12148],[-1.6304,18.9398,0.1217],[-1.6211,19.005,0.12191],[-1.6116,19.0701,0.12212],[-1.602,19.1351,0.12233],[-1.5921,19.2,0.12253],[-1.5821,19.2648,0.12272],[-1.5719,19.3294,0.12291],[-1.5615,19.3937,0.1231],[-1.551,19.4578,0.12328],[-1.5403,19.5217,0.12346],[-1.5294,19.5853,0.12363],[-1.5185,19.6486,0.1238],[-1.5074,19.7117,0.12396],[-1.4961,19.7744,0.12412],[-1.4848,19.8367,0.12428],[-1.4733,19.8987,0.12443],[-1.4617,19.9603,0.12458],[-1.45,20.0215,0.12473],[-1.4382,20.0823,0.12487],[-1.4263,20.1427,0.12501],[-1.4143,20.2026,0.12514],[-1.4022,20.2621,0.12528],[-1.39,20.3211,0.12541],[-1.3777,20.3796,0.12554],[-1.3653,20.4376,0.12567],[-1.3529,20.4951,0.12579],[-1.3403,20.5521,0.12591],[-1.3277,20.6085,0.12603],[-1.3149,20.6644,0.12615],[-1.3021,20.7197,0.12627],[-1.2892,20.7745,0.12638],[-1.2762,20.8287,0.1265],[-1.2631,20.8824,0.12661],[-1.2499,20.9355,0.12672],[-1.2366,20.9881,0.12683],[-1.2233,21.04,0.12694],[-1.2098,21.0914,0.12704],[-1.1962,21.1423,0.12715],[-1.1826,21.1925,0.12726],[-1.1688,21.2423,0.12736],[-1.155,21.2914,0.12746],[-1.141,21.34,0.12756],[-1.127,21.388,0.12767],[-1.1129,21.4354,0.12777],[-1.0986,21.4822,0.12787],[-1.0843,21.5285,0.12797],[-1.0699,21.5742,0.12807],[-1.0553,21.6193,0.12816],[-1.0407,21.6638,0.12826],[-1.026,21.7077,0.12836],[-1.0112,21.751,0.12845],[-0.9962,21.7937,0.12855],[-0.9812,21.8358,0.12864],[-0.9661,21.8773,0.12874],[-0.9509,21.9182,0.12883],[-0.9356,21.9585,0.12893],[-0.9202,21.9982,0.12902],[-0.9048,22.0374,0.12911],[-0.8892,22.076,0.1292],[-0.8735,22.114,0.1293],[-0.8578,22.1514,0.12939],[-0.8419,22.1883,0.12948]],
+         f: [[-0.8702,15.2453,0.09646],[-0.8886,15.2441,0.09692],[-0.9068,15.2434,0.09738],[-0.9248,15.2433,0.09783],[-0.9427,15.2438,0.09829],[-0.9605,15.2448,0.09875],[-0.978,15.2464,0.0992],[-0.9954,15.2487,0.09966],[-1.0126,15.2516,0.10012],[-1.0296,15.2551,0.10058],[-1.0464,15.2592,0.10104],[-1.063,15.2641,0.10149],[-1.0794,15.2697,0.10195],[-1.0956,15.276,0.10241],[-1.1115,15.2831,0.10287],[-1.1272,15.2911,0.10333],[-1.1427,15.2998,0.10379],[-1.1579,15.3095,0.10425],[-1.1728,15.32,0.10471],[-1.1875,15.3314,0.10517],[-1.2019,15.3439,0.10562],[-1.216,15.3572,0.10608],[-1.2298,15.3717,0.10654],[-1.2433,15.3871,0.107],[-1.2565,15.4036,0.10746],[-1.2693,15.4211,0.10792],[-1.2819,15.4397,0.10837],[-1.2941,15.4593,0.10883],[-1.306,15.4798,0.10929],[-1.3175,15.5014,0.10974],[-1.3287,15.524,0.1102],[-1.3395,15.5476,0.11065],[-1.3499,15.5723,0.1111],[-1.36,15.5979,0.11156],[-1.3697,15.6246,0.11201],[-1.379,15.6523,0.11246],[-1.388,15.681,0.11291],[-1.3966,15.7107,0.11335],[-1.4047,15.7415,0.1138],[-1.4125,15.7732,0.11424],[-1.4199,15.8058,0.11469],[-1.427,15.8394,0.11513],[-1.4336,15.8738,0.11557],[-1.4398,15.909,0.11601],[-1.4456,15.9451,0.11644],[-1.4511,15.9818,0.11688],[-1.4561,16.0194,0.11731],[-1.4607,16.0575,0.11774],[-1.465,16.0964,0.11816],[-1.4688,16.1358,0.11859],[-1.4723,16.1759,0.11901],[-1.4753,16.2166,0.11943],[-1.478,16.258,0.11985],[-1.4803,16.2999,0.12026],[-1.4823,16.3425,0.12067],[-1.4838,16.3858,0.12108],[-1.485,16.4298,0.12148],[-1.4859,16.4746,0.12188],[-1.4864,16.52,0.12228],[-1.4866,16.5663,0.12268],[-1.4864,16.6133,0.12307],[-1.4859,16.6612,0.12346],[-1.4851,16.71,0.12384],[-1.4839,16.7595,0.12422],[-1.4825,16.81,0.1246],[-1.4807,16.8614,0.12497],[-1.4787,16.9136,0.12534],[-1.4763,16.9667,0.12571],[-1.4737,17.0208,0.12607],[-1.4708,17.0757,0.12643],[-1.4677,17.1316,0.12678],[-1.4642,17.1883,0.12713],[-1.4606,17.2459,0.12748],[-1.4567,17.3044,0.12782],[-1.4526,17.3637,0.12816],[-1.4482,17.4238,0.12849],[-1.4436,17.4847,0.12882],[-1.4389,17.5464,0.12914],[-1.4339,17.6088,0.12946],[-1.4288,17.6719,0.12978],[-1.4235,17.7357,0.13009],[-1.418,17.8001,0.1304],[-1.4123,17.8651,0.1307],[-1.4065,17.9306,0.13099],[-1.4006,17.9966,0.13129],[-1.3945,18.063,0.13158],[-1.3883,18.1297,0.13186],[-1.3819,18.1967,0.13214],[-1.3755,18.2639,0.13241],[-1.3689,18.3312,0.13268],[-1.3621,18.3986,0.13295],[-1.3553,18.466,0.13321],[-1.3483,18.5333,0.13347],[-1.3413,18.6006,0.13372],[-1.3341,18.6677,0.13397],[-1.3269,18.7346,0.13421],[-1.3195,18.8012,0.13445],[-1.3121,18.8675,0.13469],[-1.3046,18.9335,0.13492],[-1.297,18.9991,0.13514],[-1.2894,19.0642,0.13537],[-1.2816,19.1289,0.13559],[-1.2739,19.1931,0.1358],[-1.2661,19.2567,0.13601],[-1.2583,19.3197,0.13622],[-1.2504,19.382,0.13642],[-1.2425,19.4437,0.13662],[-1.2345,19.5045,0.13681],[-1.2266,19.5647,0.137],[-1.2186,19.624,0.13719],[-1.2107,19.6824,0.13738],[-1.2027,19.74,0.13756],[-1.1947,19.7966,0.13774],[-1.1867,19.8523,0.13791],[-1.1788,19.907,0.13808],[-1.1708,19.9607,0.13825],[-1.1629,20.0133,0.13841],[-1.1549,20.0648,0.13858],[-1.147,20.1152,0.13873],[-1.139,20.1644,0.13889],[-1.1311,20.2125,0.13904],[-1.1232,20.2595,0.1392],[-1.1153,20.3053,0.13934],[-1.1074,20.3499,0.13949],[-1.0996,20.3934,0.13963],[-1.0917,20.4357,0.13977],[-1.0838,20.4769,0.13991],[-1.076,20.517,0.14005],[-1.0681,20.556,0.14018],[-1.0603,20.5938,0.14031],[-1.0525,20.6306,0.14044],[-1.0447,20.6663,0.14057],[-1.0368,20.7008,0.1407],[-1.029,20.7344,0.14082],[-1.0212,20.7668,0.14094],[-1.0134,20.7982,0.14106],[-1.0055,20.8286,0.14118],[-0.9977,20.858,0.1413],[-0.9898,20.8863,0.14142],[-0.9819,20.9137,0.14153],[-0.974,20.9401,0.14164],[-0.9661,20.9656,0.14176],[-0.9582,20.9901,0.14187],[-0.9503,21.0138,0.14198],[-0.9423,21.0367,0.14208],[-0.9344,21.0587,0.14219],[-0.9264,21.0801,0.1423],[-0.9184,21.1007,0.1424],[-0.9104,21.1206,0.1425],[-0.9024,21.1399,0.14261],[-0.8944,21.1586,0.14271],[-0.8863,21.1768,0.14281],[-0.8783,21.1944,0.14291],[-0.8703,21.2116,0.14301],[-0.8623,21.2282,0.14311],[-0.8542,21.2444,0.1432],[-0.8462,21.2603,0.1433],[-0.8382,21.2757,0.1434],[-0.8301,21.2908,0.14349],[-0.8221,21.3055,0.14359],[-0.814,21.32,0.14368],[-0.806,21.3341,0.14377],[-0.798,21.348,0.14386],[-0.7899,21.3617,0.14396],[-0.7819,21.3752,0.14405],[-0.7738,21.3884,0.14414],[-0.7658,21.4014,0.14423],[-0.7577,21.4143,0.14432],[-0.7496,21.4269,0.14441]] },
+  hfa: { m: [[109.7265,0.04156],[110.2647,0.04164],[110.8006,0.04172],[111.3338,0.0418],[111.8636,0.04187],[112.3895,0.04195],[112.911,0.04203],[113.428,0.04211],[113.941,0.04218],[114.45,0.04226],[114.9547,0.04234],[115.4549,0.04241],[115.9509,0.04249],[116.4432,0.04257],[116.9325,0.04264],[117.4196,0.04272],[117.9046,0.0428],[118.388,0.04287],[118.87,0.04295],[119.3508,0.04303],[119.8303,0.04311],[120.3085,0.04318],[120.7853,0.04326],[121.2604,0.04334],[121.7338,0.04342],[122.2053,0.0435],[122.675,0.04358],[123.1429,0.04366],[123.6092,0.04374],[124.0736,0.04382],[124.5361,0.0439],[124.9964,0.04398],[125.4545,0.04406],[125.9104,0.04414],[126.364,0.04422],[126.8156,0.0443],[127.2651,0.04438],[127.7129,0.04446],[128.159,0.04454],[128.6034,0.04462],[129.0466,0.0447],[129.4887,0.04478],[129.93,0.04487],[130.3705,0.04495],[130.8103,0.04503],[131.2495,0.04511],[131.6884,0.04519],[132.1269,0.04527],[132.5652,0.04535],[133.0031,0.04543],[133.4404,0.04551],[133.877,0.04559],[134.313,0.04566],[134.7483,0.04574],[135.1829,0.04582],[135.6168,0.04589],[136.0501,0.04597],[136.4829,0.04604],[136.9153,0.04612],[137.3474,0.04619],[137.7795,0.04626],[138.2119,0.04633],[138.6452,0.0464],[139.0797,0.04647],[139.5158,0.04654],[139.954,0.04661],[140.3948,0.04667],[140.8387,0.04674],[141.2859,0.0468],[141.7368,0.04686],[142.1916,0.04692],[142.6501,0.04698],[143.1126,0.04703],[143.5795,0.04709],[144.0511,0.04714],[144.5276,0.04719],[145.0093,0.04723],[145.4964,0.04728],[145.9891,0.04732],[146.4878,0.04736],[146.9927,0.0474],[147.5041,0.04744],[148.0224,0.04747],[148.5478,0.0475],[149.0807,0.04753],[149.6212,0.04755],[150.1694,0.04758],[150.7256,0.04759],[151.2899,0.04761],[151.8623,0.04762],[152.4425,0.04763],[153.0298,0.04763],[153.6234,0.04764],[154.2223,0.04763],[154.8258,0.04763],[155.4329,0.04762],[156.0426,0.0476],[156.6539,0.04758],[157.266,0.04756],[157.8775,0.04754],[158.4871,0.04751],[159.0937,0.04747],[159.6962,0.04744],[160.2939,0.0474],[160.8861,0.04735],[161.472,0.0473],[162.0505,0.04725],[162.6207,0.0472],[163.1816,0.04714],[163.7321,0.04707],[164.2717,0.04701],[164.7994,0.04694],[165.3145,0.04687],[165.8165,0.04679],[166.305,0.04671],[166.7799,0.04663],[167.2415,0.04655],[167.6899,0.04646],[168.1255,0.04637],[168.5482,0.04628],[168.958,0.04619],[169.3549,0.04609],[169.7389,0.04599],[170.1099,0.04589],[170.468,0.04579],[170.8136,0.04569],[171.1468,0.04559],[171.468,0.04548],[171.7773,0.04538],[172.0748,0.04527],[172.3606,0.04516],[172.6345,0.04506],[172.8967,0.04495],[173.147,0.04484],[173.3856,0.04473],[173.6126,0.04462],[173.828,0.04451],[174.0321,0.0444],[174.2251,0.04429],[174.4071,0.04418],[174.5784,0.04407],[174.7392,0.04396],[174.8896,0.04385],[175.0301,0.04375],[175.1609,0.04364],[175.2824,0.04353],[175.3951,0.04343],[175.4995,0.04332],[175.5959,0.04322],[175.685,0.04311],[175.7672,0.04301],[175.8432,0.04291],[175.9133,0.04281],[175.9781,0.04271],[176.038,0.04261],[176.0935,0.04251],[176.1449,0.04241],[176.1925,0.04232],[176.2368,0.04222],[176.2779,0.04213],[176.3162,0.04204],[176.3518,0.04195],[176.3851,0.04185],[176.4162,0.04177],[176.4453,0.04168],[176.4724,0.04159],[176.4976,0.0415],[176.5211,0.04142],[176.5432,0.04134]],
+         f: [[109.0725,0.04346],[109.6016,0.04355],[110.1258,0.04364],[110.6451,0.04373],[111.1596,0.04382],[111.6696,0.0439],[112.1753,0.04399],[112.6767,0.04407],[113.174,0.04415],[113.6672,0.04423],[114.1565,0.04431],[114.6421,0.04439],[115.1244,0.04447],[115.6039,0.04454],[116.0812,0.04461],[116.5568,0.04469],[117.0311,0.04475],[117.5044,0.04482],[117.9769,0.04489],[118.4489,0.04495],[118.9208,0.04502],[119.3926,0.04508],[119.8648,0.04514],[120.3374,0.0452],[120.8105,0.04525],[121.2843,0.04531],[121.7587,0.04536],[122.2338,0.04542],[122.7098,0.04547],[123.1868,0.04551],[123.6646,0.04556],[124.1435,0.04561],[124.6234,0.04565],[125.1045,0.04569],[125.5869,0.04573],[126.0706,0.04577],[126.5558,0.04581],[127.0424,0.04585],[127.5304,0.04588],[128.0199,0.04591],[128.5109,0.04594],[129.0035,0.04597],[129.4975,0.046],[129.9932,0.04602],[130.4904,0.04604],[130.9891,0.04607],[131.4895,0.04608],[131.9912,0.0461],[132.4944,0.04612],[132.9989,0.04613],[133.5046,0.04614],[134.0118,0.04615],[134.5202,0.04616],[135.0299,0.04616],[135.541,0.04617],[136.0533,0.04617],[136.567,0.04616],[137.0821,0.04616],[137.5987,0.04616],[138.1167,0.04615],[138.6363,0.04614],[139.1575,0.04612],[139.6803,0.04611],[140.2049,0.04609],[140.7313,0.04607],[141.2594,0.04605],[141.7892,0.04603],[142.3206,0.046],[142.8534,0.04597],[143.3874,0.04594],[143.9222,0.04591],[144.4575,0.04588],[144.9929,0.04584],[145.528,0.0458],[146.0622,0.04576],[146.5951,0.04571],[147.1262,0.04567],[147.6548,0.04562],[148.1804,0.04557],[148.7023,0.04552],[149.2197,0.04546],[149.7322,0.04541],[150.239,0.04535],[150.7394,0.04529],[151.2327,0.04523],[151.7182,0.04516],[152.1951,0.0451],[152.6628,0.04503],[153.1206,0.04497],[153.5678,0.0449],[154.0041,0.04483],[154.429,0.04476],[154.8423,0.04468],[155.2437,0.04461],[155.633,0.04454],[156.0101,0.04446],[156.3748,0.04439],[156.7269,0.04431],[157.0666,0.04423],[157.3936,0.04415],[157.7082,0.04408],[158.0102,0.044],[158.2997,0.04392],[158.5771,0.04384],[158.8425,0.04376],[159.0961,0.04369],[159.3382,0.04361],[159.5691,0.04353],[159.789,0.04345],[159.9983,0.04337],[160.1971,0.0433],[160.3857,0.04322],[160.5643,0.04314],[160.7332,0.04307],[160.8927,0.04299],[161.043,0.04292],[161.1845,0.04284],[161.3176,0.04277],[161.4425,0.0427],[161.5596,0.04263],[161.6692,0.04255],[161.7717,0.04248],[161.8673,0.04241],[161.9564,0.04235],[162.0393,0.04228],[162.1164,0.04221],[162.188,0.04214],[162.2542,0.04208],[162.3154,0.04201],[162.3719,0.04195],[162.4239,0.04189],[162.4717,0.04182],[162.5156,0.04176],[162.556,0.0417],[162.5933,0.04164],[162.6276,0.04158],[162.6594,0.04152],[162.689,0.04147],[162.7165,0.04141],[162.7425,0.04136],[162.767,0.0413],[162.7904,0.04125],[162.8126,0.04119],[162.834,0.04114],[162.8545,0.04109],[162.8743,0.04104],[162.8935,0.04099],[162.912,0.04094],[162.93,0.04089],[162.9476,0.04084],[162.9649,0.0408],[162.9817,0.04075],[162.9983,0.04071],[163.0144,0.04066],[163.03,0.04062],[163.0451,0.04058],[163.0595,0.04053],[163.0733,0.04049],[163.0862,0.04045],[163.0982,0.04041],[163.1092,0.04037],[163.1192,0.04034],[163.1279,0.0403],[163.1355,0.04026],[163.1418,0.04023],[163.1469,0.04019],[163.1508,0.04016],[163.1534,0.04012],[163.1548,0.04009]] }
+};
+
+
+
+/* ============================================================================
+ * MỤC JS-05 · TÍNH BMI VÀ HIỂN THỊ KẾT QUẢ
+ * Đọc giới tính, tuổi, chiều cao và cân nặng; kiểm tra đầu vào, tính kết quả, dựng bảng và lưu lịch sử.
+ * window.BMI cung cấp các hàm cho nút bấm, trợ lý giọng nói và camera điền số đo.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — ĐO BMI THEO CHUẨN QUỐC TẾ (bmi.js)
+   ---------------------------------------------------------------------
+   • 5–19 tuổi : BMI theo tuổi & giới — WHO Growth Reference 2007 (z-score)
+                 + Chiều cao theo tuổi (phát hiện thấp còi)
+   • ≥ 19 tuổi : Phân loại BMI người trưởng thành của WHO
+                 + đối chiếu ngưỡng châu Á – Thái Bình Dương (WHO WPRO/IDI/IASO 2000)
+   • Nguy cơ sức khỏe & lời khuyên bằng tiếng Việt (chỉ để sàng lọc).
+   • API cho module camera / thiết bị đo sau này:
+       BMI.setMeasurement({heightCm, weightKg, source:'camera', accuracyCm})
+   Cần nạp who2007-data.js TRƯỚC file này.
+   ===================================================================== */
+(function(){
+  'use strict';
+  const $id = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const vn = (x, d = 1) => Number(x).toFixed(d).replace('.', ',');
+  const signed = (x, d = 2) => (x > 0 ? '+' : x < 0 ? '−' : '') + vn(Math.abs(x), d);
+
+
+/* ============================================================================
+ * JS-05.01 · TRA BẢNG VÀ TOÁN HỌC
+ * Tra hàng theo tháng tuổi, tính z-score/giá trị tham chiếu và các hàm phục vụ phân loại.
+ * ========================================================================== */
+  /* ------------------------- Toán học LMS ------------------------- */
+  function row(table, sex, months){
+    const arr = WHO2007[table][sex]; const i = Math.round(months) - WHO2007.start;
+    return (i >= 0 && i < arr.length) ? arr[i] : null;
+  }
+  // z-score LMS, có hiệu chỉnh ngoài ±3 SD theo hướng dẫn WHO cho chỉ số BMI
+  function zBmi(y, L, M, S){
+    let z = Math.abs(L) < 1e-9 ? Math.log(y / M) / S : (Math.pow(y / M, L) - 1) / (L * S);
+    if(z > 3){
+      const sd3 = at(3, L, M, S), sd2 = at(2, L, M, S);
+      z = 3 + (y - sd3) / (sd3 - sd2);
+    } else if(z < -3){
+      const sd3 = at(-3, L, M, S), sd2 = at(-2, L, M, S);
+      z = -3 + (y - sd3) / (sd2 - sd3);
+    }
+    return z;
+  }
+  function at(z, L, M, S){ return Math.abs(L) < 1e-9 ? M * Math.exp(S * z) : M * Math.pow(1 + L * S * z, 1 / L); }
+  function erf(x){
+    const s = Math.sign(x); x = Math.abs(x);
+    const t = 1 / (1 + 0.3275911 * x);
+    const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+    return s * y;
+  }
+  const percentile = z => 50 * (1 + erf(z / Math.SQRT2));
+
+  /* ------------------------- Phân loại ------------------------- */
+  const CHILD_CATS = [
+    {key:'thin3', group:'thin', max:-3, label:'Gầy độ 3 (gầy nặng)', tone:'danger', range:'dưới −3 SD'},
+    {key:'thin',  group:'thin', max:-2, label:'Gầy', tone:'warn', range:'−3 SD đến dưới −2 SD'},
+    {key:'normal',group:'normal', max:1, label:'Bình thường', tone:'ok', range:'−2 SD đến +1 SD'},
+    {key:'over',  group:'over', max:2, label:'Thừa cân', tone:'warn', range:'trên +1 SD đến +2 SD'},
+    {key:'obese', group:'obese', max:3, label:'Béo phì', tone:'danger', range:'trên +2 SD đến +3 SD'},
+    {key:'obese2',group:'obese', max:Infinity, label:'Béo phì mức độ nặng', tone:'danger', range:'trên +3 SD'}
+  ];
+  const ADULT_CATS = [
+    {key:'thin3', group:'thin', max:16, label:'Gầy độ III', tone:'danger', range:'dưới 16,0', risk:'Thấp (nhưng tăng nguy cơ các vấn đề sức khỏe khác)'},
+    {key:'thin2', group:'thin', max:17, label:'Gầy độ II', tone:'warn', range:'16,0 – 16,9', risk:'Thấp (nhưng tăng nguy cơ các vấn đề sức khỏe khác)'},
+    {key:'thin',  group:'thin', max:18.5, label:'Gầy độ I', tone:'warn', range:'17,0 – 18,4', risk:'Thấp (nhưng tăng nguy cơ các vấn đề sức khỏe khác)'},
+    {key:'normal',group:'normal', max:25, label:'Bình thường', tone:'ok', range:'18,5 – 24,9', risk:'Trung bình'},
+    {key:'over',  group:'over', max:30, label:'Thừa cân (tiền béo phì)', tone:'warn', range:'25,0 – 29,9', risk:'Tăng'},
+    {key:'obese', group:'obese', max:35, label:'Béo phì độ I', tone:'danger', range:'30,0 – 34,9', risk:'Tăng vừa'},
+    {key:'obese2',group:'obese', max:40, label:'Béo phì độ II', tone:'danger', range:'35,0 – 39,9', risk:'Tăng nặng'},
+    {key:'obese3',group:'obese', max:Infinity, label:'Béo phì độ III', tone:'danger', range:'từ 40,0', risk:'Tăng rất nặng'}
+  ];
+  const ASIA_CATS = [
+    {max:18.5, label:'Gầy', range:'dưới 18,5'},
+    {max:23, label:'Bình thường', range:'18,5 – 22,9'},
+    {max:25, label:'Thừa cân', range:'23,0 – 24,9'},
+    {max:30, label:'Béo phì độ I', range:'25,0 – 29,9'},
+    {max:Infinity, label:'Béo phì độ II', range:'từ 30,0'}
+  ];
+  const HFA_CATS = [
+    {max:-3, key:'stunt3', label:'Thấp còi nặng', tone:'danger'},
+    {max:-2, key:'stunt', label:'Thấp còi (thấp hơn so với tuổi)', tone:'warn'},
+    {max:3, key:'normal', label:'Bình thường so với tuổi', tone:'ok'},
+    {max:Infinity, key:'tall', label:'Rất cao so với tuổi', tone:'warn'}
+  ];
+  const pickChild = z => CHILD_CATS.find(c => (c.key === 'normal' || c.key === 'over' || c.key === 'obese') ? z <= c.max : z < c.max) || CHILD_CATS[CHILD_CATS.length - 1];
+
+  /* ------------------------- Nguy cơ & lời khuyên (tiếng Việt) ------------------------- */
+  const HEALTH = {
+    thin: {
+      risks: [
+        'Thiếu năng lượng và vi chất (sắt, canxi, vitamin D, kẽm) → dễ thiếu máu, mệt mỏi, giảm tập trung khi học.',
+        'Sức đề kháng giảm, dễ ốm vặt và lâu hồi phục.',
+        'Ảnh hưởng tăng trưởng chiều cao và có thể dậy thì muộn.',
+        'Khối xương đạt được thấp, tăng nguy cơ loãng xương khi trưởng thành.',
+        'Ở bạn nữ có thể gây rối loạn kinh nguyệt.'
+      ],
+      advice: [
+        'Ăn đủ 3 bữa chính và thêm 1–2 bữa phụ (sữa, sữa chua, trái cây, các loại hạt).',
+        'Tăng thực phẩm giàu đạm: trứng, cá, thịt, đậu phụ; không bỏ bữa sáng.',
+        'Vẫn vận động đều đặn, ưu tiên bài tập sức mạnh nhẹ để tăng cơ.',
+        'Ngủ đủ 8–10 tiếng mỗi đêm.',
+        'Nếu cậu đang cố ý nhịn ăn hoặc rất lo lắng về cân nặng, hãy chia sẻ với người lớn tin cậy hoặc nhân viên y tế trường.'
+      ]
+    },
+    normal: {
+      risks: ['Nguy cơ các bệnh liên quan đến cân nặng ở mức thấp nhất.'],
+      advice: [
+        'Duy trì vận động ít nhất 60 phút mỗi ngày theo khuyến cáo của Bộ Y tế và WHO.',
+        'Ăn đa dạng, nhiều rau và trái cây, hạn chế nước ngọt có đường.',
+        'Ngủ đủ giấc và giới hạn thời gian ngồi trước màn hình giải trí dưới 2 giờ mỗi ngày.',
+        'Theo dõi BMI định kỳ mỗi 3–6 tháng vì cơ thể đang phát triển.'
+      ]
+    },
+    over: {
+      risks: [
+        'Tăng nguy cơ tăng huyết áp và rối loạn mỡ máu.',
+        'Tăng nguy cơ kháng insulin, tiền đái tháo đường.',
+        'Gan nhiễm mỡ không do rượu.',
+        'Đau khớp gối, cổ chân; giảm sức bền khi vận động.',
+        'Ảnh hưởng tâm lý: tự ti, bị trêu chọc.'
+      ],
+      advice: [
+        'Không nhịn ăn; ăn đủ bữa, ăn chậm, ưu tiên rau, đạm nạc và ngũ cốc nguyên hạt.',
+        'Giảm nước ngọt, trà sữa, đồ chiên rán và đồ ăn vặt nhiều đường, muối.',
+        'Vận động 60 phút mỗi ngày: đi bộ nhanh, đạp xe, bơi, chơi thể thao cùng bạn.',
+        'Giảm thời gian ngồi: cứ 30–45 phút thì đứng dậy đi lại.',
+        'Cả gia đình cùng thay đổi thói quen sẽ dễ duy trì hơn.'
+      ]
+    },
+    obese: {
+      risks: [
+        'Nguy cơ cao mắc đái tháo đường típ 2, tăng huyết áp, rối loạn mỡ máu.',
+        'Gan nhiễm mỡ, sỏi mật.',
+        'Ngưng thở khi ngủ, ngáy, ngủ không sâu → mệt mỏi ban ngày.',
+        'Tổn thương xương khớp (đầu gối, hông), bàn chân bẹt.',
+        'Tăng nguy cơ bệnh tim mạch khi trưởng thành; ảnh hưởng tâm lý như lo âu, trầm cảm.'
+      ],
+      advice: [
+        'Nên gặp nhân viên y tế trường hoặc bác sĩ dinh dưỡng để có kế hoạch phù hợp với tuổi.',
+        'Không tự ý dùng thuốc giảm cân, trà giảm cân hay nhịn ăn.',
+        'Thay đổi từ từ: bỏ đồ uống có đường, tăng rau, ăn đúng bữa.',
+        'Tăng vận động dần đến 60 phút mỗi ngày; chọn môn nhẹ nhàng cho khớp như bơi, đạp xe, đi bộ.',
+        'Ngủ đủ giấc và giảm thời gian dùng màn hình.'
+      ]
+    },
+    stunt: {
+      risks: ['Thấp so với tuổi thường liên quan đến thiếu dinh dưỡng kéo dài; có thể ảnh hưởng sức khỏe và học tập.'],
+      advice: ['Bổ sung đủ đạm, canxi (sữa, tôm cua, đậu), vitamin D (ra nắng buổi sáng), ngủ sớm; nên được nhân viên y tế theo dõi.']
+    },
+    tall: {
+      risks: ['Rất cao so với tuổi thường là bình thường (do di truyền), hiếm khi liên quan rối loạn nội tiết.'],
+      advice: ['Nếu chiều cao tăng quá nhanh trong thời gian ngắn, nên đi khám để kiểm tra.']
+    }
+  };
+
+
+/* ============================================================================
+ * JS-05.02 · TÍNH TOÁN TỪ SỐ ĐO
+ * compute() nhận số đo và tạo đối tượng kết quả; những phần bên dưới chỉ đọc đối tượng này để hiển thị hoặc lưu.
+ * ========================================================================== */
+  /* ------------------------- Tính toán chính ------------------------- */
+  function compute({sex, ageMonths, heightCm, weightKg}){
+    const h = heightCm / 100;
+    const bmi = weightKg / (h * h);
+    const res = {sex, ageMonths, heightCm, weightKg, bmi, ts:Date.now()};
+    if(ageMonths < 60){ res.mode = 'unsupported'; return res; }
+    if(ageMonths <= 228){
+      const r = row('bmi', sex, ageMonths); const [L, M, S] = r;
+      const z = zBmi(bmi, L, M, S);
+      const cat = pickChild(z);
+      res.mode = 'child'; res.z = z; res.percentile = percentile(z); res.cat = cat; res.median = M;
+      res.cut = {m3:at(-3, L, M, S), m2:at(-2, L, M, S), p1:at(1, L, M, S), p2:at(2, L, M, S), p3:at(3, L, M, S)};
+      res.healthyWeight = [res.cut.m2 * h * h, res.cut.p1 * h * h];
+      const hr = row('hfa', sex, ageMonths);
+      if(hr){
+        const hz = (heightCm / hr[0] - 1) / hr[1];
+        res.hfa = {z:hz, median:hr[0], cat:HFA_CATS.find(c => hz < c.max) || HFA_CATS[HFA_CATS.length - 1]};
+      }
+    } else {
+      res.mode = 'adult';
+      res.cat = ADULT_CATS.find(c => bmi < c.max);
+      res.asia = ASIA_CATS.find(c => bmi < c.max);
+      res.healthyWeight = [18.5 * h * h, 24.9 * h * h];
+      res.healthyWeightAsia = [18.5 * h * h, 22.9 * h * h];
+    }
+    const g = HEALTH[res.cat.group];
+    res.risks = g.risks.slice(); res.advice = g.advice.slice();
+    if(res.hfa && (res.hfa.cat.key === 'stunt' || res.hfa.cat.key === 'stunt3')){ res.risks.push(...HEALTH.stunt.risks); res.advice.push(...HEALTH.stunt.advice); }
+    if(res.hfa && res.hfa.cat.key === 'tall'){ res.risks.push(...HEALTH.tall.risks); res.advice.push(...HEALTH.tall.advice); }
+    if(res.cat.key === 'thin3' || res.cat.key === 'obese2' || res.cat.key === 'obese3') res.advice.unshift('Mức này cần được nhân viên y tế kiểm tra sớm.');
+    return res;
+  }
+  function ageText(m){ const y = Math.floor(m / 12), r = m % 12; return y + ' tuổi' + (r ? ' ' + r + ' tháng' : ''); }
+  const SEX_TEXT = {m:'Nam', f:'Nữ'};
+
+  /* ------------------------- Đọc & kiểm tra dữ liệu nhập ------------------------- */
+  function num(v){ const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(n) ? n : NaN; }
+  function readForm(){
+    const sex = $id('bmiSex').value;
+    const age = num($id('bmiAge').value), mon = num($id('bmiMonths').value);
+    const heightCm = num($id('bmiHeight').value), weightKg = num($id('bmiWeight').value);
+    if(!sex) return {error:'Cậu chọn giới tính giúp mình nhé.', field:'bmiSex'};
+    if(!(age >= 2 && age <= 110)) return {error:'Cậu nhập tuổi (số năm) nhé, ví dụ 15.', field:'bmiAge'};
+    const months = Math.round(age) * 12 + (mon >= 0 && mon <= 11 ? Math.round(mon) : 0);
+    if(!isFinite(heightCm)) return {error:'Cậu nhập chiều cao (cm) nhé, ví dụ 158.', field:'bmiHeight'};
+    if(!(heightCm >= 80 && heightCm <= 230)) return {error:'Chiều cao cần nằm trong khoảng 80–230 cm.', field:'bmiHeight'};
+    if(!isFinite(weightKg)) return {error:'Cậu nhập cân nặng (kg) nhé, ví dụ 48,5.', field:'bmiWeight'};
+    if(!(weightKg >= 10 && weightKg <= 250)) return {error:'Cân nặng cần nằm trong khoảng 10–250 kg.', field:'bmiWeight'};
+    if(months < 60) return {error:'Công cụ này dành cho từ 5 tuổi trở lên.', field:'bmiAge'};
+    return {sex, ageMonths:months, heightCm, weightKg};
+  }
+
+  /* ------------------------- Giao diện kết quả ------------------------- */
+  function gaugeHtml(res){
+    let segs, pos, ticks;
+    if(res.mode === 'child'){
+      const lo = -4, hi = 4, P = v => (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * 100;
+      segs = [[lo, -3, 'danger'], [-3, -2, 'warn'], [-2, 1, 'ok'], [1, 2, 'warn'], [2, 3, 'danger'], [3, hi, 'danger2']];
+      pos = P(res.z);
+      ticks = [-3, -2, 1, 2, 3].map(t => '<span style="left:' + P(t) + '%">' + (t > 0 ? '+' : '') + t + '</span>').join('');
+      return '<div class="bmi-gauge" aria-hidden="true"><div class="bmi-gauge-bar">' +
+        segs.map(s => '<i class="g-' + s[2] + '" style="left:' + P(s[0]) + '%;width:' + (P(s[1]) - P(s[0])) + '%"></i>').join('') +
+        '<b class="bmi-gauge-dot" style="left:' + pos + '%"></b></div><div class="bmi-gauge-ticks">' + ticks + '</div><div class="bmi-gauge-cap">Độ lệch chuẩn (z-score) so với trẻ cùng tuổi, cùng giới — WHO 2007</div></div>';
+    }
+    const lo = 12, hi = 45, P = v => (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * 100;
+    segs = [[lo, 16, 'danger'], [16, 18.5, 'warn'], [18.5, 25, 'ok'], [25, 30, 'warn'], [30, 40, 'danger'], [40, hi, 'danger2']];
+    ticks = [16, 18.5, 25, 30, 35, 40].map(t => '<span style="left:' + P(t) + '%">' + vn(t, t % 1 ? 1 : 0) + '</span>').join('');
+    return '<div class="bmi-gauge" aria-hidden="true"><div class="bmi-gauge-bar">' +
+      segs.map(s => '<i class="g-' + s[2] + '" style="left:' + P(s[0]) + '%;width:' + (P(s[1]) - P(s[0])) + '%"></i>').join('') +
+      '<b class="bmi-gauge-dot" style="left:' + P(res.bmi) + '%"></b></div><div class="bmi-gauge-ticks">' + ticks + '</div><div class="bmi-gauge-cap">Thang BMI người trưởng thành (kg/m²) — WHO</div></div>';
+  }
+  function renderResult(res){
+    const box = $id('bmiResult');
+    if(res.mode === 'unsupported'){ box.innerHTML = '<div class="bmi-empty">Công cụ dành cho từ 5 tuổi trở lên.</div>'; return; }
+    const meta = SEX_TEXT[res.sex] + ' · ' + ageText(res.ageMonths) + ' · ' + vn(res.heightCm, res.heightCm % 1 ? 1 : 0) + ' cm · ' + vn(res.weightKg, res.weightKg % 1 ? 1 : 0) + ' kg' +
+      (BMI.heightSource === 'camera' ? ' <span class="bmi-src-chip"><i data-lucide="scan-line"></i> chiều cao đo bằng camera</span>' : '');
+    let stats = '';
+    if(res.mode === 'child'){
+      stats += stat('Z-score BMI theo tuổi', signed(res.z) + ' SD');
+      stats += stat('Bách phân vị', 'P' + Math.max(0.1, Math.min(99.9, res.percentile)).toFixed(res.percentile < 1 || res.percentile > 99 ? 1 : 0).replace('.', ','));
+      stats += stat('BMI bình thường ở tuổi này', vn(res.cut.m2) + ' – ' + vn(res.cut.p1));
+      stats += stat('Cân nặng hợp lý với chiều cao', vn(res.healthyWeight[0]) + ' – ' + vn(res.healthyWeight[1]) + ' kg');
+      if(res.hfa) stats += stat('Chiều cao theo tuổi', '<span class="tone-' + res.hfa.cat.tone + '">' + esc(res.hfa.cat.label) + '</span> <small>(' + signed(res.hfa.z) + ' SD · trung vị ' + vn(res.hfa.median) + ' cm)</small>');
+    } else {
+      stats += stat('Nguy cơ bệnh đi kèm (WHO)', esc(res.cat.risk));
+      stats += stat('Theo ngưỡng châu Á – TBD', esc(res.asia.label) + ' <small>(' + esc(res.asia.range) + ')</small>');
+      stats += stat('Cân nặng hợp lý (WHO)', vn(res.healthyWeight[0]) + ' – ' + vn(res.healthyWeight[1]) + ' kg');
+      stats += stat('Cân nặng hợp lý (châu Á)', vn(res.healthyWeightAsia[0]) + ' – ' + vn(res.healthyWeightAsia[1]) + ' kg');
+    }
+    box.innerHTML =
+      '<div class="bmi-result-top">' +
+        '<div><div class="bmi-kicker">Chỉ số BMI của cậu</div><div class="bmi-big"><span class="bmi-num">' + vn(res.bmi) + '</span><span class="bmi-unit">kg/m²</span></div></div>' +
+        '<span class="bmi-chip tone-' + res.cat.tone + '">' + esc(res.cat.label) + '</span>' +
+      '</div>' +
+      '<div class="bmi-meta">' + meta + '</div>' +
+      gaugeHtml(res) +
+      '<div class="bmi-stats">' + stats + '</div>' +
+      '<div class="bmi-cols">' +
+        '<div class="bmi-block bmi-risk"><h4><i data-lucide="alert-triangle"></i> Nguy cơ sức khỏe</h4><ul>' + res.risks.map(r => '<li>' + esc(r) + '</li>').join('') + '</ul></div>' +
+        '<div class="bmi-block bmi-advice"><h4><i data-lucide="heart-handshake"></i> Lời khuyên</h4><ul>' + res.advice.map(r => '<li>' + esc(r) + '</li>').join('') + '</ul></div>' +
+      '</div>' +
+      '<div class="bmi-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="BMI.speakResult()"><i data-lucide="volume-2"></i> Nghe kết quả</button>' +
+      '<button type="button" class="btn btn-ghost btn-sm" onclick="BMI.reset()"><i data-lucide="rotate-ccw"></i> Đo lại</button></div>';
+    try{ lucide.createIcons(); }catch(e){}
+    box.classList.remove('bmi-pop'); void box.offsetWidth; box.classList.add('bmi-pop');
+  }
+  function stat(label, value){ return '<div class="bmi-stat"><div class="bmi-stat-l">' + esc(label) + '</div><div class="bmi-stat-v">' + value + '</div></div>'; }
+
+  function renderReference(res){
+    const box = $id('bmiReference'); if(!box) return;
+    let html = '';
+    if(res && res.mode === 'child'){
+      const c = res.cut;
+      const ranges = {thin3:'dưới ' + vn(c.m3), thin:vn(c.m3) + ' – ' + vn(c.m2), normal:vn(c.m2) + ' – ' + vn(c.p1), over:vn(c.p1) + ' – ' + vn(c.p2), obese:vn(c.p2) + ' – ' + vn(c.p3), obese2:'trên ' + vn(c.p3)};
+      html += '<p class="bmi-ref-cap">WHO 2007 — BMI theo tuổi cho <strong>' + SEX_TEXT[res.sex].toLowerCase() + ' ' + ageText(res.ageMonths) + '</strong> (trung vị ' + vn(res.median) + ' kg/m²)</p>';
+      html += table(['Phân loại', 'Z-score', 'BMI (kg/m²) ở tuổi này'], CHILD_CATS.map(k => [k.label, k.range, ranges[k.key], k.key === res.cat.key, k.tone]));
+    } else {
+      html += '<p class="bmi-ref-cap">WHO — phân loại BMI người trưởng thành (từ 19 tuổi) và nguy cơ bệnh đi kèm</p>';
+      html += table(['Phân loại (WHO)', 'BMI (kg/m²)', 'Nguy cơ bệnh đi kèm'], ADULT_CATS.map(k => [k.label, k.range, k.risk, res && res.mode === 'adult' && k.key === res.cat.key, k.tone]));
+      html += '<p class="bmi-ref-cap" style="margin-top:14px;">Ngưỡng cho người châu Á – Thái Bình Dương (WHO WPRO/IDI/IASO 2000), thường dùng ở Việt Nam</p>';
+      html += table(['Phân loại', 'BMI (kg/m²)'], ASIA_CATS.map(k => [k.label, k.range, res && res.mode === 'adult' && k === res.asia, '']));
+      if(!res) html += '<p class="bmi-ref-cap" style="margin-top:14px;">Với học sinh 5–19 tuổi, BMI được so với trẻ cùng tuổi và giới theo WHO 2007: <strong>Gầy</strong> &lt; −2 SD · <strong>Bình thường</strong> −2 đến +1 SD · <strong>Thừa cân</strong> &gt; +1 SD · <strong>Béo phì</strong> &gt; +2 SD.</p>';
+    }
+    box.innerHTML = html;
+  }
+  function table(head, rows){
+    return '<div class="bmi-table-wrap"><table class="bmi-table"><thead><tr>' + head.map(h => '<th>' + esc(h) + '</th>').join('') + '</tr></thead><tbody>' +
+      rows.map(r => {
+        const cells = r.slice(0, head.length);
+        const on = r[head.length], tone = r[head.length + 1];
+        return '<tr class="' + (on ? 'is-you' : '') + '">' + cells.map((c, i) => '<td>' + (i === 0 && tone ? '<i class="bmi-dot tone-bg-' + tone + '"></i>' : '') + esc(c) + (i === 0 && on ? ' <b class="bmi-you">cậu</b>' : '') + '</td>').join('') + '</tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  /* ------------------------- Lịch sử & lưu ------------------------- */
+  function acct(){ try{ return typeof getActiveAccount === 'function' ? getActiveAccount() : null; }catch(e){ return null; } }
+  function histKey(){ const a = acct(); return 'hp_bmi_history:' + (a ? a.role + ':' + a.username : 'khach'); }
+  function readHist(){ try{ return JSON.parse(localStorage.getItem(histKey()) || '[]'); }catch(e){ return []; } }
+  function writeHist(list){ try{ localStorage.setItem(histKey(), JSON.stringify(list.slice(0, 30))); }catch(e){} }
+  function renderHistory(){
+    const box = $id('bmiHistory'); if(!box) return;
+    const list = readHist();
+    if(!list.length){ box.innerHTML = '<div class="empty-dash">Chưa có lần đo nào. Kết quả sẽ được lưu tại đây để cậu theo dõi sự thay đổi.</div>'; return; }
+    box.innerHTML = '<div class="bmi-table-wrap"><table class="bmi-table"><thead><tr><th>Ngày</th><th>Tuổi</th><th>Chiều cao</th><th>Cân nặng</th><th>BMI</th><th>Phân loại</th></tr></thead><tbody>' +
+      list.map(r => '<tr><td>' + new Date(r.ts).toLocaleDateString('vi-VN') + '</td><td>' + ageText(r.ageMonths) + '</td><td>' + vn(r.heightCm) + ' cm' + (r.heightSource === 'camera' ? ' 📷' : '') +
+        '</td><td>' + vn(r.weightKg) + ' kg</td><td><strong>' + vn(r.bmi) + '</strong></td><td><span class="bmi-mini tone-' + r.tone + '">' + esc(r.label) + '</span></td></tr>').join('') +
+      '</tbody></table></div>';
+  }
+  async function save(res){
+    const a = acct();
+    const rec = {ts:res.ts, sex:res.sex, ageMonths:res.ageMonths, heightCm:res.heightCm, weightKg:res.weightKg, bmi:+res.bmi.toFixed(2),
+      z:res.z != null ? +res.z.toFixed(2) : null, label:res.cat.label, tone:res.cat.tone, heightSource:BMI.heightSource || 'manual'};
+    const list = readHist(); list.unshift(rec); writeHist(list); renderHistory();
+    if(a && typeof DB !== 'undefined'){
+      try{
+        const school = typeof normaliseSchool === 'function' ? normaliseSchool(a) : {};
+        await DB.collection('bmi').add(Object.assign({username:a.username, displayName:a.displayName, role:a.role, khoi:a.khoi || '',
+          schoolId:school.schoolId || '', schoolName:school.schoolName || ''}, rec));
+      }catch(e){ /* Apps Script chưa có tab "bmi" → vẫn lưu trên máy */ }
+    }
+  }
+
+  /* ------------------------- Lời đọc cho robot ------------------------- */
+  function speechOf(res){
+    if(!res || res.mode === 'unsupported') return 'Chưa có kết quả.';
+    let s = 'Chỉ số BMI của cậu là ' + vn(res.bmi) + '. ';
+    if(res.mode === 'child'){
+      s += 'So với ' + (res.sex === 'm' ? 'bạn nam' : 'bạn nữ') + ' cùng ' + ageText(res.ageMonths) + ' theo chuẩn WHO, cậu ở mức: ' + res.cat.label + '. ';
+      s += 'BMI bình thường ở tuổi này từ ' + vn(res.cut.m2) + ' đến ' + vn(res.cut.p1) + '; cân nặng hợp lý với chiều cao của cậu khoảng ' + vn(res.healthyWeight[0], 0) + ' đến ' + vn(res.healthyWeight[1], 0) + ' ki lô gam. ';
+      if(res.hfa) s += 'Chiều cao theo tuổi: ' + res.hfa.cat.label + '. ';
+    } else {
+      s += 'Theo phân loại của WHO, cậu ở mức: ' + res.cat.label + '; theo ngưỡng châu Á: ' + res.asia.label + '. ';
+    }
+    s += 'Nguy cơ sức khỏe: ' + res.risks.slice(0, 3).join(' ') + ' Lời khuyên: ' + res.advice.slice(0, 3).join(' ');
+    return s;
+  }
+  function robotSay(text, force){
+    const VR = window.VoiceRobot;
+    if(!VR) return;
+    const st = VR.state || {};
+    if(force || st.mode === 'blind' || (st.mode === 'regular' && st.robotOn)) VR.speak(text, {force:!!force});
+  }
+
+  /* ------------------------- Phân tích lời nói ------------------------- */
+  function normTxt(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd'); }
+  function parseHeight(t){
+    const s = normTxt(t).replace(/,/g, '.');
+    let m = s.match(/(\d)\s*(?:m|met|mét)\s*(\d{1,2})(?!\d)/);
+    if(m){ const b = +m[2]; return 100 * +m[1] + (m[2].length === 1 ? b * 10 : b); }
+    m = s.match(/(\d+(?:\.\d+)?)/); if(!m) return NaN;
+    let v = +m[1];
+    if(v > 0 && v < 3) v *= 100;               // 1.62 m → 162 cm
+    return v;
+  }
+  function parseWeight(t){
+    const s = normTxt(t).replace(/,/g, '.');
+    let m = s.match(/(\d+)\s*(?:kg|ki lo|ky|ki|can)\s*(\d)(?!\d)/);   // "45 ký 5" → 45,5
+    if(m) return +m[1] + +m[2] / 10;
+    m = s.match(/(\d+(?:\.\d+)?)/); return m ? +m[1] : NaN;
+  }
+  const WORDNUM = {'nam':5,'mot':1,'hai':2,'ba':3,'bon':4,'sau':6,'bay':7,'tam':8,'chin':9,'muoi':10,'muoi mot':11,'muoi hai':12,'muoi ba':13,'muoi bon':14,'muoi lam':15,'muoi sau':16,'muoi bay':17,'muoi tam':18,'muoi chin':19};
+  /** Hiểu câu kiểu: "nam 15 tuổi 6 tháng, cao 1m60, nặng 48 ký rưỡi" */
+  function parseUtterance(text){
+    const s = normTxt(text).replace(/,/g, '.');
+    const out = {};
+    let m;
+    const low = String(text || '').toLowerCase().normalize('NFC');
+    if(/(^|[\s,.])(nữ|con gái|bạn gái|gái)(?=$|[\s,.])/.test(low)) out.sex = 'f';
+    else if(/(^|[\s,.])(nam|con trai|bạn trai|trai)(?=$|[\s,.])/.test(low)) out.sex = 'm';
+    if((m = s.match(/(\d{1,2})\s*tuoi(?:\s*(\d{1,2})\s*thang)?/))){ out.age = +m[1]; if(m[2]) out.months = +m[2]; }
+    else if((m = s.match(/(muoi (?:mot|hai|ba|bon|lam|sau|bay|tam|chin)|muoi|nam|sau|bay|tam|chin)\s+tuoi/))) out.age = WORDNUM[m[1]];
+    if(!out.months && (m = s.match(/(\d{1,2})\s*thang/))) out.months = +m[1];
+    if((m = s.match(/(?:chieu cao|cao)\s*(?:la|duoc)?\s*(\d[\d.]*\s*(?:met|m)?\s*\d{0,2})/))){ const v = parseHeight(m[1]); if(v) out.height = v; }
+    if((m = s.match(/(?:can nang|nang|can)\s*(?:la|duoc)?\s*([\d.]+\s*(?:kg|ki lo|ky|can)?\s*(?:ruoi|\d)?)/))){
+      let v = parseWeight(m[1]); if(/ruoi/.test(m[1])) v += 0.5; if(v) out.weight = v;
+    }
+    return out;
+  }
+
+
+/* ============================================================================
+ * JS-05.03 · API DÙNG CHUNG CỦA BMI
+ * Các hàm công khai mở trang, tính kết quả, nhận số đo camera và hiểu câu nhập bằng giọng nói.
+ * ========================================================================== */
+  /* ------------------------- API công khai ------------------------- */
+  const BMI = {
+    last:null, heightSource:'manual',
+    open(){
+      if(typeof showView === 'function') showView('view-bmi');
+      this.prefill(); renderReference(this.last); renderHistory();
+    },
+    prefill(){
+      const a = acct();
+      const age = $id('bmiAge');
+      if(a && a.role === 'student' && a.khoi && age && !age.value){
+        age.value = String(Number(a.khoi) + 5);   // ước tính theo khối, học sinh tự sửa
+        $id('bmiMonths').value = $id('bmiMonths').value || '6';
+        const note = $id('bmiAgeNote'); if(note) note.classList.remove('hidden');
+      }
+    },
+    calc(){
+      const f = readForm();
+      const err = $id('bmiErr');
+      if(f.error){ err.textContent = f.error; const el = $id(f.field); if(el) try{ el.focus(); }catch(e){} return null; }
+      err.textContent = '';
+      const res = compute(f);
+      this.last = res;
+      renderResult(res); renderReference(res);
+      save(res);
+      robotSay(speechOf(res));
+      if(window.innerWidth < 900){ const b = $id('bmiResult'); if(b) b.scrollIntoView({behavior:(window.A11y ? A11y.scrollBehavior() : 'smooth'), block:'start'}); }
+      return res;
+    },
+    reset(){
+      ['bmiHeight','bmiWeight'].forEach(id => { const el = $id(id); if(el) el.value = ''; });
+      this.setHeightSource('manual');
+      this.last = null;
+      $id('bmiResult').innerHTML = emptyResult();
+      renderReference(null);
+      try{ lucide.createIcons(); }catch(e){}
+      robotSay('Đã xóa số đo. Cậu nhập lại chiều cao và cân nặng nhé.');
+    },
+    speakResult(){ robotSay(speechOf(this.last), true); },
+    speech(){ return speechOf(this.last); },
+    setHeightSource(src, acc){
+      this.heightSource = src;
+      const chip = $id('bmiHeightSource');
+      if(chip){ chip.classList.toggle('hidden', src !== 'camera'); chip.title = acc ? 'Sai số ước tính ±' + vn(acc) + ' cm' : ''; }
+    },
+    /** Điểm nối cho camera / thiết bị đo: tự điền số đo và tính luôn nếu đủ dữ liệu */
+    setMeasurement(m){
+      if(m.heightCm){ $id('bmiHeight').value = (+m.heightCm).toFixed(1); this.setHeightSource(m.source || 'manual', m.accuracyCm); }
+      if(m.weightKg){ $id('bmiWeight').value = (+m.weightKg).toFixed(1); }
+      const f = readForm();
+      if(!f.error) return this.calc();
+      robotSay('Đã nhận chiều cao ' + vn(m.heightCm || 0) + ' xăng ti mét. ' + f.error);
+      $id('bmiErr').textContent = f.error;
+      return null;
+    },
+    openScanner(){
+      if(window.HeightScan) window.HeightScan.open({onResult:(cm, acc) => this.setMeasurement({heightCm:cm, source:'camera', accuracyCm:acc})});
+      else robotSay('Chức năng quét camera chưa được nạp.', true);
+    },
+    /** Lệnh giọng nói ở trang BMI. Trả về câu robot cần nói, hoặc '' nếu không hiểu. */
+    voice(text){
+      const p = parseUtterance(text);
+      const said = [];
+      if(p.sex){ $id('bmiSex').value = p.sex; said.push('giới tính ' + SEX_TEXT[p.sex].toLowerCase()); }
+      if(p.age){ $id('bmiAge').value = p.age; said.push(p.age + ' tuổi'); }
+      if(p.months != null && p.months <= 11){ $id('bmiMonths').value = p.months; said.push(p.months + ' tháng'); }
+      if(p.height){ $id('bmiHeight').value = p.height; this.setHeightSource('manual'); said.push('chiều cao ' + vn(p.height, p.height % 1 ? 1 : 0) + ' xăng ti mét'); }
+      if(p.weight){ $id('bmiWeight').value = p.weight; said.push('cân nặng ' + vn(p.weight, p.weight % 1 ? 1 : 0) + ' ki lô gam'); }
+      if(!said.length) return '';
+      const f = readForm();
+      if(!f.error){ this.calc(); return null; }   // calc() tự đọc kết quả
+      const NEXT = {bmiSex:'Tiếp theo, cậu nói giới tính: nam hoặc nữ.', bmiAge:'Tiếp theo, cậu nói tuổi, ví dụ: 15 tuổi.',
+        bmiHeight:'Tiếp theo, cậu nói chiều cao, ví dụ: cao 1 mét 60.', bmiWeight:'Tiếp theo, cậu nói cân nặng, ví dụ: nặng 50 ký.'};
+      const empty = !$id(f.field).value;
+      return 'Đã ghi ' + said.join(', ') + '. ' + (empty && NEXT[f.field] ? NEXT[f.field] : f.error);
+    },
+    describe(){
+      const f = ['bmiSex','bmiAge','bmiHeight','bmiWeight'].filter(id => !$id(id).value);
+      let s = 'Trang đo BMI, chỉ số khối cơ thể theo chuẩn của Tổ chức Y tế Thế giới. ';
+      s += 'Cậu có thể nói một câu, ví dụ: tôi là nam, 15 tuổi, cao 1 mét 60, nặng 50 ki lô. Trợ lý sẽ tính luôn. ';
+      if(f.length && f.length < 4) s += 'Còn thiếu: ' + f.map(id => ({bmiSex:'giới tính', bmiAge:'tuổi', bmiHeight:'chiều cao', bmiWeight:'cân nặng'})[id]).join(', ') + '. ';
+      if(this.last) s += 'Kết quả gần nhất: BMI ' + vn(this.last.bmi) + ', mức ' + this.last.cat.label + '. Nói: đọc kết quả, để nghe chi tiết. ';
+      s += 'Nói: quét camera, để đo chiều cao bằng camera, cần người hỗ trợ đặt máy.';
+      return s;
+    },
+    _compute:compute, _parse:parseUtterance, _parseHeight:parseHeight, _parseWeight:parseWeight
+  };
+  function emptyResult(){
+    return '<div class="bmi-empty"><div class="bmi-empty-icon"><i data-lucide="activity"></i></div><strong>Kết quả sẽ hiện ở đây</strong><span>Nhập giới tính, tuổi, chiều cao và cân nặng rồi bấm <b>Tính BMI</b> — hoặc nói với trợ lý: “nam, 15 tuổi, cao 1 mét 60, nặng 50 ký”.</span></div>';
+  }
+  window.BMI = BMI;
+
+  // Gắn vào App của web chính
+  if(typeof App !== 'undefined') App.goBmi = () => BMI.open();
+  const box = $id('bmiResult'); if(box && !box.innerHTML.trim()) box.innerHTML = emptyResult();
+  renderReference(null); renderHistory();
+  ['bmiHeight'].forEach(id => { const el = $id(id); if(el) el.addEventListener('input', () => BMI.setHeightSource('manual')); });
+  document.querySelectorAll('#view-bmi input').forEach(el => el.addEventListener('keydown', e => { if(e.key === 'Enter') BMI.calc(); }));
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-06 · KHO DỮ LIỆU SỨC KHỎE
+ * Lưu kết quả khảo sát theo ngày, tổng hợp theo kỳ 7/30 ngày, trả lời yêu cầu thống kê và xuất CSV.
+ * HealthStore kết hợp bản sao trên máy với dữ liệu từ backend; DataView dựng trang Kho dữ liệu.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — KHO DỮ LIỆU SỨC KHỎE (health-store.js)
+   ---------------------------------------------------------------------
+   • Mỗi lần học sinh trả lời xong BỘ CÂU HỎI MẶC ĐỊNH trong Chatbot → lưu 1 bản ghi NGÀY
+     (mỗi ngày tối đa 1 bản ghi; làm lại trong ngày thì ghi đè bản mới nhất).
+   • Tự thống kê theo KỲ, tính từ NGÀY BẮT ĐẦU THEO DÕI (ngày đầu tiên có bản ghi):
+       – Tuần  = đúng 7 ngày  : Tuần 1 = ngày 1 → ngày 7,  Tuần 2 = ngày 8 → ngày 14, …
+       – Tháng = đúng 30 ngày : Tháng 1 = ngày 1 → ngày 30, Tháng 2 = ngày 31 → ngày 60, …
+   • Lưu vào Google Sheets (bảng healthDaily, healthPeriods) + bản sao trên máy (localStorage).
+   • Chatbot hỏi được: "thống kê tuần này", "tháng trước", "so sánh tuần trước", "xuất dữ liệu"…
+   • Trang "Kho dữ liệu" (view-data) xem theo ngày / tuần / tháng và tải file CSV (mở bằng Excel).
+   Nạp SAU Ai-healthpulse-script.js
+   ===================================================================== */
+(function(){
+  'use strict';
+  const TARGET = 420;                         // khuyến cáo: ≥ 60 phút/ngày ≈ 420 phút/tuần (quy đổi)
+  const LEVELS = ['Không HĐTL', 'Không đủ', 'Đủ', 'Cao'];
+  const DAY = 86400000;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const acct = () => { try{ return typeof getActiveAccount === 'function' ? getActiveAccount() : null; }catch(e){ return null; } };
+  const db = name => (typeof DB !== 'undefined' && DB.collection) ? DB.collection(name) : null;
+
+  /* ---------- ngày tháng (theo giờ máy) ---------- */
+  function dayKey(ts){ const d = new Date(ts == null ? Date.now() : ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function keyToNum(k){ const [y, m, d] = k.split('-').map(Number); return Math.round(Date.UTC(y, m - 1, d) / DAY); }
+  function numToKey(n){ const d = new Date(n * DAY); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0'); }
+  function vnDate(k, withYear){ const [y, m, d] = k.split('-'); return d + '/' + m + (withYear === false ? '' : '/' + y); }
+  function sayDate(k){ const [y, m, d] = k.split('-').map(Number); return 'ngày ' + d + ' tháng ' + m + ' năm ' + y; }
+  const r1 = v => Math.round(v * 10) / 10;
+  const vn = v => String(r1(v)).replace('.', ',');
+
+  /* ---------- lưu trên máy ---------- */
+  const userOf = a => a ? (a.role === 'admin' ? 'admin:' : '') + a.username : '';
+  const LKEY = u => 'hp_health:' + u;
+  function readLocal(u){ try{ return JSON.parse(localStorage.getItem(LKEY(u)) || '[]'); }catch(e){ return []; } }
+  function writeLocal(u, list){ try{ localStorage.setItem(LKEY(u), JSON.stringify(list)); }catch(e){} }
+  const cache = {};                            // username → [bản ghi ngày]
+
+  function sortRecs(list){ return list.slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0); }
+  function merge(a, b){
+    const m = new Map();
+    [...(a || []), ...(b || [])].forEach(r => { if(!r || !r.date) return; const o = m.get(r.date); if(!o || (r.ts || 0) >= (o.ts || 0)) m.set(r.date, r); });
+    return sortRecs([...m.values()]);
+  }
+
+  /* ---------- đọc dữ liệu của 1 tài khoản (máy + Google Sheets) ---------- */
+  async function load(username){
+    const a = acct();
+    const u = username || userOf(a);
+    if(!u) return [];
+    let remote = [];
+    const col = db('healthDaily');
+    if(col){
+      try{
+        const snap = await col.get();
+        remote = (snap.docs || []).map(d => d.data()).filter(r => r && r.username === u);
+      }catch(e){}
+    }
+    const list = merge(readLocal(u), remote);
+    cache[u] = list; writeLocal(u, list);
+    return list;
+  }
+  function cached(username){ const u = username || userOf(acct()); return u ? (cache[u] || (cache[u] = readLocal(u))) : []; }
+
+
+/* ============================================================================
+ * JS-06.01 · GHI KẾT QUẢ KHẢO SÁT
+ * recordSurvey() ghi kết quả trong ngày, cập nhật bản sao trên máy và dữ liệu tổng hợp của tài khoản.
+ * ========================================================================== */
+  /* ---------- ghi 1 lần khảo sát xong ---------- */
+  async function recordSurvey(computed, extracted, conversationId){
+    const a = acct(); if(!a || !computed) return null;
+    const u = userOf(a);
+    const ex = extracted || {};
+    const ts = Date.now();
+    const rec = {
+      id:u + '__' + dayKey(ts), username:u, displayName:a.displayName || a.username, role:a.role,
+      khoi:(a.khoi || (typeof state !== 'undefined' && state.khoi) || '') + '', schoolId:a.schoolId || '', schoolName:a.schoolName || '',
+      date:dayKey(ts), ts, conversationId:conversationId || '',
+      level:computed.level, quyDoi:Math.round(Number(computed.quyDoi) || 0),
+      phutVua:Math.round(Number(computed.phutVua) || 0), phutManh:Math.round(Number(computed.phutManh) || 0),
+      gioNgoi:Number(computed.gioNgoiNgay) || 0,
+      diChuyen:(ex.dichuyen && ex.dichuyen.di_chuyen_phut_tuan) || 0,
+      theThao:(ex.thethao && ex.thethao.the_thao_ngoai_gio_phut_tuan) || 0,
+      cuongDo:(ex.thethao && ex.thethao.cuong_do) || '',
+      truongManh:!!(ex.truong && ex.truong.van_dong_truong_hoc === 'manh'),
+      viecNha:(ex.vieenha && ex.vieenha.viec_nha_phut_tuan) || 0,
+      cuoiTuan:(ex.cuoituan && ex.cuoituan.hoat_dong_cuoi_tuan_phut_tuan) || 0
+    };
+    const list = merge(cached(u), [rec]);
+    cache[u] = list; writeLocal(u, list);
+    const col = db('healthDaily');
+    if(col) try{ await col.doc(rec.id).set(rec); }catch(e){}
+    // thống kê lại tuần / tháng chứa ngày hôm nay và lưu vào kho
+    const P = periods(list, u);
+    const week = P.weeks.find(w => w.start <= rec.date && rec.date <= w.end);
+    const month = P.months.find(m => m.start <= rec.date && rec.date <= m.end);
+    const pc = db('healthPeriods');
+    if(pc){
+      [week, month].forEach(p => { if(p) pc.doc(u + '__' + p.code).set(Object.assign({username:u, displayName:rec.displayName, schoolId:rec.schoolId, schoolName:rec.schoolName, updatedAt:ts}, stripRecs(p))).catch(() => {}); });
+    }
+    renderIfOpen();
+    return {rec, week, month};
+  }
+  function stripRecs(p){ const o = Object.assign({}, p); delete o.recs; return o; }
+
+  /** Hôm nay tài khoản đã trả lời bộ câu hỏi mặc định chưa? (dùng dữ liệu có sẵn trên máy → trả lời ngay) */
+  function doneToday(){
+    const a = acct(); if(!a) return null;
+    const today = dayKey();
+    const r = cached().find(x => x.date === today);
+    if(r) return r;
+    // dự phòng: tìm trong lịch sử trò chuyện
+    try{
+      const c = (ChatHistory.conversations || []).find(c => c.survey && c.survey.completed && !c.survey.adminChat && !c.survey.freeformToday &&
+        c.survey.computed && dayKey(c.survey.completedAt || (c.survey.summary && c.survey.summary.createdAt) || c.updatedAt) === today);
+      if(c) return {date:today, ts:c.survey.completedAt || c.updatedAt, level:c.survey.computed.level, quyDoi:c.survey.computed.quyDoi};
+    }catch(e){}
+    return null;
+  }
+
+
+/* ============================================================================
+ * JS-06.02 · TỔNG HỢP THEO KỲ
+ * Tạo các kỳ 7 ngày/30 ngày kể từ ngày bắt đầu theo dõi; tính số lần khảo sát, trung bình và số lượng theo mức.
+ * ========================================================================== */
+  /* ---------- thống kê theo kỳ 7 ngày / 30 ngày ---------- */
+  function statOf(recs, start, end, kind, index){
+    const n = recs.length;
+    const sum = f => recs.reduce((s, r) => s + (Number(r[f]) || 0), 0);
+    const counts = {}; LEVELS.forEach(l => counts[l] = 0); recs.forEach(r => { if(counts[r.level] != null) counts[r.level]++; });
+    const main = n ? LEVELS.slice().sort((x, y) => counts[y] - counts[x] || LEVELS.indexOf(y) - LEVELS.indexOf(x))[0] : '';
+    const avg = n ? sum('quyDoi') / n : 0;
+    const enough = recs.filter(r => r.level === 'Đủ' || r.level === 'Cao').length;
+    const days = kind === 'week' ? 7 : 30;
+    return {
+      type:kind, index, code:(kind === 'week' ? 'W' : 'M') + index, days,
+      label:(kind === 'week' ? 'Tuần ' : 'Tháng ') + index, start, end, recs,
+      records:n, coverage:Math.round(n / days * 100),
+      avgQuyDoi:Math.round(avg), minQuyDoi:n ? Math.min(...recs.map(r => r.quyDoi || 0)) : 0, maxQuyDoi:n ? Math.max(...recs.map(r => r.quyDoi || 0)) : 0,
+      avgVua:n ? Math.round(sum('phutVua') / n) : 0, avgManh:n ? Math.round(sum('phutManh') / n) : 0,
+      avgGioNgoi:n ? r1(sum('gioNgoi') / n) : 0, levelCounts:counts, mainLevel:main,
+      daysEnough:enough, status:n ? (avg >= TARGET ? 'Đạt khuyến cáo' : avg >= TARGET * 0.6 ? 'Gần đạt khuyến cáo' : 'Cần cải thiện') : 'Chưa có dữ liệu'
+    };
+  }
+  function periods(list, username){
+    const recs = sortRecs(list || cached(username));
+    if(!recs.length) return {start:null, weeks:[], months:[], days:[]};
+    const s = keyToNum(recs[0].date);
+    const today = keyToNum(dayKey());
+    const last = Math.max(today, keyToNum(recs[recs.length - 1].date));
+    const make = (len, kind) => {
+      const out = [];
+      for(let i = 0; s + i * len <= last; i++){
+        const a = s + i * len, b = a + len - 1;
+        const ka = numToKey(a), kb = numToKey(b);
+        out.push(statOf(recs.filter(r => r.date >= ka && r.date <= kb), ka, kb, kind, i + 1));
+      }
+      out.forEach((p, i) => { const prev = out[i - 1]; p.change = prev && prev.records && p.records ? p.avgQuyDoi - prev.avgQuyDoi : null; });
+      return out;
+    };
+    return {start:recs[0].date, weeks:make(7, 'week'), months:make(30, 'month'), days:recs};
+  }
+  /** BMI gần nhất (từ trang Đo BMI, lưu trên máy) trong khoảng ngày */
+  function bmiIn(start, end){
+    const a = acct(); if(!a) return null;
+    try{
+      const list = JSON.parse(localStorage.getItem('hp_bmi_history:' + a.role + ':' + a.username) || '[]');
+      return list.filter(r => { const k = dayKey(r.ts); return k >= start && k <= end; }).sort((x, y) => y.ts - x.ts)[0] || null;
+    }catch(e){ return null; }
+  }
+
+  /* ---------- lời thống kê (Chatbot & trợ lý giọng nói đọc) ---------- */
+  function periodText(p){
+    if(!p) return '';
+    let s = p.label + ', từ ' + vnDate(p.start) + ' đến ' + vnDate(p.end) + ' (' + p.days + ' ngày): ';
+    if(!p.records) return s + 'chưa có lần khảo sát nào.';
+    s += 'có ' + p.records + ' ngày ghi nhận trên ' + p.days + ' ngày. ' +
+      'Vận động quy đổi trung bình ' + p.avgQuyDoi + ' phút/tuần (thấp nhất ' + p.minQuyDoi + ', cao nhất ' + p.maxQuyDoi + '; khuyến cáo ' + TARGET + '), ' +
+      'gồm khoảng ' + p.avgVua + ' phút cường độ vừa và ' + p.avgManh + ' phút cường độ mạnh. ' +
+      'Ngồi tĩnh tại trung bình ' + vn(p.avgGioNgoi) + ' giờ/ngày. ' +
+      'Số ngày đạt khuyến cáo: ' + p.daysEnough + '/' + p.records + '. Mức phổ biến: ' + p.mainLevel + '. Tình trạng: ' + p.status + '.';
+    if(p.change != null) s += ' So với kỳ trước: ' + (p.change > 0 ? 'tăng ' + p.change : p.change < 0 ? 'giảm ' + (-p.change) : 'không đổi') + (p.change ? ' phút/tuần.' : '.');
+    const b = bmiIn(p.start, p.end);
+    if(b) s += ' BMI đo gần nhất trong kỳ: ' + vn(b.bmi) + ' (' + b.label + ').';
+    return s;
+  }
+  function advice(p){
+    if(!p || !p.records) return '';
+    if(p.avgQuyDoi >= TARGET) return 'Gợi ý: cậu đang làm rất tốt, giữ nhịp này và nhớ ngủ đủ, uống đủ nước nhé.';
+    const need = TARGET - p.avgQuyDoi;
+    return 'Gợi ý: cậu cần thêm khoảng ' + need + ' phút/tuần, tức khoảng ' + Math.ceil(need / 7) + ' phút mỗi ngày — ví dụ đi bộ nhanh sau giờ học.' +
+      (p.avgGioNgoi > 6 ? ' Thời gian ngồi khá nhiều, cứ 60 phút cậu đứng dậy vận động 3–5 phút.' : '');
+  }
+
+  /* ---------- hiểu yêu cầu thống kê trong Chatbot ---------- */
+  const strip = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  function isStatsRequest(text){
+    const n = strip(text);
+    return /(thong ke|so lieu|bao cao|kho du lieu|du lieu (suc khoe|cua|tuan|thang|ngay)|xuat (du lieu|file|csv|excel|so lieu|bao cao)|tai (file|du lieu|csv)|tong ket (tuan|thang)|tinh trang (tuan|thang)|xu huong|so sanh (tuan|thang)|trung binh (tuan|thang)|tuan nay|tuan truoc|thang nay|thang truoc|(tuan|thang) (thu )?\d+|lich su (khao sat|suc khoe))/.test(n);
+  }
+  /** Trả lời yêu cầu thống kê: {text, csv:[{label, kind}]} */
+  function answer(text){
+    const n = strip(text);
+    const a = acct();
+    if(!a) return {text:'Cậu đăng nhập tài khoản trước nhé, kho dữ liệu lưu riêng theo từng tài khoản.'};
+    const P = periods();
+    if(!P.days.length) return {text:'Kho dữ liệu của cậu chưa có số liệu nào. Khi cậu trả lời xong bộ câu hỏi vận động trong ngày, mình sẽ tự lưu và thống kê theo tuần (7 ngày) và theo tháng (30 ngày) nhé.'};
+    const out = [];
+    const csv = [];
+    const wantMonth = /thang/.test(n), wantWeek = /tuan/.test(n) || !wantMonth;
+    const pick = (list, kind) => {
+      const w = kind === 'week' ? 'tuan' : 'thang';
+      if(/tat ca|toan bo|cac (tuan|thang)|lich su/.test(n)) return list;
+      if(/so sanh|xu huong/.test(n) || (new RegExp(w + ' nay').test(n) && new RegExp(w + ' truoc').test(n))) return list.slice(-2);
+      const m = n.match(new RegExp(w + ' (?:thu )?(\\d+)'));
+      if(m) return [list[+m[1] - 1]].filter(Boolean);
+      if(new RegExp(w + ' truoc').test(n)) return [list[list.length - 2]].filter(Boolean);
+      return [list[list.length - 1]];
+    };
+    out.push('Kho dữ liệu của ' + (a.displayName || a.username) + ': bắt đầu theo dõi từ ' + vnDate(P.start) + ', đã có ' + P.days.length + ' ngày khảo sát.');
+    if(/ngay|hom nay|lich su/.test(n) && !/tuan|thang/.test(n)){
+      P.days.slice(-7).forEach(r => out.push('• ' + vnDate(r.date) + ': ' + r.quyDoi + ' phút/tuần quy đổi, mức ' + r.level + ', ngồi ' + vn(r.gioNgoi) + ' giờ/ngày.'));
+      csv.push({label:'Tải CSV theo ngày', kind:'days'});
+    } else {
+      if(wantWeek){ pick(P.weeks, 'week').forEach(p => out.push(periodText(p))); csv.push({label:'Tải CSV theo tuần', kind:'weeks'}); }
+      if(wantMonth){ pick(P.months, 'month').forEach(p => out.push(periodText(p))); csv.push({label:'Tải CSV theo tháng', kind:'months'}); }
+      const last = wantMonth && !wantWeek ? P.months[P.months.length - 1] : P.weeks[P.weeks.length - 1];
+      const adv = advice(last); if(adv) out.push(adv);
+    }
+    if(/xuat|tai|csv|excel|file/.test(n)){ csv.length = 0; csv.push({label:'Tải CSV theo ngày', kind:'days'}, {label:'Tải CSV theo tuần', kind:'weeks'}, {label:'Tải CSV theo tháng', kind:'months'}); out.push('Mình đã chuẩn bị file CSV (mở được bằng Excel) ở nút bên dưới.'); }
+    out.push('Cậu xem đầy đủ ở mục Kho dữ liệu, hoặc hỏi mình: tuần trước, tháng này, so sánh tuần, tuần 2…');
+    return {text:out.join('\n'), csv};
+  }
+  /** Tóm tắt ngắn để Chatbot AI tham khảo khi trò chuyện */
+  function contextLine(){
+    const P = periods(); if(!P.days.length) return '';
+    const w = P.weeks[P.weeks.length - 1], m = P.months[P.months.length - 1];
+    return 'KHO DỮ LIỆU SỨC KHỎE: ' + periodText(w) + ' ' + periodText(m);
+  }
+
+
+/* ============================================================================
+ * JS-06.03 · TẢI DỮ LIỆU CSV
+ * toCsv() chuyển bản ghi thành chuỗi CSV; download() tạo tệp tải xuống từ chuỗi đó.
+ * ========================================================================== */
+  /* ---------- xuất CSV ---------- */
+  function toCsv(kind, username){
+    const P = periods(null, username);
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    let rows;
+    if(kind === 'days'){
+      rows = [['Ngày', 'Phút/tuần quy đổi', 'Mức', 'Phút vừa', 'Phút mạnh', 'Giờ ngồi/ngày', 'Đi bộ/xe đạp (phút/tuần)', 'Thể thao (phút/tuần)', 'Cường độ', 'Vận động mạnh ở trường', 'Việc nhà (phút/tuần)', 'Cuối tuần (phút/tuần)']]
+        .concat(P.days.map(r => [vnDate(r.date), r.quyDoi, r.level, r.phutVua, r.phutManh, vn(r.gioNgoi), r.diChuyen, r.theThao, r.cuongDo, r.truongManh ? 'Có' : 'Không', r.viecNha, r.cuoiTuan]));
+    } else {
+      const list = kind === 'months' ? P.months : P.weeks;
+      rows = [['Kỳ', 'Từ ngày', 'Đến ngày', 'Số ngày', 'Ngày có dữ liệu', 'TB phút/tuần quy đổi', 'Thấp nhất', 'Cao nhất', 'TB phút vừa', 'TB phút mạnh', 'TB giờ ngồi/ngày', 'Ngày đạt khuyến cáo', 'Mức phổ biến', 'Tình trạng', 'Thay đổi so với kỳ trước']]
+        .concat(list.map(p => [p.label, vnDate(p.start), vnDate(p.end), p.days, p.records, p.avgQuyDoi, p.minQuyDoi, p.maxQuyDoi, p.avgVua, p.avgManh, vn(p.avgGioNgoi), p.daysEnough, p.mainLevel, p.status, p.change == null ? '' : p.change]));
+    }
+    return '﻿' + rows.map(r => r.map(q).join(',')).join('\r\n');
+  }
+  function download(kind, username){
+    const a = acct();
+    const name = 'kho-du-lieu-' + (username || (a && a.username) || 'tai-khoan').replace(/[^a-z0-9._-]/gi, '') + '-' + ({days:'theo-ngay', weeks:'theo-tuan', months:'theo-thang'}[kind] || kind) + '-' + dayKey() + '.csv';
+    const url = URL.createObjectURL(new Blob([toCsv(kind, username)], {type:'text/csv;charset=utf-8'}));
+    const l = document.createElement('a'); l.href = url; l.download = name; document.body.appendChild(l); l.click();
+    setTimeout(() => { URL.revokeObjectURL(url); l.remove(); }, 1500);
+    if(typeof toast === 'function') toast('Đã tải ' + name);
+  }
+
+
+/* ============================================================================
+ * JS-06.04 · DỰNG TRANG KHO DỮ LIỆU
+ * Tạo thẻ, bảng, biểu đồ và nội dung đọc cho trợ lý dựa trên tài khoản/kỳ đang chọn.
+ * ========================================================================== */
+  /* ======================= TRANG "KHO DỮ LIỆU" ======================= */
+  const V = {tab:'overview', user:null};
+  function chartWeeks(list){
+    const shown = list.slice(-8);
+    const max = Math.max(TARGET * 1.25, ...shown.map(p => p.avgQuyDoi || 0));
+    const tPct = TARGET / max * 100;
+    return '<div class="hd-chart" role="img" aria-label="Biểu đồ phút vận động quy đổi trung bình theo tuần, so với mức khuyến cáo ' + TARGET + ' phút">' +
+      '<div class="hd-chart-plot"><div class="hd-target" style="bottom:' + tPct.toFixed(1) + '%"><span>Khuyến cáo ' + TARGET + '</span></div>' +
+      shown.map(p => {
+        const h = p.records ? Math.max(2, (p.avgQuyDoi / max) * 100) : 0;
+        const tip = p.label + ' (' + vnDate(p.start, false) + '–' + vnDate(p.end, false) + '): ' + (p.records ? p.avgQuyDoi + ' phút/tuần · ' + p.records + ' ngày có dữ liệu' : 'chưa có dữ liệu');
+        return '<div class="hd-col' + (p === shown[shown.length - 1] ? ' last' : '') + '" tabindex="0" title="' + esc(tip) + '" aria-label="' + esc(tip) + '"><div class="hd-bar' + (p.avgQuyDoi >= TARGET ? ' ok' : '') + '" style="height:' + h.toFixed(1) + '%">' +
+          (p.records ? '<span class="hd-val">' + p.avgQuyDoi + '</span>' : '') + '</div></div>';
+      }).join('') + '</div>' +
+      '<div class="hd-chart-x">' + shown.map(p => '<span>' + esc(p.label.replace('Tuần ', 'T')) + '</span>').join('') + '</div></div>';
+  }
+  function card(p, title){
+    if(!p) return '';
+    const b = bmiIn(p.start, p.end);
+    return '<div class="hd-card"><div class="hd-card-head"><strong>' + esc(title) + '</strong><span>' + vnDate(p.start) + ' → ' + vnDate(p.end) + ' · ' + p.days + ' ngày</span></div>' +
+      (p.records ? '<div class="hd-big">' + p.avgQuyDoi + '<small> phút/tuần TB</small></div>' +
+        '<div class="hd-status s-' + (p.avgQuyDoi >= TARGET ? 'ok' : p.avgQuyDoi >= TARGET * 0.6 ? 'mid' : 'low') + '">' + esc(p.status) + '</div>' +
+        '<ul class="hd-facts"><li>Ngày có dữ liệu: <b>' + p.records + '/' + p.days + '</b></li><li>Ngày đạt khuyến cáo: <b>' + p.daysEnough + '</b></li>' +
+        '<li>Mức phổ biến: <b>' + esc(p.mainLevel) + '</b></li><li>Ngồi TB: <b>' + vn(p.avgGioNgoi) + ' giờ/ngày</b></li>' +
+        (p.change != null ? '<li>So với kỳ trước: <b>' + (p.change > 0 ? '+' : '') + p.change + ' phút</b></li>' : '') +
+        (b ? '<li>BMI gần nhất: <b>' + vn(b.bmi) + '</b> (' + esc(b.label) + ')</li>' : '') + '</ul>'
+        : '<div class="hd-empty">Chưa có lần khảo sát nào trong kỳ này.</div>') + '</div>';
+  }
+  function table(list, kind){
+    if(kind === 'days'){
+      return '<div class="hd-table-wrap"><table class="hd-table"><thead><tr><th>Ngày</th><th>Phút/tuần quy đổi</th><th>Mức</th><th>Phút vừa</th><th>Phút mạnh</th><th>Giờ ngồi/ngày</th></tr></thead><tbody>' +
+        list.slice().reverse().map(r => '<tr><td>' + vnDate(r.date) + '</td><td><b>' + r.quyDoi + '</b></td><td>' + esc(r.level) + '</td><td>' + r.phutVua + '</td><td>' + r.phutManh + '</td><td>' + vn(r.gioNgoi) + '</td></tr>').join('') + '</tbody></table></div>';
+    }
+    return '<div class="hd-table-wrap"><table class="hd-table"><thead><tr><th>Kỳ</th><th>Thời gian</th><th>Ngày có dữ liệu</th><th>Trung bình phút/tuần</th><th>Trung bình giờ ngồi/ngày</th><th>Đạt khuyến cáo</th><th>Mức phổ biến</th><th>Tình trạng</th><th>So với kỳ trước</th></tr></thead><tbody>' +
+      list.slice().reverse().map(p => '<tr><td><b>' + esc(p.label) + '</b></td><td>' + vnDate(p.start) + ' → ' + vnDate(p.end) + '</td><td>' + p.records + '/' + p.days + '</td><td><b>' + (p.records ? p.avgQuyDoi : '–') + '</b></td><td>' + (p.records ? vn(p.avgGioNgoi) : '–') + '</td><td>' + (p.records ? p.daysEnough + ' ngày' : '–') + '</td><td>' + esc(p.mainLevel || '–') + '</td><td>' + esc(p.status) + '</td><td>' + (p.change == null ? '–' : (p.change > 0 ? 'tăng ' : p.change < 0 ? 'giảm ' : '') + Math.abs(p.change)) + '</td></tr>').join('') + '</tbody></table></div>';
+  }
+  async function render(){
+    const box = $('dataBody'); if(!box) return;
+    const a = acct();
+    if(!a){ box.innerHTML = '<div class="hd-empty">Cậu đăng nhập tài khoản để xem kho dữ liệu của mình. <button class="btn btn-primary btn-sm" onclick="App.goStudentAuth(\'login\')">Đăng nhập</button></div>'; return; }
+    box.innerHTML = '<div class="hd-empty">Đang tải kho dữ liệu…</div>';
+    // giáo viên: chọn học sinh cùng trường
+    let users = null;
+    if(a.role === 'admin'){
+      users = [];
+      const col = db('healthDaily');
+      try{ const snap = col ? await col.get() : {docs:[]}; const seen = {}; (snap.docs || []).map(d => d.data()).forEach(r => { if(r && r.role === 'student' && !seen[r.username] && (typeof schoolMatches !== 'function' || !a.schoolId || schoolMatches(r, a))){ seen[r.username] = 1; users.push(r); } }); }catch(e){}
+      if(!V.user && users.length) V.user = users[0].username;
+    } else V.user = userOf(a);
+    const list = V.user ? await load(V.user) : [];
+    const P = periods(list, V.user);
+    const sel = $('dataUser');
+    if(sel){
+      sel.classList.toggle('hidden', !users);
+      if(users) sel.innerHTML = users.length ? users.map(u => '<option value="' + esc(u.username) + '"' + (u.username === V.user ? ' selected' : '') + '>' + esc(u.displayName || u.username) + ' (' + esc(u.username) + ')</option>').join('') : '<option>Chưa có học sinh nào có dữ liệu</option>';
+    }
+    const info = $('dataInfo');
+    if(info) info.textContent = P.start ? 'Bắt đầu theo dõi: ' + vnDate(P.start) + ' · ' + P.days.length + ' ngày có dữ liệu · Tuần = 7 ngày, Tháng = 30 ngày tính từ ngày bắt đầu' : 'Chưa có dữ liệu';
+    document.querySelectorAll('[data-hd-tab]').forEach(b => { const on = b.dataset.hdTab === V.tab; b.classList.toggle('active', on); b.setAttribute('aria-selected', String(on)); });
+    if(!P.days.length){
+      box.innerHTML = '<div class="hd-empty"><strong>Kho dữ liệu đang trống.</strong><br>Mỗi ngày, khi trả lời xong bộ câu hỏi vận động trong Chatbot, kết quả sẽ tự được lưu ở đây và thống kê theo tuần (7 ngày) và tháng (30 ngày).' +
+        (a.role === 'student' ? '<br><button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="App.goChat()">Mở Chatbot</button>' : '') + '</div>';
+      return;
+    }
+    const w = P.weeks[P.weeks.length - 1], m = P.months[P.months.length - 1];
+    let html = '';
+    if(V.tab === 'overview'){
+      html = '<div class="hd-cards">' + card(w, w.label + ' (tuần hiện tại)') + card(m, m.label + ' (tháng hiện tại)') + '</div>' +
+        '<div class="panel-card hd-panel"><h3>Phút vận động trung bình theo tuần</h3>' + chartWeeks(P.weeks) +
+        '<p class="hd-note">' + esc(advice(w)) + '</p></div>';
+    } else if(V.tab === 'weeks') html = '<div class="panel-card hd-panel"><h3>Thống kê theo tuần (7 ngày)</h3>' + table(P.weeks, 'weeks') + '</div>';
+    else if(V.tab === 'months') html = '<div class="panel-card hd-panel"><h3>Thống kê theo tháng (30 ngày)</h3>' + table(P.months, 'months') + '</div>';
+    else if(V.tab === 'days') html = '<div class="panel-card hd-panel"><h3>Dữ liệu từng ngày</h3>' + table(P.days, 'days') + '</div>';
+    html += '<div class="hd-export"><span>Xuất dữ liệu (mở bằng Excel):</span>' +
+      '<button class="btn btn-ghost btn-sm" data-hd-csv="days">Theo ngày</button><button class="btn btn-ghost btn-sm" data-hd-csv="weeks">Theo tuần</button><button class="btn btn-ghost btn-sm" data-hd-csv="months">Theo tháng</button></div>';
+    box.innerHTML = html;
+  }
+  function renderIfOpen(){ const v = $('view-data'); if(v && v.classList.contains('active')) render(); }
+  function open(tab){
+    if(tab) V.tab = tab;
+    if(typeof showView === 'function') showView('view-data');
+    render();
+  }
+  function speech(){
+    const a = acct();
+    if(!a) return 'Trang Kho dữ liệu. Cậu chưa đăng nhập. Nói: đăng nhập, để xem kho dữ liệu của mình.';
+    const P = periods(null, V.user);
+    if(!P.days.length) return 'Trang Kho dữ liệu sức khỏe. Kho đang trống: khi cậu trả lời xong bộ câu hỏi vận động trong Chatbot, kết quả sẽ tự được lưu và thống kê theo tuần 7 ngày, theo tháng 30 ngày.';
+    return 'Trang Kho dữ liệu sức khỏe. Bắt đầu theo dõi từ ' + sayDate(P.start) + ', có ' + P.days.length + ' ngày khảo sát. ' +
+      periodText(P.weeks[P.weeks.length - 1]) + ' ' + periodText(P.months[P.months.length - 1]) +
+      ' Nói: theo tuần, theo tháng, theo ngày, để xem bảng; nói: xuất dữ liệu tuần, để tải file.';
+  }
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-hd-tab]'); if(t){ V.tab = t.dataset.hdTab; render(); return; }
+    const c = e.target.closest('[data-hd-csv]'); if(c){ download(c.dataset.hdCsv, V.user); return; }
+  });
+  document.addEventListener('change', e => { if(e.target && e.target.id === 'dataUser'){ V.user = e.target.value; render(); } });
+
+  /** Tài khoản đổi họ tên / trường → sửa luôn bản sao trên máy (bản trên Sheet do Apps Script sửa) */
+  function patchAccount(fields){
+    const u = userOf(acct()); if(!u || !fields) return;
+    const keys = ['displayName','schoolId','schoolName','schoolLevel','wardName','districtName','provinceName','provinceCode','wardCode','address'];
+    const list = cached(u).map(r => { const o = Object.assign({}, r); keys.forEach(k => { if(k in fields) o[k] = fields[k]; }); return o; });
+    cache[u] = list; writeLocal(u, list); renderIfOpen();
+  }
+  window.HealthStore = {recordSurvey, patchAccount, doneToday, load, periods, periodText, answer, isStatsRequest, contextLine, toCsv, download, open, render, speech,
+    setTab(t){ V.tab = t; render(); }, get user(){ return V.user; }, dayKey, vnDate, TARGET};
+  if(typeof App !== 'undefined') App.goData = (tab) => HealthStore.open(tab);
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-07 · QUÉT CHIỀU CAO BẰNG CAMERA
+ * Tạo hộp thoại camera, hiệu chỉnh vạch mốc, tải mô hình tư thế, xử lý nhiều khung hình và lấy số đo.
+ * Kết quả được chuyển sang BMI.setMeasurement(); chức năng thử nghiệm gốc được giữ nguyên.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — QUÉT CHIỀU CAO BẰNG CAMERA (height-scan.js) · THỬ NGHIỆM
+   ---------------------------------------------------------------------
+   Nguyên lý:
+   1) Hiệu chỉnh: dán 1 vạch mốc trên tường ở độ cao đã biết (mặc định 100 cm).
+      Người hỗ trợ chạm vào CHÂN TƯỜNG và VẠCH MỐC trên màn hình
+      → biết 1 pixel = bao nhiêu cm tại mặt phẳng tường.
+   2) Học sinh đứng sát tường (gót chân chạm tường). AI MediaPipe Pose
+      (mã nguồn mở, Apache-2.0) nhận dạng 33 điểm cơ thể + tách dáng người
+      → tìm đỉnh đầu từ mặt nạ dáng người, kiểm tra đứng thẳng, gối thẳng,
+      chân chạm sàn.
+   3) Lấy trung vị của hàng chục khung hình hợp lệ → chiều cao (cm) + sai số,
+      rồi tự điền sang mục BMI qua BMI.setMeasurement().
+   Sai số thực tế thường ±1–3 cm, phụ thuộc camera đặt ngang, đủ sáng, tóc gọn.
+   API: HeightScan.open({onResult(cm, accuracyCm)}) · HeightScan.close()
+   ===================================================================== */
+(function(){
+  'use strict';
+  const MP_VER = '0.10.14';
+  const MP_BASE = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@' + MP_VER;
+  const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+  const CALIB_KEY = 'hp_height_calib';
+  const NEED = 45, MAX_SAMPLES = 120;
+
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const vn = (x, d = 1) => Number(x).toFixed(d).replace('.', ',');
+  const S = {
+    el:null, video:null, canvas:null, ctx:null, stream:null, raf:0, landmarker:null, loading:null,
+    step:'prep', facing:'user', calib:null, taps:[], samples:[], onResult:null, lastTs:-1,
+    lastSay:0, status:'', result:null, frameInfo:null
+  };
+
+  function say(text, force){
+    const VR = window.VoiceRobot; if(!VR) return;
+    const st = VR.state || {};
+    if(force || st.mode === 'blind' || (st.mode === 'regular' && st.robotOn)) VR.speak(text, {force:!!force});
+  }
+  function lsGet(){ try{ return JSON.parse(localStorage.getItem(CALIB_KEY) || 'null'); }catch(e){ return null; } }
+  function lsSet(v){ try{ localStorage.setItem(CALIB_KEY, JSON.stringify(v)); }catch(e){} }
+
+  /* ------------------------- Giao diện ------------------------- */
+  function build(){
+    if(S.el) return;
+    const d = document.createElement('div');
+    d.className = 'hs-overlay hidden';
+    d.id = 'heightScan';
+    d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'Quét chiều cao bằng camera');
+    d.innerHTML =
+      '<div class="hs-card">' +
+        '<div class="hs-head"><div><div class="hs-kicker"><i data-lucide="scan-line"></i> AI đo chiều cao · Thử nghiệm</div><h3>Quét chiều cao bằng camera</h3></div>' +
+        '<button type="button" class="icon-btn" data-hs="close" aria-label="Đóng"><i data-lucide="x"></i></button></div>' +
+        '<div class="hs-body">' +
+          '<div class="hs-stage"><video playsinline muted autoplay></video><canvas></canvas>' +
+            '<div class="hs-hud"><span class="hs-live" id="hsLive"></span></div>' +
+            '<div class="hs-placeholder" id="hsPlaceholder"><i data-lucide="camera"></i><span>Camera chưa bật</span></div>' +
+          '</div>' +
+          '<div class="hs-panel">' +
+            '<ol class="hs-steps"><li data-s="prep">Chuẩn bị</li><li data-s="calib">Hiệu chỉnh</li><li data-s="scan">Quét</li><li data-s="done">Kết quả</li></ol>' +
+            '<div class="hs-pane" data-p="prep">' +
+              '<ul class="hs-list">' +
+                '<li>Dán một <b>vạch mốc</b> (băng dính) lên tường ở độ cao đã biết, đo bằng thước dây.</li>' +
+                '<li>Đặt máy cách tường <b>2–3 m</b>, camera ở <b>ngang tầm thắt lưng</b>, để thẳng, không nghiêng.</li>' +
+                '<li>Học sinh <b>bỏ giày dép</b>, buộc gọn tóc, đứng sát tường, gót chân chạm tường.</li>' +
+                '<li>Phòng đủ sáng, tường trơn, không có người khác trong khung hình.</li>' +
+              '</ul>' +
+              '<div class="school-grid"><div class="field"><label class="field-label" for="hsRef">Độ cao vạch mốc (cm)</label><input type="number" id="hsRef" value="100" min="30" max="200" step="0.5"></div>' +
+              '<div class="field"><label class="field-label" for="hsFacing">Camera</label><select id="hsFacing"><option value="user">Camera trước / webcam</option><option value="environment">Camera sau (điện thoại)</option></select></div></div>' +
+              '<button type="button" class="btn btn-primary hs-wide" data-hs="start"><i data-lucide="camera"></i> Bật camera</button>' +
+            '</div>' +
+            '<div class="hs-pane" data-p="calib">' +
+              '<p class="hs-tip" id="hsCalibTip">Chạm vào <b>chân tường</b> (điểm sàn sát tường, chỗ học sinh sẽ đứng).</p>' +
+              '<div class="hs-row"><button type="button" class="btn btn-ghost btn-sm" data-hs="recalib"><i data-lucide="rotate-ccw"></i> Chạm lại</button>' +
+              '<button type="button" class="btn btn-ghost btn-sm hidden" data-hs="reuse"><i data-lucide="history"></i> Dùng hiệu chỉnh trước</button></div>' +
+            '</div>' +
+            '<div class="hs-pane" data-p="scan">' +
+              '<p class="hs-tip">Học sinh đứng thẳng sát tường, gót chạm tường, mắt nhìn thẳng, <b>giữ yên 3 giây</b>.</p>' +
+              '<div class="hs-progress"><i id="hsBar"></i></div>' +
+              '<div class="hs-status" id="hsStatus">Đang tìm người trong khung hình…</div>' +
+              '<div class="hs-checks" id="hsChecks"></div>' +
+              '<div class="hs-row"><button type="button" class="btn btn-ghost btn-sm" data-hs="recalib"><i data-lucide="crosshair"></i> Hiệu chỉnh lại</button></div>' +
+            '</div>' +
+            '<div class="hs-pane" data-p="done">' +
+              '<div class="hs-result"><span id="hsResult">—</span><small>cm</small></div>' +
+              '<div class="hs-acc" id="hsAcc"></div>' +
+              '<button type="button" class="btn btn-primary hs-wide" data-hs="use"><i data-lucide="check"></i> Dùng số đo này cho BMI</button>' +
+              '<div class="hs-row"><button type="button" class="btn btn-ghost btn-sm" data-hs="again"><i data-lucide="refresh-cw"></i> Đo lại</button></div>' +
+            '</div>' +
+            '<div class="hs-err err-text" id="hsErr"></div>' +
+            '<p class="hs-foot">AI nhận dạng dáng người: MediaPipe Pose (Google, mã nguồn mở). Hình ảnh chỉ xử lý trên máy, không gửi đi đâu.</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(d);
+    S.el = d; S.video = $('video', d); S.canvas = $('canvas', d); S.ctx = S.canvas.getContext('2d');
+    if(window.A11y) A11y.manageDialog(d, {close:() => close()});    // Escape đóng, giữ Tab trong hộp thoại, trả focus
+    d.addEventListener('click', e => {
+      const b = e.target.closest('[data-hs]'); if(!b) return;
+      const a = b.dataset.hs;
+      if(a === 'close') close();
+      if(a === 'start') startCamera();
+      if(a === 'recalib') beginCalib(true);
+      if(a === 'reuse') useSavedCalib();
+      if(a === 'again') beginScan();
+      if(a === 'use') useResult();
+    });
+    S.canvas.addEventListener('pointerdown', onTap);
+    d.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
+    try{ lucide.createIcons(); }catch(e){}
+  }
+  function setStep(step){
+    S.step = step;
+    S.el.querySelectorAll('.hs-pane').forEach(p => p.classList.toggle('active', p.dataset.p === step));
+    const order = ['prep','calib','scan','done'];
+    S.el.querySelectorAll('.hs-steps li').forEach(li => {
+      const i = order.indexOf(li.dataset.s), c = order.indexOf(step);
+      li.classList.toggle('active', i === c); li.classList.toggle('done', i < c);
+    });
+    S.canvas.classList.toggle('hs-tappable', step === 'calib');
+  }
+  function err(msg, detail){ const e = $('#hsErr', S.el); if(e) e.textContent = (msg || '') + (detail ? ' (' + detail + ')' : ''); if(msg) say(msg); }
+
+
+/* ============================================================================
+ * JS-07.01 · KHỞI ĐỘNG CAMERA VÀ MÔ HÌNH
+ * Mở camera, quản lý luồng hình ảnh và tải mô hình cần dùng cho việc nhận dạng tư thế.
+ * ========================================================================== */
+  /* ------------------------- Camera ------------------------- */
+  async function startCamera(){
+    err('');
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ err('Trình duyệt không hỗ trợ camera. Hãy dùng Chrome hoặc Edge, mở trang qua https.'); return; }
+    S.facing = $('#hsFacing', S.el).value;
+    try{
+      stopStream();
+      S.stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:{ideal:S.facing}, width:{ideal:1280}, height:{ideal:720}}});
+      S.video.srcObject = S.stream;
+      await S.video.play();
+    }catch(e){
+      err(e && e.name === 'NotAllowedError' ? 'Chưa được phép dùng camera. Bấm biểu tượng ổ khóa cạnh thanh địa chỉ để cho phép.' : 'Không mở được camera.', e && e.name !== 'NotAllowedError' ? (e.message || String(e)) : '');
+      return;
+    }
+    S.el.classList.toggle('hs-mirror', S.facing === 'user');
+    $('#hsPlaceholder', S.el).classList.add('hidden');
+    await new Promise(r => { if(S.video.videoWidth) r(); else S.video.onloadedmetadata = () => r(); });
+    S.canvas.width = S.video.videoWidth; S.canvas.height = S.video.videoHeight;
+    const stage = $('.hs-stage', S.el);
+    stage.style.aspectRatio = S.canvas.width + ' / ' + S.canvas.height; stage.style.height = 'auto';
+    loadModel().catch(() => {});
+    const saved = lsGet();
+    const reuse = $('[data-hs="reuse"]', S.el);
+    if(reuse) reuse.classList.toggle('hidden', !(saved && saved.vw === S.canvas.width && saved.vh === S.canvas.height && saved.facing === S.facing));
+    beginCalib(false);
+    loop();
+  }
+  function stopStream(){
+    if(S.stream){ S.stream.getTracks().forEach(t => t.stop()); S.stream = null; }
+  }
+  async function loadModel(){
+    if(S.landmarker) return S.landmarker;
+    if(S.loading) return S.loading;
+    S.loading = (async () => {
+      setLive('Đang tải mô hình AI nhận dạng dáng người…');
+      const vision = await import(MP_BASE + '/vision_bundle.mjs');
+      const fileset = await vision.FilesetResolver.forVisionTasks(MP_BASE + '/wasm');
+      const opts = d => ({baseOptions:{modelAssetPath:MODEL_URL, delegate:d}, runningMode:'VIDEO', numPoses:1, outputSegmentationMasks:true,
+        minPoseDetectionConfidence:0.6, minPosePresenceConfidence:0.6, minTrackingConfidence:0.6});
+      try{ S.landmarker = await vision.PoseLandmarker.createFromOptions(fileset, opts('GPU')); }
+      catch(e){ S.landmarker = await vision.PoseLandmarker.createFromOptions(fileset, opts('CPU')); }
+      setLive('');
+      return S.landmarker;
+    })().catch(e => {
+      S.loading = null;
+      err('Không tải được mô hình AI nhận dạng dáng người. Lần đầu cần kết nối mạng.', e && e.message);
+      throw e;
+    });
+    return S.loading;
+  }
+
+
+/* ============================================================================
+ * JS-07.02 · HIỆU CHỈNH MỐC ĐO
+ * Ghi vị trí chân tường/vạch mốc để quy đổi tọa độ ảnh sang chiều cao theo thiết lập hiệu chỉnh.
+ * ========================================================================== */
+  /* ------------------------- Hiệu chỉnh ------------------------- */
+  function beginCalib(force){
+    S.taps = []; S.calib = force ? null : S.calib;
+    if(S.calib){ beginScan(); return; }
+    setStep('calib');
+    $('#hsCalibTip', S.el).innerHTML = 'Chạm vào <b>chân tường</b> (điểm sàn sát tường, chỗ học sinh sẽ đứng).';
+    say('Bước hiệu chỉnh. Người hỗ trợ chạm vào chân tường trên màn hình, rồi chạm vào vạch mốc.');
+  }
+  function useSavedCalib(){
+    const c = lsGet(); if(!c) return;
+    S.calib = c; $('#hsRef', S.el).value = c.refCm;
+    beginScan();
+  }
+  function toVideoXY(e){
+    const r = S.canvas.getBoundingClientRect();
+    const cw = S.canvas.width, ch = S.canvas.height;
+    const sc = Math.min(r.width / cw, r.height / ch);
+    const ox = (r.width - cw * sc) / 2, oy = (r.height - ch * sc) / 2;
+    let x = (e.clientX - r.left - ox) / sc, y = (e.clientY - r.top - oy) / sc;
+    if(S.el.classList.contains('hs-mirror')) x = cw - x;
+    return {x, y};
+  }
+  function onTap(e){
+    if(S.step !== 'calib') return;
+    const p = toVideoXY(e);
+    if(p.y < 0 || p.y > S.canvas.height) return;
+    S.taps.push(p);
+    if(S.taps.length === 1){
+      $('#hsCalibTip', S.el).innerHTML = 'Tốt! Giờ chạm vào <b>vạch mốc</b> trên tường.';
+      say('Giờ chạm vào vạch mốc.');
+    } else {
+      const refCm = parseFloat(String($('#hsRef', S.el).value).replace(',', '.')) || 100;
+      const floor = S.taps[0], mark = S.taps[1];
+      const px = floor.y - mark.y;
+      if(px < S.canvas.height * 0.12){ err('Hai điểm quá gần hoặc chạm ngược. Chạm chân tường trước, vạch mốc sau.'); S.taps = []; beginCalib(true); return; }
+      S.calib = {floorY:floor.y, floorX:floor.x, markY:mark.y, markX:mark.x, refCm, cmPerPx:refCm / px,
+        vw:S.canvas.width, vh:S.canvas.height, facing:S.facing, ts:Date.now()};
+      lsSet(S.calib);
+      err('');
+      beginScan();
+    }
+  }
+
+
+/* ============================================================================
+ * JS-07.03 · XỬ LÝ KHUNG HÌNH VÀ LẤY KẾT QUẢ
+ * Kiểm tra tư thế, lấy các mẫu hợp lệ, tổng hợp số đo và chuyển kết quả được chọn sang biểu mẫu BMI.
+ * ========================================================================== */
+  /* ------------------------- Quét ------------------------- */
+  function beginScan(){
+    S.samples = []; S.result = null;
+    setStep('scan');
+    $('#hsBar', S.el).style.width = '0%';
+    say('Bắt đầu quét. Học sinh đứng thẳng sát tường, gót chân chạm tường, mắt nhìn thẳng và giữ yên.');
+  }
+  const L = {nose:0, lSh:11, rSh:12, lHip:23, rHip:24, lKnee:25, rKnee:26, lAnk:27, rAnk:28, lHeel:29, rHeel:30, lFoot:31, rFoot:32};
+  function angle(a, b, c){
+    const v1 = [a.x - b.x, a.y - b.y], v2 = [c.x - b.x, c.y - b.y];
+    const d = Math.hypot(...v1) * Math.hypot(...v2); if(!d) return 180;
+    return Math.acos(Math.max(-1, Math.min(1, (v1[0] * v2[0] + v1[1] * v2[1]) / d))) * 180 / Math.PI;
+  }
+  /** Tính 1 khung hình. lm: 33 điểm (toạ độ chuẩn hoá), mask: {data,w,h} hoặc null. Trả {ok, heightCm, checks, headY} */
+  function measureFrame(lm, mask, W, H, calib){
+    const checks = [];
+    const vis = i => lm[i] && (lm[i].visibility == null || lm[i].visibility > 0.5);
+    const need = [L.nose, L.lSh, L.rSh, L.lHip, L.rHip, L.lKnee, L.rKnee, L.lAnk, L.rAnk];
+    const allVis = need.every(vis);
+    checks.push({ok:allVis, t:'Thấy toàn thân'});
+    if(!allVis) return {ok:false, checks};
+    const shTilt = Math.abs(lm[L.lSh].y - lm[L.rSh].y);
+    const midSh = {x:(lm[L.lSh].x + lm[L.rSh].x) / 2, y:(lm[L.lSh].y + lm[L.rSh].y) / 2};
+    const midAn = {x:(lm[L.lAnk].x + lm[L.rAnk].x) / 2, y:(lm[L.lAnk].y + lm[L.rAnk].y) / 2};
+    const upright = shTilt < 0.03 && Math.abs(midSh.x - midAn.x) < 0.07;
+    checks.push({ok:upright, t:'Đứng thẳng, vai cân'});
+    const kneeOk = angle(lm[L.lHip], lm[L.lKnee], lm[L.lAnk]) > 165 && angle(lm[L.rHip], lm[L.rKnee], lm[L.rAnk]) > 165;
+    checks.push({ok:kneeOk, t:'Gối thẳng'});
+    const footY = Math.max(...[L.lHeel, L.rHeel, L.lFoot, L.rFoot, L.lAnk, L.rAnk].filter(vis).map(i => lm[i].y)) * H;
+    const onFloor = Math.abs(footY - calib.floorY) < H * 0.05;
+    checks.push({ok:onFloor, t:'Đứng đúng chỗ, chân chạm sàn sát tường'});
+    // Đỉnh đầu: từ mặt nạ dáng người, quét từ trên xuống trong dải quanh đầu
+    let headY = null;
+    const shW = Math.abs(lm[L.lSh].x - lm[L.rSh].x) * W;
+    const cx = lm[L.nose].x * W, half = Math.max(12, shW * 0.45);
+    if(mask && mask.data){
+      const sx = mask.w / W, sy = mask.h / H;
+      const x0 = Math.max(0, Math.floor((cx - half) * sx)), x1 = Math.min(mask.w - 1, Math.ceil((cx + half) * sx));
+      const yEnd = Math.min(mask.h - 1, Math.ceil(lm[L.nose].y * H * sy));
+      const minHits = Math.max(2, Math.round((x1 - x0 + 1) * 0.12));
+      for(let y = 0; y <= yEnd; y++){
+        let hits = 0; const rowOff = y * mask.w;
+        for(let x = x0; x <= x1; x++) if(mask.data[rowOff + x] > 0.5) hits++;
+        if(hits >= minHits){ headY = y / sy; break; }
+      }
+    }
+    if(headY == null){
+      // dự phòng khi không có mặt nạ: ước lượng đỉnh đầu từ mũi & vai (kém chính xác hơn)
+      const faceH = (midSh.y - lm[L.nose].y) * H;
+      headY = lm[L.nose].y * H - faceH * 0.95;
+    }
+    const cropped = headY < H * 0.01;
+    checks.push({ok:!cropped, t:'Không bị cắt đầu'});
+    const ok = allVis && upright && kneeOk && onFloor && !cropped;
+    const heightCm = (calib.floorY - headY) * calib.cmPerPx;
+    return {ok, heightCm, checks, headY, footY};
+  }
+  function median(a){ const s = a.slice().sort((x, y) => x - y); const n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : NaN; }
+  function iqr(a){ const s = a.slice().sort((x, y) => x - y); const q = p => s[Math.min(s.length - 1, Math.max(0, Math.round(p * (s.length - 1))))]; return q(0.75) - q(0.25); }
+
+  function loop(){
+    cancelAnimationFrame(S.raf);
+    const tick = () => {
+      if(!S.stream) return;
+      S.raf = requestAnimationFrame(tick);
+      const W = S.canvas.width, H = S.canvas.height;
+      const ctx = S.ctx; ctx.clearRect(0, 0, W, H);
+      drawCalib(ctx, W, H);
+      if(!S.landmarker || S.video.readyState < 2) return;
+      const ts = performance.now(); if(ts <= S.lastTs) return; S.lastTs = ts;
+      try{
+        S.landmarker.detectForVideo(S.video, ts, res => onResult(res, W, H));
+      }catch(e){ /* bỏ qua khung lỗi */ }
+    };
+    tick();
+  }
+  function onResult(res, W, H){
+    const lm = res.landmarks && res.landmarks[0];
+    let mask = null;
+    if(S.step === 'scan' && lm && res.segmentationMasks && res.segmentationMasks[0]){
+      const m = res.segmentationMasks[0];
+      try{ mask = {data:m.getAsFloat32Array(), w:m.width, h:m.height}; }catch(e){}
+    }
+    const ctx = S.ctx;
+    if(!lm){ if(S.step === 'scan') setStatus('Chưa thấy người trong khung hình…', []); return; }
+    drawPose(ctx, lm, W, H);
+    if(S.step !== 'scan' || !S.calib) return;
+    const f = measureFrame(lm, mask, W, H, S.calib);
+    if(f.headY != null){
+      ctx.strokeStyle = f.ok ? '#2F8F7D' : '#FFB74D'; ctx.lineWidth = 3; ctx.setLineDash([10, 8]);
+      ctx.beginPath(); ctx.moveTo(0, f.headY); ctx.lineTo(W, f.headY); ctx.stroke(); ctx.setLineDash([]);
+    }
+    if(f.ok){
+      S.samples.push(f.heightCm);
+      if(S.samples.length > MAX_SAMPLES) S.samples.shift();
+      setLive(vn(median(S.samples.slice(-15))) + ' cm');
+    }
+    const pct = Math.min(100, S.samples.length / NEED * 100);
+    $('#hsBar', S.el).style.width = pct + '%';
+    setStatus(f.ok ? 'Đang đo… giữ yên nhé' : 'Chỉnh tư thế theo gợi ý bên dưới', f.checks);
+    if(!f.ok && performance.now() - S.lastSay > 6000){
+      const bad = f.checks.find(c => !c.ok);
+      if(bad){ say('Chú ý: ' + bad.t.toLowerCase() + '.'); S.lastSay = performance.now(); }
+    }
+    if(S.samples.length >= NEED){
+      const spread = iqr(S.samples);
+      if(spread <= 2 || S.samples.length >= MAX_SAMPLES) finish(median(S.samples), spread);
+    }
+  }
+  function finish(cm, spread){
+    const acc = Math.max(1, Math.min(4, spread / 2 + 1));
+    S.result = {cm:Math.round(cm * 10) / 10, acc};
+    setStep('done');
+    $('#hsResult', S.el).textContent = vn(S.result.cm);
+    $('#hsAcc', S.el).textContent = 'Sai số ước tính ±' + vn(acc) + ' cm · ' + S.samples.length + ' khung hình hợp lệ';
+    setLive('');
+    say('Đã đo xong. Chiều cao khoảng ' + vn(S.result.cm) + ' xăng ti mét.');
+  }
+  function useResult(){
+    if(!S.result) return;
+    const cb = S.onResult; const r = S.result;
+    close();
+    if(cb) cb(r.cm, r.acc);
+  }
+  function setLive(t){ const e = $('#hsLive', S.el); if(e){ e.textContent = t; e.classList.toggle('hidden', !t); } }
+  function setStatus(t, checks){
+    $('#hsStatus', S.el).textContent = t;
+    $('#hsChecks', S.el).innerHTML = (checks || []).map(c => '<span class="' + (c.ok ? 'ok' : 'no') + '">' + (c.ok ? '✓' : '•') + ' ' + c.t + '</span>').join('');
+  }
+
+  /* ------------------------- Vẽ lớp phủ ------------------------- */
+  function drawCalib(ctx, W, H){
+    const c = S.calib;
+    const pts = c ? [{y:c.floorY, x:c.floorX, t:'Chân tường 0 cm'}, {y:c.markY, x:c.markX, t:'Vạch mốc ' + vn(c.refCm, c.refCm % 1 ? 1 : 0) + ' cm'}]
+                  : S.taps.map((p, i) => ({y:p.y, x:p.x, t:i ? 'Vạch mốc' : 'Chân tường'}));
+    pts.forEach(p => {
+      ctx.strokeStyle = '#FF5D5D'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.moveTo(0, p.y); ctx.lineTo(W, p.y); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = '#FF5D5D'; ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.save();
+      if(S.el.classList.contains('hs-mirror')){ ctx.translate(W, 0); ctx.scale(-1, 1); }
+      const tx = S.el.classList.contains('hs-mirror') ? W - p.x : p.x;
+      ctx.font = 'bold 20px Inter, sans-serif'; ctx.fillStyle = '#fff'; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 4;
+      ctx.strokeText(p.t, tx + 12, p.y - 10); ctx.fillText(p.t, tx + 12, p.y - 10);
+      ctx.restore();
+    });
+  }
+  const BONES = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28],[27,29],[28,30],[29,31],[30,32]];
+  function drawPose(ctx, lm, W, H){
+    ctx.strokeStyle = 'rgba(127,224,201,.9)'; ctx.lineWidth = 4;
+    BONES.forEach(([a, b]) => { if(!lm[a] || !lm[b]) return; ctx.beginPath(); ctx.moveTo(lm[a].x * W, lm[a].y * H); ctx.lineTo(lm[b].x * W, lm[b].y * H); ctx.stroke(); });
+    ctx.fillStyle = '#fff';
+    lm.forEach((p, i) => { if(i > 10 || i === 0){ ctx.beginPath(); ctx.arc(p.x * W, p.y * H, 4, 0, Math.PI * 2); ctx.fill(); } });
+  }
+
+  /* ------------------------- Mở / đóng ------------------------- */
+  function open(opts){
+    build();
+    S.onResult = opts && opts.onResult;
+    S.el.classList.remove('hidden');
+    const saved = lsGet();
+    if(saved && saved.refCm) $('#hsRef', S.el).value = saved.refCm;
+    $('#hsFacing', S.el).value = /Android|iPhone|iPad/i.test(navigator.userAgent) ? 'environment' : 'user';
+    setStep('prep'); err(''); setLive('');
+    $('#hsPlaceholder', S.el).classList.remove('hidden');
+    try{ lucide.createIcons(); }catch(e){}
+    setTimeout(() => { const b = $('[data-hs="start"]', S.el); if(b) b.focus(); }, 50);
+    say('Chế độ quét chiều cao bằng camera, bản thử nghiệm. Cần một người hỗ trợ đặt máy và dán vạch mốc trên tường, rồi bấm bật camera.');
+    loadModel().catch(() => {});   // tải trước mô hình trong lúc chuẩn bị
+  }
+  function close(){
+    cancelAnimationFrame(S.raf);
+    stopStream();
+    if(S.el) S.el.classList.add('hidden');
+  }
+  window.HeightScan = {open, close, _measureFrame:measureFrame, _median:median};
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-08 · PIPER: TẠO GIỌNG NÓI TIẾNG VIỆT
+ * Tải mô hình và dữ liệu phát âm, lưu IndexedDB, chuyển văn bản thành âm vị rồi tạo âm thanh WAV.
+ * window.PiperVI được trợ lý giọng nói ở JS-11 sử dụng khi cần giọng AI trong trình duyệt.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — GIỌNG AI TIẾNG VIỆT MÃ NGUỒN MỞ (piper-tts.js)
+   ---------------------------------------------------------------------
+   • Công cụ : Piper TTS (MIT) — chạy HOÀN TOÀN trong trình duyệt bằng
+               onnxruntime-web (MIT) + espeak-ng/piper-phonemize (GPL-3, WASM)
+   • Giọng    : vi_VN-vais1000-medium — giọng nữ miền Bắc, 22 050 Hz
+               Dữ liệu huấn luyện: VAIS-1000 Vietnamese Speech Synthesis
+               Corpus (CC BY 4.0).
+   • Lần đầu tải ~90 MB (mô hình 63 MB + dữ liệu phát âm 18 MB + ONNX
+     10 MB), lưu vào IndexedDB → những lần sau chạy OFFLINE, không cần mạng.
+   API: PiperVI.load()   → Promise (tải + khởi tạo)
+        PiperVI.ready     → true khi dùng được
+        PiperVI.synth(text, rate) → Promise<string objectURL (wav)>
+        PiperVI.onProgress = (pct, label) => {}
+   ===================================================================== */
+(function(){
+  'use strict';
+  const CFG = Object.assign({
+    ort: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/',
+    phonemize: 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/',
+    model: 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/vi/vi_VN/vais1000/medium/',
+    modelName: 'vi_VN-vais1000-medium.onnx'
+  }, window.PIPER_CONFIG || {});
+
+  const P = {
+    ready: false, loading: false, failed: false, error: '', progress: 0,
+    onProgress: null, onReady: null,
+    _load: null, _ort: null, _session: null, _config: null,
+    _phonWasm: null, _phonData: null, _cache: new Map()
+  };
+
+
+/* ============================================================================
+ * JS-08.01 · BỘ NHỚ ĐỆM MÔ HÌNH GIỌNG NÓI
+ * Các hàm IndexedDB đọc/lưu tệp lớn để tái sử dụng dữ liệu mô hình sau lần tải đầu.
+ * ========================================================================== */
+  /* ---------- Lưu tệp lớn vào IndexedDB (dùng offline) ---------- */
+  const DB_NAME = 'hp-piper-voice', STORE = 'files';
+  function idb(){
+    return new Promise((res, rej) => {
+      try{
+        const r = indexedDB.open(DB_NAME, 1);
+        r.onupgradeneeded = () => r.result.createObjectStore(STORE);
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      }catch(e){ rej(e); }
+    });
+  }
+  async function idbGet(key){
+    try{
+      const db = await idb();
+      return await new Promise(res => {
+        const q = db.transaction(STORE, 'readonly').objectStore(STORE).get(key);
+        q.onsuccess = () => res(q.result || null); q.onerror = () => res(null);
+      });
+    }catch(e){ return null; }
+  }
+  async function idbPut(key, val){
+    try{
+      const db = await idb();
+      await new Promise(res => {
+        const tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).put(val, key);
+        tx.oncomplete = res; tx.onerror = res; tx.onabort = res;
+      });
+    }catch(e){}
+  }
+
+  /* ---------- Tải có tiến độ ---------- */
+  const weights = {model: 0.7, data: 0.2, wasm: 0.1};
+  const got = {model: 0, data: 0, wasm: 0, cfg: 0};
+  function report(label){
+    const pct = Math.round(100 * (got.model * weights.model + got.data * weights.data + got.wasm * weights.wasm));
+    P.progress = Math.min(100, pct);
+    if(P.onProgress) try{ P.onProgress(P.progress, label || ''); }catch(e){}
+  }
+  async function fetchCached(url, key, part, expectSize){
+    const hit = await idbGet(url);
+    if(hit){ got[part] = 1; report(); return hit; }
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Không tải được ' + url + ' (HTTP ' + res.status + ')');
+    const total = +(res.headers.get('Content-Length') || 0) || expectSize || 0;
+    let buf;
+    if(res.body && res.body.getReader){
+      const reader = res.body.getReader(); const parts = []; let n = 0;
+      for(;;){
+        const {done, value} = await reader.read();
+        if(done) break;
+        parts.push(value); n += value.length;
+        if(total){ got[part] = Math.min(0.99, n / total); report('Đang tải giọng AI'); }
+      }
+      const out = new Uint8Array(n); let o = 0;
+      parts.forEach(p => { out.set(p, o); o += p.length; });
+      buf = out.buffer;
+    } else buf = await res.arrayBuffer();
+    got[part] = 1; report();
+    idbPut(url, buf);
+    return buf;
+  }
+  function loadScript(src, globalName){
+    return new Promise((res, rej) => {
+      if(globalName && window[globalName]) return res(window[globalName]);
+      const s = document.createElement('script');
+      s.src = src; s.async = true; s.crossOrigin = 'anonymous';
+      s.onload = () => res(globalName ? window[globalName] : true);
+      s.onerror = () => rej(new Error('Không tải được ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  /* ---------- Khởi tạo ---------- */
+  P.load = function(){
+    if(P._load) return P._load;
+    P.loading = true; P.failed = false;
+    P._load = (async () => {
+      report('Chuẩn bị giọng AI');
+      const ort = await loadScript(CFG.ort + 'ort.wasm.min.js', 'ort');
+      ort.env.wasm.wasmPaths = CFG.ort;
+      ort.env.wasm.numThreads = 1;                // GitHub Pages không có SharedArrayBuffer
+      ort.env.wasm.proxy = !CFG.noProxy;          // chạy AI trong Web Worker → không làm giật giao diện
+      P._ort = ort;
+      await loadScript(CFG.phonemize + 'piper_phonemize.js', 'createPiperPhonemize');
+      const cfgUrl = CFG.model + CFG.modelName + '.json';
+      const [cfgBuf, modelBuf, dataBuf, wasmBuf] = await Promise.all([
+        fetchCached(cfgUrl, 'cfg', 'cfg', 5000),
+        fetchCached(CFG.model + CFG.modelName, 'model', 'model', 63200000),
+        fetchCached(CFG.phonemize + 'piper_phonemize.data', 'data', 'data', 18077249),
+        fetchCached(CFG.phonemize + 'piper_phonemize.wasm', 'wasm', 'wasm', 635212)
+      ]);
+      P._config = JSON.parse(new TextDecoder().decode(cfgBuf));
+      P._phonData = dataBuf; P._phonWasm = wasmBuf;
+      report('Khởi động giọng AI');
+      P._session = await ort.InferenceSession.create(new Uint8Array(modelBuf), {executionProviders: ['wasm']});
+      P.ready = true; P.loading = false;
+      got.model = got.data = got.wasm = 1; report('Giọng AI đã sẵn sàng');
+      if(P.onReady) try{ P.onReady(); }catch(e){}
+      return true;
+    })().catch(err => {
+      P.loading = false; P.failed = true; P.error = String(err && err.message || err);
+      P._load = null;
+      console.warn('[PiperVI]', err);
+      throw err;
+    });
+    return P._load;
+  };
+
+
+/* ============================================================================
+ * JS-08.02 · TỔNG HỢP ÂM THANH
+ * Chuyển chữ thành mã âm vị, chạy mô hình suy luận và đóng gói mẫu âm thanh thành WAV.
+ * ========================================================================== */
+  /* ---------- Chữ → mã âm vị (espeak-ng, tiếng Việt) ---------- */
+  async function phonemeIds(text){
+    const lines = [];
+    const mod = await window.createPiperPhonemize({
+      print: (s) => { lines.push(s); },
+      printErr: () => {},
+      wasmBinary: P._phonWasm,
+      getPreloadedPackage: () => P._phonData,
+      locateFile: (u) => CFG.phonemize + u
+    });
+    mod.callMain(['-l', (P._config.espeak && P._config.espeak.voice) || 'vi',
+      '--input', JSON.stringify([{text: text}]), '--espeak_data', '/espeak-ng-data']);
+    const ids = [];
+    lines.forEach(l => { try{ const j = JSON.parse(l); if(j && j.phoneme_ids) ids.push(...j.phoneme_ids); }catch(e){} });
+    return ids;
+  }
+  function pcmToWav(pcm, sampleRate){
+    const n = pcm.length, view = new DataView(new ArrayBuffer(44 + n * 2));
+    const w = (o, s) => { for(let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+    w(0, 'RIFF'); view.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true); view.setUint16(34, 16, true); w(36, 'data'); view.setUint32(40, n * 2, true);
+    // chuẩn hoá âm lượng nhẹ để giọng rõ hơn
+    let peak = 0; for(let i = 0; i < n; i++){ const a = Math.abs(pcm[i]); if(a > peak) peak = a; }
+    const gain = peak > 0 ? Math.min(3, 0.95 / peak) : 1;
+    for(let i = 0, p = 44; i < n; i++, p += 2){
+      const v = Math.max(-1, Math.min(1, pcm[i] * gain));
+      view.setInt16(p, v < 0 ? v * 0x8000 : v * 0x7FFF, true);
+    }
+    return new Blob([view.buffer], {type: 'audio/wav'});
+  }
+  async function synthRaw(text, rate){
+    if(!P.ready) await P.load();
+    const ort = P._ort, c = P._config;
+    const ids = await phonemeIds(text);
+    if(!ids.length) throw new Error('Không tách được âm vị');
+    const inf = c.inference || {};
+    const feeds = {
+      input: new ort.Tensor('int64', BigInt64Array.from(ids.map(BigInt)), [1, ids.length]),
+      input_lengths: new ort.Tensor('int64', BigInt64Array.from([BigInt(ids.length)]), [1]),
+      scales: new ort.Tensor('float32', Float32Array.from([
+        inf.noise_scale != null ? inf.noise_scale : 0.667,
+        (inf.length_scale != null ? inf.length_scale : 1) / Math.max(0.6, Math.min(1.8, rate || 1)),
+        inf.noise_w != null ? inf.noise_w : 0.8
+      ]), [3])
+    };
+    if(c.num_speakers > 1) feeds.sid = new ort.Tensor('int64', BigInt64Array.from([0n]), [1]);
+    const out = await P._session.run(feeds);
+    const pcm = (out.output || out[Object.keys(out)[0]]).data;
+    return URL.createObjectURL(pcmToWav(pcm, (c.audio && c.audio.sample_rate) || 22050));
+  }
+  /** Tạo âm thanh (có bộ nhớ đệm để tải trước câu kế tiếp) */
+  P.synth = function(text, rate){
+    const key = (rate || 1).toFixed(2) + '|' + text;
+    if(!P._cache.has(key)){
+      const pr = synthRaw(text, rate);
+      pr.catch(() => P._cache.delete(key));
+      P._cache.set(key, pr);
+      if(P._cache.size > 40){ const k = P._cache.keys().next().value; P._cache.delete(k); }
+    }
+    return P._cache.get(key);
+  };
+  P.isCached = async function(){ return !!(await idbGet(CFG.model + CFG.modelName)); };
+  P.credit = 'Giọng AI: Piper TTS (mã nguồn mở, MIT) · mô hình vi_VN vais1000 · dữ liệu VAIS-1000 (CC BY 4.0)';
+
+  window.PiperVI = P;
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-09 · CHUẨN HÓA NHẬP TIẾNG VIỆT
+ * VNInput xử lý Telex, dấu thanh, lời đánh vần và quy tắc nhập riêng cho từng loại ô.
+ * Được dùng chung khi nhập bằng giọng nói, chữ nổi hoặc ký hiệu tay.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — NHẬP CHỮ TIẾNG VIỆT THEO QUY TẮC (vn-input.js)
+   • telex(raw)   : gõ kiểu Telex → chữ Việt có dấu, đặt dấu thanh theo quy tắc
+                    chính tả thông dụng (hòa, thủy, người, quyển, giữa…)
+                    aa→â aw→ă ee→ê oo→ô ow→ơ uw→ư dd→đ (w đứng riêng giữ nguyên là w) · s sắc f huyền r hỏi x ngã j nặng z xóa dấu
+   • spell(text)  : hiểu lời ĐÁNH VẦN tiếng Việt ("bê", "a", "dấu sắc", "cách", "xóa"…)
+                    → các phím Telex, để nhập bằng giọng nói từng chữ
+   • forField(el, text): chuẩn hoá theo quy tắc từng ô (tên đăng nhập, mật khẩu, họ tên, số…)
+   ===================================================================== */
+(function(){
+  'use strict';
+  const VOWELS = 'aăâeêioôơuưy';
+  const TONES = ['', '́', '̀', '̉', '̃', '̣'];   // ngang sắc huyền hỏi ngã nặng
+  const TONE_KEY = {s:1, f:2, r:3, x:4, j:5, z:0};
+  const MOD = {aa:'â', aw:'ă', ee:'ê', oo:'ô', ow:'ơ', uw:'ư', dd:'đ'};
+
+  const baseOf = ch => ch.normalize('NFD').replace(/[̣̀́̃̉]/g, '').normalize('NFC');
+  const toneOf = ch => { const d = ch.normalize('NFD'); for(let t = 1; t < TONES.length; t++) if(d.includes(TONES[t])) return t; return 0; };
+  const withTone = (ch, t) => (baseOf(ch).normalize('NFD') + TONES[t]).normalize('NFC');
+  const isV = ch => VOWELS.includes(baseOf(ch).toLowerCase());
+
+  /** Đặt dấu thanh cho một âm tiết (chữ thường/hoa đều được) */
+  function placeTone(word, tone){
+    const plain = [...word].map(baseOf).join('');
+    const lw = plain.toLowerCase();
+    // vị trí nguyên âm, bỏ "u" trong "qu" và "i" trong "gi" (thuộc phụ âm đầu) khi còn nguyên âm khác phía sau
+    let idx = [];
+    [...lw].forEach((c, i) => { if(VOWELS.includes(c)) idx.push(i); });
+    if(!idx.length) return word;
+    if((lw.startsWith('qu') && idx[0] === 1 && idx.length > 1) || (lw.startsWith('gi') && idx[0] === 1 && idx.length > 1)) idx = idx.slice(1);
+    // nguyên âm liền nhau đầu tiên (nhân vần)
+    const run = [idx[0]]; for(let k = 1; k < idx.length && idx[k] === idx[k - 1] + 1; k++) run.push(idx[k]);
+    let pos;
+    const special = run.filter(i => 'ăâêôơư'.includes(lw[i]));
+    const endsWithConsonant = run[run.length - 1] < lw.length - 1;
+    if(special.length) pos = special[special.length - 1];                 // ưu tiên chữ có mũ/móc (ươ → ơ)
+    else if(run.length === 1) pos = run[0];
+    else if(endsWithConsonant) pos = run[run.length - 1];                 // hoàn, tuyến
+    else if(run.length >= 3) pos = run[1];                                // ngoài, khuỷu
+    else pos = run[0];                                                    // hòa, thủy, mía, múa
+    const chars = [...plain];
+    // giữ nguyên các dấu thanh khác đã bỏ; đặt thanh mới
+    chars[pos] = withTone(chars[pos], tone);
+    return chars.join('');
+  }
+  const wordTone = w => { for(const ch of w){ const t = toneOf(ch); if(t) return t; } return 0; };
+
+  /** Chuyển chuỗi gõ Telex thành tiếng Việt */
+  function telex(raw){
+    const out = [];
+    let word = '';
+    const flush = () => { if(word){ out.push(word); word = ''; } };
+    for(const ch of String(raw || '')){
+      if(!/[a-zA-ZÀ-ỹđĐ]/.test(ch)){ flush(); out.push(ch); continue; }
+      const lower = ch.toLowerCase();
+      const plainWord = [...word].map(baseOf).join('');
+      const last = plainWord.slice(-1).toLowerCase();
+      const hasV = [...word].some(isV);
+      // dấu thanh
+      if(hasV && lower in TONE_KEY && !(lower === 'z' && !wordTone(word))){
+        const t = TONE_KEY[lower];
+        const cur = wordTone(word);
+        if(cur === t && t){ word = placeTone(word, 0) + ch; continue; }   // gõ 2 lần = bỏ dấu, giữ chữ
+        word = placeTone(word, t); continue;
+      }
+      // dấu mũ / móc / gạch
+      const pair = last + lower;
+      if(MOD[pair] && !(lower === 'w' && 'aou'.indexOf(last) < 0)){
+        const tone = wordTone(word);
+        const up = plainWord.slice(-1) !== last;
+        let m = MOD[pair]; if(up) m = m.toUpperCase();
+        let w2 = [...plainWord]; w2[w2.length - 1] = m;
+        // "uow" → "ươ"
+        if(pair === 'ow' && w2.length >= 2 && w2[w2.length - 2].toLowerCase() === 'u') w2[w2.length - 2] = w2[w2.length - 2] === 'U' ? 'Ư' : 'ư';
+        word = w2.join('');
+        if(tone) word = placeTone(word, tone);
+        continue;
+      }
+      /* "w" đứng một mình GIỮ NGUYÊN là chữ W/w (trước đây tự đổi thành ư/Ư → gõ "W" ra "Ư").
+         Chỉ kết hợp với nguyên âm ngay trước: uw → ư, ow → ơ, aw → ă (xử lý ở MOD phía trên). */
+      const tone = wordTone(word);
+      word = plainWord + ch;
+      if(tone) word = placeTone(word, tone);
+    }
+    flush();
+    return out.join('');
+  }
+
+  /* ---------- Đánh vần bằng giọng nói ---------- */
+  const LETTERS = [
+    ['a','a'],['á','aw'],['ă','aw'],['a trăng','aw'],['ớ','aa'],['â','aa'],['a mũ','aa'],['ơ','ow'],['ô','oo'],['o mũ','oo'],['ơ móc','ow'],['ư','uw'],['u móc','uw'],
+    ['e','e'],['ê','ee'],['e mũ','ee'],['i','i'],['i ngắn','i'],['o','o'],['u','u'],['y','y'],['i dài','y'],['i gờ rét','y'],['i cờ rét','y'],
+    ['bê','b'],['bờ','b'],['xê','c'],['cờ','c'],['cê','c'],['dê','d'],['dờ','d'],['đê','dd'],['đờ','dd'],['giê','g'],['gờ','g'],['hát','h'],['hắt','h'],['hờ','h'],
+    ['ca','k'],['ka','k'],['e lờ','l'],['lờ','l'],['em mờ','m'],['mờ','m'],['en nờ','n'],['nờ','n'],['pê','p'],['pờ','p'],['quy','q'],['cu','q'],['qui','q'],
+    ['e rờ','r'],['rờ','r'],['ét xì','s'],['sờ','s'],['tê','t'],['tờ','t'],['vê','v'],['vờ','v'],['ích xì','x'],['xờ','x'],['ép','f'],['ép phờ','f'],['phờ','f'],
+    ['gi','j'],['vê kép','w'],['vê đúp','w'],['đáp liu','w'],['dét','z'],['di','z'],
+    ['dấu sắc','s'],['sắc','s'],['dấu huyền','f'],['huyền','f'],['dấu hỏi','r'],['hỏi','r'],['dấu ngã','x'],['ngã','x'],['dấu nặng','j'],['nặng','j'],['bỏ dấu','z'],
+    ['cách','␠'],['dấu cách','␠'],['khoảng trắng','␠'],['chấm','.'],['dấu chấm','.'],['phẩy',','],['dấu phẩy',','],['gạch dưới','_'],['gạch ngang','-'],['a còng','@'],
+    ['không','0'],['một','1'],['hai','2'],['ba','3'],['bốn','4'],['tư','4'],['năm','5'],['lăm','5'],['sáu','6'],['bảy','7'],['tám','8'],['chín','9'],
+    ['xóa','⌫'],['xoá','⌫'],['xóa chữ','⌫'],['xóa hết','⌧'],['xoá hết','⌧'],['viết hoa','⇧'],['chữ hoa','⇧']
+  ].sort((a, b) => b[0].split(' ').length - a[0].split(' ').length);
+  /** Trả về danh sách phím từ lời đánh vần. VD "bê a dấu huyền cách một hai" → ['b','a','f','␠','1','2'] */
+  function spell(text){
+    const toks = String(text || '').toLowerCase().normalize('NFC').replace(/^(chữ|con chữ|số)\s+/, '').split(/[\s,]+/).filter(Boolean);
+    const keys = [];
+    for(let i = 0; i < toks.length;){
+      if(/^\d+$/.test(toks[i])){ keys.push(...toks[i].split('')); i++; continue; }
+      if(/^[a-z]$/.test(toks[i]) && !LETTERS.some(l => l[0] === toks[i])){ keys.push(toks[i]); i++; continue; }
+      let hit = null;
+      for(const [name, key] of LETTERS){
+        const w = name.split(' ');
+        if(w.every((x, k) => toks[i + k] === x)){ hit = [w.length, key]; break; }
+      }
+      if(hit){ keys.push(hit[1]); i += hit[0]; }
+      else if(toks[i] === 'chữ' || toks[i] === 'số' || toks[i] === 'dấu') i++;
+      else return null;                 // có từ không phải đánh vần → không phải chế độ đánh vần
+    }
+    return keys;
+  }
+  /** Áp danh sách phím vào chuỗi gõ thô (raw Telex) */
+  function applyKeys(raw, keys, state){
+    state = state || {};
+    for(const k of keys){
+      if(k === '⌫') raw = raw.slice(0, -1);
+      else if(k === '⌧') raw = '';
+      else if(k === '⇧') state.upper = true;
+      else if(k === '␠') raw += ' ';
+      else { raw += state.upper ? k.charAt(0).toUpperCase() + k.slice(1) : k; state.upper = false; }
+    }
+    return raw;
+  }
+  const KEY_NAMES = {aw:'ă', aa:'â', ow:'ơ', oo:'ô', uw:'ư', ee:'ê', dd:'đ', s:'s', f:'f', r:'r', x:'x', j:'j', z:'z',
+    '␠':'dấu cách', '⌫':'xóa', '⌧':'xóa hết', '⇧':'viết hoa', '.':'chấm', ',':'phẩy', '_':'gạch dưới', '-':'gạch ngang', '@':'a còng'};
+
+  /* ---------- Quy tắc từng loại ô ---------- */
+  function strip(s){ return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); }
+  function titleCase(s){
+    return String(s).split(/\s+/).filter(Boolean).map(w => {
+      const n = strip(w).toLowerCase();
+      if(n === 'thpt' || n === 'thcs') return w.toUpperCase();
+      return w.charAt(0).toLocaleUpperCase('vi-VN') + w.slice(1).toLocaleLowerCase('vi-VN');
+    }).join(' ');
+  }
+
+/* ============================================================================
+ * JS-09.01 · QUY TẮC NHẬP THEO LOẠI Ô
+ * forField() xử lý khác nhau cho tên đăng nhập, mật khẩu, số, họ tên/địa bàn, URL và văn bản thông thường.
+ * ========================================================================== */
+  function forField(el, text){
+    const id = (el && el.id) || '';
+    let v = String(text || '');
+    if(/Username$/.test(id)) return strip(v).toLowerCase().replace(/[^a-z0-9._]/g, '');
+    if(el && el.type === 'password') return v.replace(/\s+/g, '');
+    if(el && el.type === 'number'){ const n = parseFloat(v.replace(/\s+/g, '').replace(',', '.')); return isFinite(n) ? String(n) : ''; }
+    if(/^(studentName|adminFullName)$|SchoolName$|^schoolName$|Ward$|District$|Province$/.test(id)) return titleCase(v.replace(/\s+/g, ' ').trim());
+    if(/refUrl$/.test(id)) return v.replace(/\s+/g, '').toLowerCase();
+    v = v.replace(/\s+/g, ' ');
+    return v.charAt(0).toLocaleUpperCase('vi-VN') + v.slice(1);
+  }
+  window.VNInput = {telex, spell, applyKeys, forField, placeTone, KEY_NAMES, strip, titleCase};
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-10 · TRỢ NĂNG VÀ KHUNG ĐIỀU KHIỂN
+ * Nhận diện loại thiết bị; thông báo cho trình đọc màn hình; quản lý focus, hộp thoại và phím Escape.
+ * Cung cấp thao tác kéo/thu gọn khung trợ lý, khung webcam và nút trợ giúp.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — LÕI TRỢ NĂNG DÙNG CHUNG (a11y.js)
+   Nạp TRƯỚC voice-robot.js / finger-nav.js. Không phụ thuộc file nào khác.
+   • Device   : phân biệt máy tính / điện thoại bằng matchMedia (User-Agent chỉ là dự phòng)
+   • A11y.announce(text, {assertive}) : vùng aria-live cho trình đọc màn hình
+   • Hộp thoại (.modal-overlay, [data-a11y-dialog]) : role="dialog", Escape để đóng,
+     giữ Tab trong hộp thoại (focus trap), trả focus về nút đã mở khi đóng
+   • A11y.reducedMotion() : người dùng bật "Giảm chuyển động"
+   ===================================================================== */
+(function(){
+  'use strict';
+  const mq = q => { try{ return !!(window.matchMedia && window.matchMedia(q).matches); }catch(e){ return false; } };
+  const UA = String(navigator.userAgent || '');
+
+  /* ---------------- Device ---------------- */
+  const Device = {
+    /** Có chuột / bàn di chuột (con trỏ chính xác) */
+    hasFinePointer(){ return mq('(any-pointer: fine)') || mq('(pointer: fine)'); },
+    /** Màn hình cảm ứng là cách nhập chính */
+    isTouchPrimary(){ return mq('(pointer: coarse)') && !mq('(any-pointer: fine)'); },
+    isNarrow(){ return mq('(max-width: 768px)'); },
+    isIOS(){ return /iPhone|iPad|iPod/i.test(UA) || (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1); },
+    /** Điện thoại / máy tính bảng: ưu tiên matchMedia, User-Agent chỉ dùng khi trình duyệt không hỗ trợ media query */
+    isMobile(){
+      const hasMQ = !!window.matchMedia;
+      if(hasMQ){
+        if(Device.isTouchPrimary()) return true;                       // điện thoại, máy tính bảng
+        if(Device.isNarrow() && mq('(pointer: coarse)')) return true;  // màn hình hẹp + cảm ứng
+        if(Device.hasFinePointer()) return false;                      // laptop cảm ứng vẫn là máy tính
+      }
+      return /Android|iPhone|iPad|iPod|Mobile|Silk|Opera Mini/i.test(UA) || Device.isIOS();
+    },
+    isDesktop(){ return !Device.isMobile(); },
+    /** Có thể dùng camera nhận diện ký hiệu tay (chỉ máy tính, có getUserMedia, trang an toàn) */
+    canUseHandCamera(){
+      return Device.isDesktop() && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext !== false;
+    },
+    label(){ return Device.isMobile() ? 'điện thoại' : 'máy tính'; }
+  };
+  window.Device = Device;
+  const syncDeviceClass = () => {
+    const b = document.body; if(!b) return;
+    b.classList.toggle('is-mobile', Device.isMobile());
+    b.classList.toggle('is-desktop', Device.isDesktop());
+  };
+  syncDeviceClass();
+  ['(pointer: coarse)', '(max-width: 768px)'].forEach(q => {
+    try{
+      const m = window.matchMedia(q);
+      if(m.addEventListener) m.addEventListener('change', syncDeviceClass); else if(m.addListener) m.addListener(syncDeviceClass);
+    }catch(e){}
+  });
+
+  /* ---------------- Vùng thông báo cho trình đọc màn hình ---------------- */
+  function region(id, level){
+    let el = document.getElementById(id);
+    if(!el){
+      el = document.createElement('div');
+      el.id = id; el.className = 'vr-sr-only';
+      el.setAttribute('aria-live', level); el.setAttribute('aria-atomic', 'true');
+      el.setAttribute('role', level === 'assertive' ? 'alert' : 'status');
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+  const LIVE = {timer:0, last:'', lastAt:0};
+  function announce(text, opts){
+    text = String(text || '').replace(/\s+/g, ' ').trim();
+    if(!text) return;
+    const now = Date.now();
+    if(text === LIVE.last && now - LIVE.lastAt < 1500) return;          // không lặp lại cùng một câu liên tục
+    LIVE.last = text; LIVE.lastAt = now;
+    const el = region(opts && opts.assertive ? 'accessibilityLiveRegionAssertive' : 'accessibilityLiveRegion', opts && opts.assertive ? 'assertive' : 'polite');
+    el.textContent = '';
+    clearTimeout(LIVE.timer);
+    // đổi nội dung sau một nhịp để trình đọc màn hình nhận là thông báo mới
+    LIVE.timer = setTimeout(() => { el.textContent = text; }, 60);
+  }
+
+  /* ---------------- Hộp thoại: Escape, giữ Tab, trả focus ---------------- */
+  const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const isShown = el => !!el && !el.classList.contains('hidden') && el.getAttribute('aria-hidden') !== 'true' &&
+    !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+  const focusables = root => [...root.querySelectorAll(FOCUSABLE)].filter(el => isShown(el) && !el.closest('[inert]'));
+  const D = {stack:[], openers:new WeakMap()};
+  function topDialog(){
+    for(let i = D.stack.length - 1; i >= 0; i--){ if(isShown(D.stack[i])) return D.stack[i]; D.stack.splice(i, 1); }
+    return null;
+  }
+  function onOpen(dlg){
+    if(D.stack.includes(dlg)) return;
+    const opener = document.activeElement;
+    if(opener && opener !== document.body && !dlg.contains(opener)) D.openers.set(dlg, opener);
+    D.stack.push(dlg);
+    setTimeout(() => {
+      if(!isShown(dlg) || dlg.contains(document.activeElement)) return;
+      const first = dlg.querySelector('[autofocus]') || focusables(dlg)[0];
+      if(first) try{ first.focus({preventScroll:true}); }catch(e){}
+    }, 60);
+  }
+  function onClose(dlg){
+    const i = D.stack.indexOf(dlg); if(i >= 0) D.stack.splice(i, 1);
+    const opener = D.openers.get(dlg); D.openers.delete(dlg);
+    if(opener && opener.isConnected && isShown(opener) && (!document.activeElement || document.activeElement === document.body || dlg.contains(document.activeElement))){
+      try{ opener.focus({preventScroll:true}); }catch(e){}
+    }
+  }
+  /** Theo dõi một hộp thoại có sẵn (ẩn/hiện bằng class "hidden") */
+  function manageDialog(dlg, opts){
+    if(!dlg || dlg._a11yManaged) return;
+    dlg._a11yManaged = true; dlg._a11yOpts = opts || {};
+    if(!dlg.getAttribute('role')) dlg.setAttribute('role', 'dialog');
+    if(dlg._a11yOpts.modal !== false) dlg.setAttribute('aria-modal', 'true');
+    if(!dlg.getAttribute('aria-labelledby') && !dlg.getAttribute('aria-label')){
+      const h = dlg.querySelector('h1, h2, h3');
+      if(h){ if(!h.id) h.id = (dlg.id || 'dlg') + 'Title'; dlg.setAttribute('aria-labelledby', h.id); }
+    }
+    let was = isShown(dlg);
+    if(was) onOpen(dlg);
+    new MutationObserver(() => {
+      const now = isShown(dlg);
+      if(now === was) return;
+      was = now;
+      if(now) onOpen(dlg); else onClose(dlg);
+    }).observe(dlg, {attributes:true, attributeFilter:['class', 'hidden', 'aria-hidden']});
+  }
+  function closeDialog(dlg){
+    const o = dlg._a11yOpts || {};
+    if(typeof o.close === 'function') return o.close();
+    const btn = dlg.querySelector('[data-a11y-close], .modal-head .icon-btn, [aria-label^="Đóng"]');
+    if(btn) btn.click(); else dlg.classList.add('hidden');
+  }
+  document.addEventListener('keydown', (e) => {
+    const dlg = topDialog(); if(!dlg) return;
+    if(e.key === 'Escape' && dlg._a11yOpts.escape !== false){
+      e.preventDefault(); e.stopPropagation(); closeDialog(dlg); return;
+    }
+    if(e.key !== 'Tab' || dlg._a11yOpts.trap === false) return;
+    const list = focusables(dlg); if(!list.length){ e.preventDefault(); return; }
+    const first = list[0], last = list[list.length - 1], a = document.activeElement;
+    if(e.shiftKey && (a === first || !dlg.contains(a))){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && (a === last || !dlg.contains(a))){ e.preventDefault(); first.focus(); }
+  }, true);
+
+  /* ---------------- Sửa nhanh ngữ nghĩa trên các phần có sẵn ---------------- */
+  function patchSemantics(root){
+    root = root || document;
+    // nút chỉ có biểu tượng → cần nhãn
+    root.querySelectorAll('button.icon-btn:not([aria-label])').forEach(b => {
+      const t = b.getAttribute('title');
+      const close = /close\(\)/.test(b.getAttribute('onclick') || '') || b.closest('.modal-head');
+      b.setAttribute('aria-label', t || (close ? 'Đóng' : 'Nút'));
+    });
+    // nút "Đăng nhập" mở menu tài khoản: thông báo có menu
+    const acc = document.getElementById('accountMenuBtn');
+    if(acc && !acc.getAttribute('aria-haspopup')) acc.setAttribute('aria-haspopup', 'true');
+    const toast = document.getElementById('toast');
+    if(toast && !toast.getAttribute('role')){ toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); }
+    // phần tử div/span có onclick mà không phải nút → cho bàn phím dùng được
+    root.querySelectorAll('[onclick]:not(button):not(a):not(input):not(select):not(textarea)').forEach(el => {
+      if(!el.getAttribute('role')) el.setAttribute('role', 'button');
+      if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+      if(!el._a11yKey){
+        el._a11yKey = true;
+        el.addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && e.target === el){ e.preventDefault(); el.click(); } });
+      }
+    });
+  }
+  function init(){
+    syncDeviceClass();
+    region('accessibilityLiveRegion', 'polite');
+    region('accessibilityLiveRegionAssertive', 'assertive');
+    patchSemantics();
+    document.querySelectorAll('.modal-overlay').forEach(m => manageDialog(m));
+    // menu tài khoản: Escape đóng và trả focus về nút
+    document.addEventListener('keydown', (e) => {
+      if(e.key !== 'Escape') return;
+      const menu = document.getElementById('accountMenu'), btn = document.getElementById('accountMenuBtn');
+      if(menu && !menu.classList.contains('hidden') && typeof AccountMenu !== 'undefined'){
+        AccountMenu.close(); if(btn) try{ btn.focus(); }catch(err){}
+      }
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+  /* ---------------- KHUNG KÉO / THU GỌN ĐƯỢC (khung trợ lý AI, nút trợ giúp, khung webcam) ----------------
+     makeMovable(el, {key, name, grip, collapseBtn})
+     • Kéo nút "⠿" bằng chuột / ngón tay; hoặc focus nút đó rồi dùng phím mũi tên (Shift = bước dài), Home = về chỗ cũ.
+     • Nút "–" thu gọn / mở rộng. Vị trí + trạng thái được nhớ (localStorage, có try/catch).
+     • Mỗi thao tác đều được trợ lý NÓI RA và báo cho trình đọc màn hình. */
+  const panels = {};
+  const store = {
+    get(k){ try{ return JSON.parse(localStorage.getItem('hp_panel:' + k) || 'null'); }catch(e){ return null; } },
+    set(k, v){ try{ localStorage.setItem('hp_panel:' + k, JSON.stringify(v)); }catch(e){} }
+  };
+  function sayOut(text){
+    announce(text);
+    window.__hpQuietHoverUntil = Date.now() + 1200;   // khung vừa đổi chỗ / thu gọn → chuột "rơi" vào nội dung khác: không đọc đè lời báo
+    const V = window.VoiceRobot;
+    if(V && V.speak) try{ V.speak(text, {force:true, interrupt:true}); }catch(e){}
+  }
+  function whereOf(el){
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2, W = window.innerWidth, H = window.innerHeight;
+    const h = cx < W / 3 ? 'bên trái' : cx > W * 2 / 3 ? 'bên phải' : 'ở giữa';
+    const v = cy < H / 3 ? 'phía trên' : cy > H * 2 / 3 ? 'phía dưới' : 'giữa';
+    if(v === 'giữa' && h === 'ở giữa') return 'giữa màn hình';
+    if(v === 'giữa') return 'giữa màn hình, ' + h;
+    return v + ' màn hình, ' + h;
+  }
+  function makeMovable(el, cfg){
+    if(!el || panels[cfg.key]) return panels[cfg.key];
+    const P = {el, key:cfg.key, name:cfg.name, grip:cfg.grip, btn:cfg.collapseBtn, timer:0};
+    panels[cfg.key] = P;
+    const M = 8;                                                  // chừa mép màn hình
+    function clampPlace(left, top){
+      const r = el.getBoundingClientRect();
+      const W = document.documentElement.clientWidth, H = window.innerHeight;
+      left = Math.max(M, Math.min(W - r.width - M, left));
+      top = Math.max(M, Math.min(H - Math.min(r.height, H - 2 * M) - M, top));
+      Object.assign(el.style, {left:Math.round(left) + 'px', top:Math.round(top) + 'px', right:'auto', bottom:'auto', transform:'none'});
+      el.dataset.moved = '1';
+    }
+    function save(){
+      const st = {collapsed:el.classList.contains('is-collapsed')};
+      if(el.dataset.moved){ const r = el.getBoundingClientRect(); st.x = r.left / Math.max(1, window.innerWidth); st.y = r.top / Math.max(1, window.innerHeight); }
+      store.set(P.key, st);
+    }
+    function syncBtn(){
+      const c = el.classList.contains('is-collapsed');
+      if(P.btn){
+        P.btn.setAttribute('aria-expanded', String(!c));
+        P.btn.setAttribute('aria-label', (c ? 'Mở rộng ' : 'Thu gọn ') + P.name);
+        P.btn.title = (c ? 'Mở rộng ' : 'Thu gọn ') + P.name;
+        P.btn.textContent = c ? '▢' : '–';
+      }
+    }
+    P.collapse = (on, quiet) => {
+      on = on === undefined ? !el.classList.contains('is-collapsed') : !!on;
+      el.classList.toggle('is-collapsed', on); syncBtn(); save();
+      if(cfg.onChange) cfg.onChange(on);
+      if(!quiet) sayOut(on ? 'Đã thu gọn ' + P.name + '.' + (cfg.noteCollapsed ? ' ' + cfg.noteCollapsed : '') + ' Bấm nút mở rộng, hoặc nói: mở rộng ' + P.name + ', để hiện lại.' : 'Đã mở rộng ' + P.name + '.');
+      if(on && P.btn) try{ P.btn.focus({preventScroll:true}); }catch(e){}
+    };
+    P.moveBy = (dx, dy, quiet) => {
+      const r = el.getBoundingClientRect(); clampPlace(r.left + dx, r.top + dy); save();
+      if(!quiet){ clearTimeout(P.timer); P.timer = setTimeout(() => sayOut('Đã di chuyển ' + P.name + ' tới ' + whereOf(el) + '.'), 450); }
+    };
+    P.moveTo = (where, quiet) => {
+      const r = el.getBoundingClientRect(), W = document.documentElement.clientWidth, H = window.innerHeight;
+      const X = {l:M + 8, c:(W - r.width) / 2, r:W - r.width - M - 8}, Y = {t:M + 8, m:(H - r.height) / 2, b:H - r.height - M - 8};
+      const map = {tl:['l','t'], tr:['r','t'], bl:['l','b'], br:['r','b'], center:['c','m'], top:['c','t'], bottom:['c','b'], left:['l','m'], right:['r','m']};
+      const step = Math.round(Math.min(W, H) * 0.2);
+      if(where === 'up') return P.moveBy(0, -step, quiet);
+      if(where === 'down') return P.moveBy(0, step, quiet);
+      if(where === 'leftward') return P.moveBy(-step, 0, quiet);
+      if(where === 'rightward') return P.moveBy(step, 0, quiet);
+      const m = map[where]; if(!m) return;
+      clampPlace(X[m[0]], Y[m[1]]); save();
+      if(!quiet) sayOut('Đã di chuyển ' + P.name + ' tới ' + whereOf(el) + '.');
+    };
+    P.reset = (quiet) => {
+      ['left','top','right','bottom','transform'].forEach(k => { el.style[k] = ''; });
+      delete el.dataset.moved; save();
+      if(!quiet) sayOut('Đã đưa ' + P.name + ' về vị trí ban đầu, ' + whereOf(el) + '.');
+    };
+    P.where = () => whereOf(el);
+    // ---- kéo bằng chuột / ngón tay ----
+    if(P.grip){
+      let drag = null;
+      P.grip.addEventListener('pointerdown', e => {
+        if(e.button !== 0) return;
+        const r = el.getBoundingClientRect();
+        drag = {id:e.pointerId, dx:e.clientX - r.left, dy:e.clientY - r.top, x0:e.clientX, y0:e.clientY, moved:false};
+        try{ P.grip.setPointerCapture(e.pointerId); }catch(err){}
+        e.preventDefault();
+      });
+      P.grip.addEventListener('pointermove', e => {
+        if(!drag || e.pointerId !== drag.id) return;
+        if(!drag.moved && Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) < 5) return;
+        if(!drag.moved){ drag.moved = true; el.classList.add('is-dragging'); }
+        clampPlace(e.clientX - drag.dx, e.clientY - drag.dy);
+      });
+      const end = e => {
+        if(!drag || (e && e.pointerId !== drag.id)) return;
+        const moved = drag.moved; drag = null; el.classList.remove('is-dragging');
+        if(moved){ save(); sayOut('Đã di chuyển ' + P.name + ' tới ' + whereOf(el) + '.'); P.justDragged = Date.now(); }
+      };
+      P.grip.addEventListener('pointerup', end); P.grip.addEventListener('pointercancel', end);
+      P.grip.addEventListener('click', e => {
+        e.stopPropagation();
+        if(P.justDragged && Date.now() - P.justDragged < 400) return;
+        sayOut('Nút di chuyển ' + P.name + ', đang ở ' + whereOf(el) + '. Kéo nút này để di chuyển; hoặc dùng phím mũi tên; phím Home để về chỗ cũ.');
+      });
+      P.grip.addEventListener('dblclick', e => { e.stopPropagation(); P.reset(); });
+      P.grip.addEventListener('keydown', e => {
+        const big = e.shiftKey ? 80 : 24;
+        const k = {ArrowLeft:[-big, 0], ArrowRight:[big, 0], ArrowUp:[0, -big], ArrowDown:[0, big]}[e.key];
+        if(k){ e.preventDefault(); e.stopPropagation(); P.moveBy(k[0], k[1]); return; }
+        if(e.key === 'Home'){ e.preventDefault(); P.reset(); }
+      });
+    }
+    if(P.btn) P.btn.addEventListener('click', e => { e.stopPropagation(); P.collapse(); });
+    // khôi phục trạng thái đã lưu
+    const st = store.get(P.key);
+    if(st){
+      if(st.collapsed){ el.classList.add('is-collapsed'); if(cfg.onChange) cfg.onChange(true); }
+      if(typeof st.x === 'number') requestAnimationFrame(() => { if(el.getBoundingClientRect().width) clampPlace(st.x * window.innerWidth, st.y * window.innerHeight); else P.pendingXY = st; });
+    }
+    syncBtn();
+    P.refit = () => {
+      if(P.pendingXY && el.getBoundingClientRect().width){ const s2 = P.pendingXY; P.pendingXY = null; clampPlace(s2.x * window.innerWidth, s2.y * window.innerHeight); return; }
+      if(el.dataset.moved){ const r = el.getBoundingClientRect(); if(r.width) clampPlace(r.left, r.top); }
+    };
+    return P;
+  }
+  let refitT = 0;
+  window.addEventListener('resize', () => { clearTimeout(refitT); refitT = setTimeout(() => Object.keys(panels).forEach(k => panels[k].refit()), 150); });
+
+  window.A11y = {
+    announce, manageDialog, makeMovable, panels, closeDialog, focusables, patchSemantics,
+    reducedMotion(){ return mq('(prefers-reduced-motion: reduce)'); },
+    /** behavior cho scrollTo/scrollIntoView: "auto" khi người dùng giảm chuyển động */
+    scrollBehavior(){ return mq('(prefers-reduced-motion: reduce)') ? 'auto' : 'smooth'; }
+  };
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-11 · TRỢ LÝ GIỌNG NÓI, MICRO VÀ ĐIỀU HƯỚNG
+ * VoiceRobot quản lý chế độ thường/khiếm thị, đọc văn bản (TTS), nhận diện lời nói (STT),
+ * phụ đề, đọc khi rê chuột, phân vùng trang, điền biểu mẫu và gửi câu trả lời vào chatbot.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — ROBOT GIỌNG NÓI (voice-robot.js)
+   ---------------------------------------------------------------------
+   • Mở web: robot tự bật, hỏi "khiếm thị" hay "bình thường".
+   • Trang KHIẾM THỊ : robot LUÔN bật, đọc to nội dung, nói tên mục
+                        → tự điều hướng; lời nói trong Chatbot tự gửi.
+   • Trang THÔNG THƯỜNG: Robot mặc định TẮT; chỉ nghe từ khóa
+                        điều khiển giọng nói, rồi mới nhận lệnh.
+   Nạp file này SAU Ai-healthpulse-script.js.
+   Mở thẳng một trang: ?voice=khiemthi  hoặc  ?voice=thuong
+   ===================================================================== */
+(function(){
+  'use strict';
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  const synth = ('speechSynthesis' in window) ? window.speechSynthesis : null;
+  const MODE_KEY = 'hp_voice_mode';
+  const ROBOT_KEY = 'hp_voice_robot';
+  const AUTOREAD_KEY = 'hp_voice_autoread';
+  const CHATVOICE_KEY = 'hp_chat_voice';   // Chỉ bật sau lựa chọn rõ ràng của học sinh
+
+
+/* ============================================================================
+ * JS-11.01 · TRẠNG THÁI TRỢ LÝ
+ * R lưu chế độ, hàng đợi lời đọc, trạng thái micro/loa, ô đang nhập và các bộ hẹn giờ; các hàm phía dưới cùng cập nhật đối tượng này.
+ * ========================================================================== */
+  const R = {
+    mode:null,            // 'blind' | 'regular'
+    robotOn:false,        // chỉ dùng cho trang thông thường
+    autoRead:false,       // trang thường: tự đọc tin nhắn AI
+    started:false,        // đã được phép phát âm thanh
+    audioOk:false,
+    gateOpen:false,
+    speaking:false, listening:false, micDenied:false,
+    rec:null, voice:null, gen:0, queue:[],
+    lastSpoken:'', lastHeardAt:0, lastSpeakEnd:0,
+    pendingFirst:null, pendingView:null, viewTimer:null,
+    restartTimer:null, restartDelay:300, lastStart:0,
+    pumpTimer:null, autoTimer:null,
+    awaitField:null, gatePrompts:0, modalWasOpen:false,
+    chatVoice:false, chatIntroDone:false, chatState:'',
+    // One owner of the audio device: speech OR recognition, never both.
+    voiceReady:false, voiceArmed:false, micState:'idle', recStarting:false,
+    recStopping:false, ttsMuted:false, userMuted:false, micWaiters:[],
+    listenAfter:0, idleTimer:null, idleTicker:null, lastManualAt:0,
+    currentText:'', suspendedSpeech:null, inputRevision:0, lastInput:null,
+    appendField:null, phase:'idle', lastMoveAt:0,
+    voiceOff:false,       // người dùng chủ động TẮT điều khiển giọng nói → không tự mở micro
+    armedAt:0             // thời điểm vừa bật điều khiển giọng nói (đọc thông báo 8 giây)
+  };
+
+  /* ------------------------- tiện ích ------------------------- */
+  const byId = id => document.getElementById(id);
+  function ss(key, val){
+    try{
+      if(val === undefined) return sessionStorage.getItem(key);
+      if(val === null) sessionStorage.removeItem(key); else sessionStorage.setItem(key, val);
+    }catch(e){}
+    return null;
+  }
+  function icons(){ try{ if(window.lucide) window.lucide.createIcons(); }catch(e){} }
+  function norm(s){
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/đ/g,'d').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+  }
+  function has(n, phrase){ return (' ' + n + ' ').indexOf(' ' + phrase + ' ') !== -1; }
+  function startsWithPhrase(n, phrase){ return n === phrase || n.indexOf(phrase + ' ') === 0; }
+  function wc(n){ return n ? n.split(' ').length : 0; }
+  function visible(el){
+    if(!el || !el.isConnected) return false;
+    if(el.closest('.hidden')) return false;
+    return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+  }
+  function activeViewEl(){ return document.querySelector('.view.active'); }
+  function activeView(){ const v = activeViewEl(); return v ? v.id : ''; }
+  function scannerOpen(){ const h = byId('heightScan'); return !!(h && !h.classList.contains('hidden')); }
+  function isModalOpen(){ const m = byId('settingsModal'); return !!(m && !m.classList.contains('hidden')); }
+  function textOf(el){ return el ? String(el.textContent || '').replace(/\s+/g,' ').trim() : ''; }
+  function fire(el){
+    echoSeen(el);                         // giá trị do trợ lý điền đã được đọc xác nhận → rời ô không đọc lại lần nữa
+    el.dispatchEvent(new Event('input', {bubbles:true}));
+    el.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+
+/* ============================================================================
+ * JS-11.02 · ĐỌC PHẢN HỒI KHI NHẬP
+ * Theo dõi nội dung trước/sau khi nhập và tạo câu xác nhận khi rời ô; xử lý riêng các trường nhạy cảm.
+ * ========================================================================== */
+  /* ======================= ĐỌC LẠI NỘI DUNG VỪA NHẬP KHI RỜI Ô =======================
+     Gõ tay xong rồi rời ô (Tab, bấm chỗ khác, blur) → "Cậu vừa nhập họ và tên: Nguyễn Văn A."
+     Mật khẩu / khóa API / mã bí mật: chỉ nói số ký tự. Giá trị không đổi thì không đọc. */
+  const ECHO = {seen:new WeakMap(), base:new WeakMap(), pending:null, timer:0};
+  function echoSeen(el){ try{ ECHO.seen.set(el, el.value); ECHO.base.set(el, el.value); }catch(e){} }
+  function echoable(el){
+    if(!el || !el.matches || el.id === 'chatInput' || el.disabled || el.readOnly) return false;
+    if(el.tagName === 'TEXTAREA') return true;
+    return el.tagName === 'INPUT' && !/^(checkbox|radio|hidden|button|submit|reset|file|range|color|image)$/i.test(el.type || 'text');
+  }
+  function sensitiveField(el){
+    const sig = [el.id, el.name, el.getAttribute('autocomplete'), el.dataset && el.dataset.sensitive].join(' ');
+    return el.type === 'password' || /pass|api|key|token|secret|otp|pin\b/i.test(sig);
+  }
+  function inputEchoText(el){
+    const label = (fieldLabel(el) || 'nhập liệu').replace(/[:：]\s*$/, '').toLowerCase();
+    const v = String(el.value || '').trim();
+    if(sensitiveField(el)) return v ? 'Cậu đã nhập ' + v.length + ' ký tự vào ô ' + label + '.' : 'Đã xóa nội dung ô ' + label + '.';
+    if(!v) return 'Đã xóa nội dung ô ' + label + '.';
+    return 'Cậu vừa nhập ' + label + ': ' + (/Username$/.test(el.id || '') ? spellUser(v.split('').join(' ')) : v) + '.';
+  }
+  function takeInputEcho(){
+    const p = ECHO.pending; if(!p) return '';
+    ECHO.pending = null; clearTimeout(ECHO.timer);
+    return Date.now() - p.at < 900 ? p.text : '';
+  }
+  document.addEventListener('focusin', (e) => { const el = e.target; if(echoable(el) && !ECHO.base.has(el)) ECHO.base.set(el, el.value); }, true);
+  document.addEventListener('focusout', (e) => {
+    const el = e.target; if(!echoable(el)) return;
+    const v = el.value;
+    const base = ECHO.base.get(el); ECHO.base.delete(el);
+    if(base === undefined || v === base || ECHO.seen.get(el) === v) return;
+    ECHO.seen.set(el, v);
+    if(!isNavActive() || R.gateOpen || R.spell) return;
+    const text = inputEchoText(el);
+    if(window.A11y) A11y.announce(text);
+    ECHO.pending = {text, at:Date.now()};
+    clearTimeout(ECHO.timer);
+    // nếu không có thao tác Tab đọc ô kế tiếp (sẽ đọc kèm câu này) thì đọc riêng
+    ECHO.timer = setTimeout(() => { const t = takeInputEcho(); if(t) speak(t, {interrupt:true}); }, 180);
+  }, true);
+  function acct(){ try{ return (typeof getActiveAccount === 'function') ? getActiveAccount() : null; }catch(e){ return null; } }
+  /** Trợ lý điều hướng đang bật (trang khiếm thị, hoặc trang thường đã bật Trợ lý) */
+  function isNavActive(){ return R.gateOpen || R.mode === 'blind' || (R.mode === 'regular' && R.robotOn); }
+  /** Chế độ giọng nói của Chatbot: vào Chatbot là tự đọc câu hỏi + tự mở micro nghe câu trả lời (cả 2 trang) */
+  function chatVoiceActive(){ return !!(R.chatVoice && R.mode && !R.gateOpen && activeView() === 'view-chat'); }
+  function isActive(){ return isNavActive() || chatVoiceActive(); }
+  function ls(key, val){
+    try{
+      if(val === undefined) return localStorage.getItem(key);
+      localStorage.setItem(key, val);
+    }catch(e){}
+    return null;
+  }
+  /* Tiếng bíp báo "micro đang mở, cậu nói đi" (không cần file âm thanh) */
+  let earCtx = null;
+  function earcon(freq, ms){
+    try{
+      earCtx = earCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if(earCtx.state === 'suspended') earCtx.resume().catch(() => {});
+      const o = earCtx.createOscillator(), g = earCtx.createGain(), t = earCtx.currentTime, d = (ms || 140) / 1000;
+      o.type = 'sine'; o.frequency.value = freq || 880;
+      g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g); g.connect(earCtx.destination); o.start(t); o.stop(t + d + 0.02);
+    }catch(e){}
+  }
+
+  const VIEW_NAMES = {
+    'view-landing':'trang chủ',
+    'view-library':'trang tư liệu tham khảo',
+    'view-adminAuth':'trang đăng nhập giáo viên',
+    'view-studentAuth':'trang đăng nhập học sinh',
+    'view-adminHome':'khu vực quản trị',
+    'view-chat':'trang Chatbot',
+    'view-bmi':'trang đo BMI',
+    'view-data':'trang kho dữ liệu sức khỏe',
+    'view-profile':'trang cập nhật thông tin tài khoản'
+  };
+  const NUM_WORDS = {'mot':1,'hai':2,'ba':3,'bon':4,'tu':4,'nam':5,'sau':6,'bay':7,'tam':8,'chin':9,'muoi':10,'muoi mot':11,'muoi hai':12};
+  const DIGIT_WORDS = {'khong':'0','mot':'1','hai':'2','ba':'3','bon':'4','tu':'4','nam':'5','lam':'5','sau':'6','bay':'7','tam':'8','chin':'9'};
+
+
+/* ============================================================================
+ * JS-11.03 · CHỌN VÀ PHÁT GIỌNG ĐỌC
+ * Quản lý giọng trên thiết bị và lựa chọn giọng web/Piper, chia đoạn, xếp hàng và phát âm thanh.
+ * ========================================================================== */
+  /* ======================= PHÁT GIỌNG NÓI — CHỈ DÙNG GIỌNG TIẾNG VIỆT CÓ SẴN TRONG MÁY =======================
+     • Không dùng giọng mạng / API ngoài → không phải chờ tải, không bị ngắt giữa câu.
+     • Chỉ chọn giọng có mã ngôn ngữ vi (Edge: HoaiMy, NamMinh · Windows: An · Android: Google · Mac: Linh).
+     • Không bao giờ để trình duyệt tự đọc bằng giọng tiếng Anh.
+     • Dừng nhận diện và đợi sự kiện end trước khi phát; chờ 8 giây yên thao tác sau khi đọc xong. */
+  const VOICE_KEY = 'hp_tts_voice', RATE_KEY = 'hp_tts_rate';
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+  R.rate = parseFloat(lsGet(RATE_KEY)) || 1;
+
+  function viVoices(){ return synth ? (synth.getVoices() || []).filter(v => /^vi([-_]|$)/i.test(v.lang) || /vietnam/i.test(v.name)) : []; }
+  function voiceRank(v){ return /HoaiMy|NamMinh|Natural|Online/i.test(v.name) ? 3 : /Google/i.test(v.name) ? 2 : 1; }
+  function pickVoice(){
+    const list = viVoices(); if(!list.length) return null;
+    const saved = lsGet(VOICE_KEY);
+    return list.find(v => v.name === saved) || list.slice().sort((a, b) => voiceRank(b) - voiceRank(a))[0];
+  }
+  function isNaturalVoice(v){ return !!v && voiceRank(v) >= 2; }
+  function voiceShort(v){ return v ? v.name.replace(/^Microsoft\s+/i, '').replace(/\s*[-–(].*$/, '').replace(/\s+Online$/i, '') : ''; }
+  function voiceGender(v){ return v && /NamMinh|\bAn\b|male|Nam\b/i.test(v.name) && !/female/i.test(v.name) ? 'nam' : 'nữ'; }
+  function engineLabel(){
+    if(R.voice) return 'Giọng ' + voiceShort(R.voice) + ' (tiếng Việt, có sẵn trong máy)';
+    const P = window.PiperVI, e = webEngine();
+    if(e === 'ai') return 'Giọng AI tiếng Việt (chạy ngay trong trình duyệt)';
+    if(e === 'online') return 'Giọng tiếng Việt trực tuyến' + (P && P.loading ? ' · đang tải giọng AI ' + P.progress + '%' : '');
+    if(P && P.loading) return 'Đang tải giọng AI tiếng Việt ' + P.progress + '%…';
+    return 'Chưa có giọng tiếng Việt — cần mạng để tải giọng, hoặc cài giọng Tiếng Việt cho Windows';
+  }
+  /* ---------- Giọng tiếng Việt cho CHROME (máy không có giọng Việt sẵn, VD Chrome trên Windows) ----------
+     1) Giọng AI Piper tiếng Việt chạy ngay trong trình duyệt (tải 1 lần, sau đó không cần mạng)
+     2) Trong lúc tải: giọng tiếng Việt trực tuyến
+     Phát bằng 2 bộ đệm âm thanh luân phiên + tạo trước đoạn kế tiếp → đọc liền mạch. */
+  R.onlineOk = null; R.onlineFails = 0; R.aiFails = 0;
+  R.webPref = lsGet('hp_web_voice') || 'ai';
+  function webEngine(){
+    const ai = !!(window.PiperVI && window.PiperVI.ready && R.aiFails < 3);
+    const on = R.onlineOk !== false && navigator.onLine !== false;
+    if(R.webPref === 'online' && on) return 'online';
+    if(ai) return 'ai';
+    if(on) return 'online';
+    return 'none';
+  }
+  function startWebVoice(){
+    const P = window.PiperVI;
+    if(!P || P.ready || P.loading || R.voice) return;
+    P.onProgress = () => { setStatus(); loaderVoice(); };
+    P.onReady = () => { setStatus(); loaderVoice(); };
+    P.load().catch(() => { R.aiFails = 9; setStatus(); loaderVoice(); });
+  }
+  // Chrome nạp danh sách giọng chậm → đợi tối đa 1,5 giây rồi mới kết luận "máy không có giọng Việt"
+  R.voicesSettled = false;
+  setTimeout(() => { R.voicesSettled = true; if(!R.voice) startWebVoice(); setStatus(); loaderVoice(); }, 1500);
+  /* Báo tiến độ GIỌNG ĐỌC cho màn hình tải (index.html → HPLoader) */
+  function loaderVoice(){
+    const L = window.HPLoader; if(!L || L.done) return;
+    if(R.voice){ L.set('voice', 1, 'Giọng ' + voiceShort(R.voice)); return; }
+    if(!R.voicesSettled){ L.set('voice', 0.3, 'Đang tìm giọng tiếng Việt…'); return; }
+    const P = window.PiperVI;
+    if(P && P.ready){ L.set('voice', 1, 'Giọng AI tiếng Việt'); return; }
+    if(P && P.loading){
+      L.set('voice', 0.35 + 0.65 * (P.progress || 0) / 100, 'Đang tải giọng AI tiếng Việt ' + (P.progress || 0) + '%');
+      if(!R.voiceWaitT) R.voiceWaitT = setTimeout(() => { const L2 = window.HPLoader; if(L2) L2.set('voice', 1, 'Dùng giọng trực tuyến · giọng AI tải tiếp phía sau'); }, 6000);
+      return;
+    }
+    L.set('voice', 1, webEngine() === 'online' ? 'Giọng tiếng Việt trực tuyến' : 'Chưa có giọng — vẫn hiện chữ phụ đề');
+  }
+  if(synth){
+    R.voice = pickVoice();
+    const onVoices = () => { const had = !!R.voice; R.voice = pickVoice(); if(viVoices().length || synth.getVoices().length) R.voicesSettled = true; if(!R.voice && R.voicesSettled) startWebVoice(); setStatus(); if(!had && R.voice && R.pendingNoVoice){ const t = R.pendingNoVoice; R.pendingNoVoice = null; speak(t); } loaderVoice(); };
+    if(synth.addEventListener) synth.addEventListener('voiceschanged', onVoices);
+    else synth.onvoiceschanged = onVoices;
+  }
+
+  /* Việt hóa chữ viết tắt / tiếng Anh để đọc "thuần Việt". Sửa hoặc thêm từ ở đây. */
+  const VIET_HOA = [
+    // ngày tháng: 26/09/2026 → ngày 26 tháng 9 năm 2026
+    [/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/g, (m, d, mo, y) => 'ngày ' + (+d) + ' tháng ' + (+mo) + ' năm ' + y],
+    [/\s*→\s*/g, ' đến '],
+    [/\s*&\s*/g, ' và '],
+    [/AI\s*HealthPulse|Health\s*Pulse|HealthPulse/gi, 'Nhịp Khỏe Học Đường'],
+    [/(Nhịp Khỏe Học Đường)[\s,.–—-]*Nhịp Khỏe Học Đường/g, '$1'],
+    [/HĐTL/gi, 'hoạt động thể lực'],
+    [/THCS\s*[–-]\s*THPT/g, 'trung học cơ sở và trung học phổ thông'],
+    [/\bTHPT\b/g, 'trung học phổ thông'], [/\bTHCS\b/g, 'trung học cơ sở'],
+    [/\bBGH\b/g, 'ban giám hiệu'], [/\bGV\b/g, 'giáo viên'], [/\bHS\b/g, 'học sinh'],
+    [/Tổ chức Y tế Thế giới\s*\(WHO\)/g, 'Tổ chức Y tế Thế giới'], [/\bWHO\b/g, 'Tổ chức Y tế Thế giới'], [/z-score/gi, 'điểm z'], [/\bSD\b/g, 'độ lệch chuẩn'],
+    [/kg\s*\/\s*m²|kg\s*\/\s*m2/g, 'ki lô gam trên mét vuông'],
+    [/(\d)\s*kg\b/g, '$1 ki lô gam'], [/(\d)\s*cm\b/g, '$1 xăng ti mét'], [/(\d)\s*MB\b/g, '$1 mê ga bai'],
+    [/\bP(\d{1,2})\b/g, 'bách phân vị $1'],
+    [/\bBMI\b/g, 'bê em i'], [/calories?/gi, 'ca lo'], [/\bcamera\b/gi, 'ca mê ra'], [/\bwebcam\b/gi, 'ca mê ra máy tính'], [/\bkcal\b/gi, 'ki lô ca lo'], [/\bkm\b/g, 'ki lô mét'],
+    [/\bAPI\s*Key\b/gi, 'khóa kết nối'], [/\bAPI\b/g, 'kết nối'],
+    [/\bAI\b/g, 'trí tuệ nhân tạo'],
+    [/Gemini/gi, 'Giê mi nai'], [/Google/g, ''], [/Microsoft/g, 'Mai crô sóp'],
+    [/Chat\s?bot/gi, 'trợ lý trò chuyện'], [/\bchat\b/gi, 'trò chuyện'],
+    [/Dashboard/gi, 'bảng thống kê'], [/\bHome\b/g, 'trang chủ'],
+    [/Robot/gi, 'trợ lý'], [/\bonline\b/gi, 'trực tuyến'], [/\boffline\b/gi, 'không cần mạng'], [/\blink\b/gi, 'đường dẫn'],
+    [/\be-?mail\b/gi, 'thư điện tử'], [/\bOK\b/g, 'được'], [/\bwebsite\b/gi, 'trang web'],
+    [/\badmin\b/gi, 'quản trị viên'], [/\bEnter\b/g, 'En tơ'], [/\bTab\b/g, 'Táp'], [/\bEdge\b/g, 'Ét'], [/\bChrome\b/g, 'Crôm'],
+    [/(\d)\s*[–-]\s*(\d)/g, '$1 đến $2'],
+    [/(\d)\s*\/\s*(\d)/g, '$1 trên $2'],
+    [/(\d)\s*′/g, '$1 phút'],
+    [/(\d)\s*%/g, '$1 phần trăm'],
+    [/\/\s*tuần/gi, ' mỗi tuần'], [/\/\s*ngày/gi, ' mỗi ngày'], [/\/\s*buổi/gi, ' mỗi buổi'],
+    [/(\d+)\s*h\s*(\d+)/g, '$1 giờ $2'], [/(\d+)\s*h\b/g, '$1 giờ'],
+    [/\s*\/\s*/g, ' hoặc ']
+  ];
+  function speakable(t){
+    let s = String(t || '').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '');
+    VIET_HOA.forEach(([re, rep]) => { s = s.replace(re, rep); });
+    return s.replace(/[—–•·]/g, ', ').replace(/[*_#>`“”"()]/g, ' ').replace(/\s+([,.!?:;])/g, '$1').replace(/([,.;:])\1+/g, '$1').replace(/\s+/g, ' ').trim();
+  }
+  function chunks(text){
+    const out = [];
+    text.replace(/([.!?…])\s+/g, '$1\u0001').split('\u0001').forEach(p => {
+      p = p.trim(); if(!p) return;
+      while(p.length > 300){
+        let cut = p.lastIndexOf(', ', 300);
+        if(cut < 80) cut = p.lastIndexOf(' ', 300);
+        if(cut < 80) cut = 300;
+        out.push(p.slice(0, cut + 1).trim()); p = p.slice(cut + 1).trim();
+      }
+      if(p) out.push(p);
+    });
+    return out;
+  }
+  function audioBusy(){ return !!((synth && (synth.speaking || synth.pending)) || (R.audio && !R.audio.paused && !R.audio.ended)); }
+
+/* ============================================================================
+ * JS-11.04 · PHỤ ĐỀ LỜI TRỢ LÝ
+ * Hiển thị câu đang đọc, cập nhật tiến độ tô chữ và đồng bộ trạng thái kết thúc phát.
+ * ========================================================================== */
+  /* ======================= PHỤ ĐỀ: chữ của câu trợ lý đang đọc =======================
+     Hiện ngay trên màn hình, tô đậm dần phần đã đọc (giọng máy báo vị trí từng từ). */
+  R.captions = lsGet('hp_captions') !== '0';
+  const CAP = {el:null, done:null, rest:null, text:'', hideT:0, tick:0};
+  function caption(text){
+    if(!text) return;
+    if(!CAP.el){ CAP.el = byId('vrScript'); if(!CAP.el) return; CAP.done = CAP.el.firstChild; CAP.rest = CAP.el.lastChild; }
+    clearTimeout(CAP.hideT); clearInterval(CAP.tick);
+    CAP.text = text;
+    CAP.done.textContent = ''; CAP.rest.textContent = text;
+    CAP.el.dataset.kind = 'say';
+    CAP.el.scrollTop = 0;
+  }
+  function captionAt(i){
+    if(!CAP.el || !CAP.text) return;
+    let j = Math.min(CAP.text.length, Math.max(0, i));
+    const sp = CAP.text.indexOf(' ', j); if(sp > 0) j = sp;          // tô tới hết từ đang đọc
+    CAP.done.textContent = CAP.text.slice(0, j); CAP.rest.textContent = CAP.text.slice(j);
+    // giữ dòng đang đọc luôn hiện trong khung (khung chỉ cao 2–3 dòng)
+    const el = CAP.el, d = CAP.done;
+    const want = d.offsetTop + d.offsetHeight - el.clientHeight + 4;
+    if(want > el.scrollTop + 2) el.scrollTop = want;
+  }
+  function captionHide(){
+    if(!CAP.el) return;
+    clearInterval(CAP.tick);
+    if(CAP.text){ CAP.done.textContent = CAP.text; CAP.rest.textContent = ''; CAP.el.dataset.kind = 'said'; }
+  }
+  function haltAudio(){
+    clearTimeout(R.playGuard); clearInterval(R.keepAlive); clearInterval(CAP.tick);
+    if(R.utter){ R.utter.onstart = R.utter.onend = R.utter.onerror = R.utter.onboundary = null; }
+    if(synth){ try{ synth.cancel(); }catch(e){} }
+    if(R.audio){
+      try{ R.audio.onended = R.audio.onerror = R.audio.onplaying = null; R.audio.pause(); R.audio.currentTime = 0; }catch(e){}
+    }
+    R.pre = null;                                   // bỏ đoạn Piper/giọng trực tuyến đã tạo trước cho câu cũ
+    R.utter = null; R.audio = null; R.curUtter = null;
+  }
+  // Normal feedback is queued. Only navigation, explicit Stop/Repeat or Mute
+  // may replace current speech. A click never owns the speech cancellation path.
+  function speak(text, opts = {}){
+    if(!opts.force && !isActive()) return;
+    const t = speakable(text); if(!t) return;
+    const parts = chunks(t);
+    R.lastSpoken = t;
+    if(R.userMuted){
+      if(opts.interrupt || !R.suspendedSpeech) R.suspendedSpeech = [];
+      R.suspendedSpeech.push(...parts);
+      noVoice(t); setStatus(); return;
+    }
+    showSaid(t);
+    if(R.speaking && !opts.interrupt){ R.queue.push(...parts); return; }
+    R.gen++;
+    clearTimeout(R.pumpTimer); clearIdleWait();
+    haltAudio();
+    R.queue = parts; R.currentText = ''; R.echoDone = ''; R.webPlayedInSpeech = false;
+    R.speaking = true; setStatus();
+    const gen = R.gen;
+    // abort() is asynchronous. Keep TTS muted until this recognition session ends.
+    pauseListening().then(() => {
+      if(gen !== R.gen || !R.speaking || R.userMuted) return;
+      R.ttsMuted = false; pump();
+    });
+  }
+  function finishSpeech(){
+    R.currentText = ''; R.curUtter = null;
+    R.speaking = false; R.lastSpeakEnd = Date.now();
+    captionHide(); resumeSoon(); setStatus();
+  }
+  function remainingSpeech(){
+    const c = R.curUtter;
+    const rest = c ? c.text.slice(Math.max(0, c.idx || 0)).trim() : R.currentText;
+    return [rest, ...R.queue].filter(Boolean);
+  }
+  function setMuted(on){
+    on = !!on;
+    if(on === R.userMuted) return;
+    if(on){
+      R.suspendedSpeech = R.speaking ? remainingSpeech() : null;
+      R.userMuted = true;
+      stopSpeaking({keepSuspended:true});
+    } else {
+      R.userMuted = false;
+      const saved = R.suspendedSpeech; R.suspendedSpeech = null;
+      if(saved && saved.length) speak(saved.join(' '), {force:true, interrupt:true});
+    }
+    updateToggles(); setStatus();
+  }
+
+  const MERGE_LIMIT = 600;   // gộp nhiều câu thành một đoạn dài → đọc liền mạch
+  function takeMerged(){
+    let text = R.queue.shift();
+    while(R.queue.length && (text + ' ' + R.queue[0]).length <= MERGE_LIMIT) text += ' ' + R.queue.shift();
+    return text;
+  }
+  function pump(){
+    const gen = R.gen;
+    if(!R.speaking || R.userMuted || R.ttsMuted || R.rec || R.recStarting || R.recStopping) return;
+    if(!R.queue.length){ finishSpeech(); return; }
+    if(!R.voice && !R.voicesSettled){ clearTimeout(R.pumpTimer); R.pumpTimer = setTimeout(pump, 250); return; }   // Chrome chưa nạp xong giọng
+    if(!R.voice || !synth){
+      const eng = webEngine();
+      if(eng !== 'none'){ playWeb(takeWeb(eng, !R.webPlayedInSpeech), gen, eng); R.webPlayedInSpeech = true; return; }
+      // Không có giọng tiếng Việt nào: hiện chữ, KHÔNG đọc bằng giọng tiếng Anh
+      startWebVoice();
+      const txt = R.queue.join(' '); R.queue = [];
+      noVoice(txt); R.pendingNoVoice = txt.slice(-600);
+      finishSpeech(); return;
+    }
+    playLocal(takeMerged(), gen);
+  }
+  /* ---------- Phát giọng web (AI trong trình duyệt / trực tuyến) ---------- */
+  const WEB_LIMIT = {online:190, ai:240};
+  function mergeWeb(list, start, eng, first){
+    const lim = first && eng === 'ai' ? 130 : WEB_LIMIT[eng];      // đoạn đầu ngắn → bắt đầu nói nhanh
+    let text = list[start], i = start + 1;
+    while(text.length > lim && eng === 'online'){ // cắt đoạn quá dài cho giọng trực tuyến (giới hạn ~200 ký tự)
+      const cut = Math.max(text.lastIndexOf(' ', lim), 60);
+      list.splice(start, 1, text.slice(0, cut), text.slice(cut + 1)); text = list[start];
+    }
+    while(i < list.length && (text + ' ' + list[i]).length <= lim){ text += ' ' + list[i]; i++; }
+    return {text, next:i};
+  }
+  function takeWeb(eng, first){ const m = mergeWeb(R.queue, 0, eng, first); R.queue.splice(0, m.next); return m.text; }
+  function peekWeb(eng){ return R.queue.length ? mergeWeb(R.queue.slice(), 0, eng, false).text : ''; }
+  function ttsUrl(text){
+    return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&ttsspeed=1&total=1&idx=0&textlen=' +
+      text.length + '&q=' + encodeURIComponent(text);
+  }
+  function webKey(eng, text){ return eng + '|' + R.rate + '|' + text; }
+  function makeAudio(eng, text){
+    const src = eng === 'ai' ? window.PiperVI.synth(text, R.rate) : Promise.resolve(ttsUrl(text));
+    return src.then(url => { const a = new Audio(); a.preload = 'auto'; a.src = url; try{ a.load(); }catch(e){} return a; });
+  }
+  function getAudio(eng, text){
+    const key = webKey(eng, text);
+    if(R.pre && R.pre.key === key){ const p = R.pre.p; R.pre = null; return p; }
+    return makeAudio(eng, text);
+  }
+  function prefetchWeb(eng){
+    const nx = peekWeb(eng); if(!nx) return;
+    const key = webKey(eng, nx);
+    if(R.pre && R.pre.key === key) return;
+    const p = makeAudio(eng, nx); p.catch(() => {});
+    R.pre = {key, p};
+  }
+  function playWeb(text, gen, eng){
+    if(gen !== R.gen || R.ttsMuted || R.userMuted) return;
+    R.currentText = text;
+    let done = false, started = false;
+    const next = (res) => {
+      if(done || gen !== R.gen) return; done = true; clearTimeout(guard);
+      if(R.audio){ R.audio.onplaying = R.audio.onended = R.audio.onerror = null; try{ R.audio.pause(); }catch(e){} }
+      R.currentText = '';
+      if(R.curUtter && R.curUtter.text === text){ R.echoDone = ((R.echoDone || '') + ' ' + norm(text)).slice(-1200); R.curUtter = null; }
+      if(res === 'blocked'){ const retry = [text, ...R.queue].join(' '); R.pendingFirst = () => speak(retry, {force:true}); R.gen++; R.queue = []; R.currentText = ''; R.speaking = false; setStatus(); onAudioBlocked(); resumeSoon(); return; }
+      if(res === 'fail'){
+        if(eng === 'online'){ R.onlineFails++; if(R.onlineFails >= 2) R.onlineOk = false; } else R.aiFails++;
+        setStatus();
+        const alt = webEngine();
+        if(alt !== 'none' && alt !== eng) return playWeb(text, gen, alt);
+        noVoice(text);
+      } else if(eng === 'online'){ R.onlineOk = true; R.onlineFails = 0; }
+      pump();
+    };
+    const guard = R.playGuard = setTimeout(() => next(started ? 'ok' : 'fail'), 20000 + text.length * 160);
+    getAudio(eng, text).then(a => {
+      if(done || gen !== R.gen || R.ttsMuted || R.userMuted) return;
+      R.audio = a;
+      a.muted = false;
+      a.onended = () => next('ok');
+      a.onerror = () => next('fail');
+      a.onplaying = () => {
+        if(gen !== R.gen || R.ttsMuted || R.userMuted){ a.pause(); return; }
+        started = true; R.audioOk = true; R.started = true; R.pendingFirst = null; detachGesture(); hideTapHint(); if(!R.curUtter || R.curUtter.text !== text) R.curUtter = {text, t0:Date.now(), idx:0};
+        caption(text);
+        CAP.tick = setInterval(() => { if(a.duration > 0) { const idx = Math.round(text.length * a.currentTime / a.duration); if(R.curUtter) R.curUtter.idx = idx; captionAt(idx); } }, 250);
+      };
+      try{ a.playbackRate = eng === 'online' ? R.rate : 1; }catch(e){}
+      const p = a.play();
+      if(p && p.catch) p.catch(err => {
+        if(err && err.name === 'NotAllowedError') next('blocked');
+        else if(!(err && err.name === 'AbortError')) next('fail');
+      });
+      prefetchWeb(eng);                         // chuẩn bị sẵn đoạn sau trong lúc đang đọc
+    }).catch(() => next('fail'));
+  }
+  function noVoice(text){
+    caption(text); captionHide();                       // không có giọng: vẫn đọc được bằng chữ trong khung
+  }
+  function playLocal(text, gen){
+    if(gen !== R.gen || R.ttsMuted || R.userMuted) return;
+    R.currentText = text;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = R.voice.lang || 'vi-VN';
+    u.voice = R.voice;
+    u.rate = R.rate;
+    let done = false;
+    const next = (res) => {
+      if(done || gen !== R.gen) return; done = true; clearTimeout(guard); clearInterval(R.keepAlive);
+      R.currentText = '';
+      if(R.curUtter && R.curUtter.text === text){ R.echoDone = ((R.echoDone || '') + ' ' + norm(text)).slice(-1200); R.curUtter = null; }
+      if(gen !== R.gen) return;
+      if(res === 'blocked'){ const retry = [text, ...R.queue].join(' '); R.pendingFirst = () => speak(retry, {force:true}); R.gen++; R.queue = []; R.currentText = ''; R.speaking = false; setStatus(); onAudioBlocked(); resumeSoon(); return; }
+      pump();
+    };
+    // phòng khi trình duyệt không báo "đã đọc xong"
+    const guard = R.playGuard = setTimeout(() => { haltAudio(); next('ok'); }, 8000 + text.length * 160 / R.rate);
+    u.onboundary = (e) => { if(gen === R.gen && R.curUtter && e && e.charIndex != null){ R.curUtter.idx = e.charIndex; captionAt(e.charIndex); } };
+    u.onstart = () => {
+      if(gen !== R.gen || R.ttsMuted || R.userMuted){ try{ synth.cancel(); }catch(e){} return; }
+      R.audioOk = true; R.started = true; R.pendingFirst = null; detachGesture(); hideTapHint();
+      R.curUtter = {text, t0:Date.now(), idx:0};
+      caption(text);
+      // Chrome tự dừng giọng mạng của Google sau ~15 giây → "đánh thức" định kỳ
+      clearInterval(R.keepAlive);
+      if(R.voice && !R.voice.localService && /Google/i.test(R.voice.name)){
+        R.keepAlive = setInterval(() => { if(synth.speaking && !synth.paused){ synth.pause(); synth.resume(); } }, 9000);
+      }
+    };
+    u.onend = () => next('ok');
+    u.onerror = (e) => next(e && e.error === 'not-allowed' ? 'blocked' : 'ok');
+    R.utter = u;                 // giữ tham chiếu (tránh lỗi mất sự kiện trên Chrome)
+    try{ if(synth.paused) synth.resume(); synth.speak(u); }catch(e){ next('ok'); }
+  }
+  function stopSpeaking(opts = {}){
+    R.gen++; R.queue = []; R.currentText = ''; R.echoDone = '';
+    if(!opts.keepSuspended) R.suspendedSpeech = null;
+    clearTimeout(R.pumpTimer); haltAudio();
+    R.speaking = false; R.lastSpeakEnd = Date.now(); captionHide();
+    if(opts.resume !== false) resumeSoon(); else clearIdleWait();
+    setStatus();
+  }
+
+  function useVoice(v, sayIt){
+    if(!v) return;
+    R.voice = v; lsSet(VOICE_KEY, v.name); setStatus();
+    if(sayIt !== false) speak('Đã chuyển sang giọng ' + voiceShort(v) + '.', {force:true});
+  }
+  function cycleVoice(){
+    const list = viVoices();
+    if(!list.length){
+      R.webPref = R.webPref === 'online' ? 'ai' : 'online'; lsSet('hp_web_voice', R.webPref); setStatus();
+      if(R.webPref === 'ai' && !(window.PiperVI && window.PiperVI.ready)){ startWebVoice(); speak('Mình đang tải giọng trí tuệ nhân tạo, trong lúc chờ vẫn dùng giọng trực tuyến.', {force:true}); }
+      else speak('Đã chuyển sang ' + (R.webPref === 'ai' ? 'giọng trí tuệ nhân tạo chạy trong trình duyệt.' : 'giọng tiếng Việt trực tuyến.'), {force:true});
+      return;
+    }
+    if(list.length === 1){ speak('Máy chỉ có một giọng tiếng Việt là ' + voiceShort(list[0]) + '.', {force:true}); return; }
+    const i = list.findIndex(v => R.voice && v.name === R.voice.name);
+    useVoice(list[(i + 1) % list.length]);
+  }
+  function voiceByGender(g){
+    const v = viVoices().find(x => voiceGender(x) === g);
+    if(v) useVoice(v); else speak('Máy chưa có giọng ' + g + ' tiếng Việt.', {force:true});
+  }
+  function setRate(delta){
+    R.rate = Math.max(0.7, Math.min(1.6, Math.round((R.rate + delta) * 100) / 100));
+    lsSet(RATE_KEY, String(R.rate));
+    speak(delta > 0 ? 'Mình sẽ đọc nhanh hơn như thế này.' : 'Mình sẽ đọc chậm hơn như thế này.', {force:true});
+  }
+
+
+/* ============================================================================
+ * JS-11.05 · ĐIỀU PHỐI MICRO VÀ LOA
+ * Các hàm chờ/dừng micro và chuyển trạng thái đảm bảo luồng phát/nhận giọng nói phối hợp theo logic gốc.
+ * ========================================================================== */
+  /* ======================= ĐIỀU PHỐI MICRO / LOA =======================
+     wake: chỉ so khớp từ khóa, không hiện transcript và không chạy lệnh nền.
+     Web Speech vẫn cần quyền micro để nghe wake word; đây không phải bộ
+     phát hiện từ khóa ngoại tuyến. TTS và STT tuyệt đối không chạy đồng thời. */
+  const IDLE_LISTEN_MS = 8000;
+  const WAKE_WORD = 'dieu khien giong noi';
+  function commandListening(){ return R.gateOpen || R.mode === 'blind' || R.voiceArmed; }
+  function canListen(){
+    if(R.voiceOff && R.mode === 'regular' && !R.gateOpen) return false;      // đã chủ động tắt → không tự mở micro
+    return !!SR && R.voiceReady && !R.micDenied && !document.hidden && !!(R.mode || R.gateOpen);
+  }
+  function shouldListen(){
+    return canListen() && !R.speaking && !audioBusy() && Date.now() >= R.listenAfter;
+  }
+  function clearIdleWait(){
+    clearTimeout(R.idleTimer); clearInterval(R.idleTicker); clearTimeout(R.restartTimer);
+    R.idleTimer = R.idleTicker = R.restartTimer = null; R.listenAfter = 0;
+  }
+  function resumeSoon(){
+    clearIdleWait();
+    if(!canListen() || R.speaking) return;
+    R.listenAfter = Math.max(Date.now(), R.lastManualAt, R.lastSpeakEnd) + IDLE_LISTEN_MS;
+    R.idleTimer = setTimeout(() => {
+      R.idleTimer = null; clearInterval(R.idleTicker); R.idleTicker = null;
+      R.listenAfter = 0; startListening(); setStatus();
+    }, R.listenAfter - Date.now());
+    R.idleTicker = setInterval(setStatus, 1000);
+    setStatus();
+  }
+  function manualActivity(e){
+    if(!e.isTrusted || !R.voiceReady) return;
+    const now = Date.now();
+    if(e.type === 'pointermove'){ if(now - R.lastMoveAt < 250) return; R.lastMoveAt = now; }   // chuột di chuyển: tối đa 4 lần/giây
+    R.lastManualAt = now;
+    if(e.type !== 'pointermove') clearTimeout(HV.timer);
+    // Mouse/keyboard interaction delays recognition, never cancels speech.
+    if(R.rec) pauseListening();
+    if(!R.speaking) resumeSoon();
+  }
+  ['pointerdown','pointermove','click','keydown','input','wheel','touchstart'].forEach(type =>
+    document.addEventListener(type, manualActivity, {capture:true, passive:true}));
+
+/* ============================================================================
+ * JS-11.06 · BẬT CHẾ ĐỘ NHẬN LỆNH
+ * Quản lý thông báo kích hoạt, thời gian chờ và trạng thái sẵn sàng nhận lệnh giọng nói.
+ * ========================================================================== */
+  /* ======================= BẬT ĐIỀU KHIỂN GIỌNG NÓI: ĐỌC THÔNG BÁO, CHỜ 8 GIÂY RỒI MỚI MỞ MICRO =======================
+     1) Tắt micro (TTS và STT không bao giờ chạy cùng lúc).
+     2) Đọc: "Vui lòng chờ 8 giây…" — trong lúc đọc MIC = OFF, STT = OFF.
+     3) Đọc xong → resumeSoon(): đếm 8 giây (thao tác chuột/phím thì đếm lại) → mở micro, khung hiện "Có thể nói".
+     Bấm bật nhiều lần chỉ có MỘT bộ đếm; tắt trong lúc chờ → hủy bộ đếm, không tự mở micro. */
+  const ARM_TEXT = 'Vui lòng chờ 8 giây để nói giọng đọc AI điều khiển chức năng mong muốn.';
+  function armVoice(prefix){
+    R.voiceOff = false; R.voiceArmed = true; R.voiceReady = true; R.started = true; R.micDenied = false;
+    if(R.mode === 'regular'){ R.robotOn = true; ss(ROBOT_KEY, '1'); }
+    R.awaitField = null; R.armedAt = Date.now();
+    clearIdleWait(); pauseListening();
+    applyUi(); ensureMic();
+    const text = (prefix ? prefix + ' ' : '') + ARM_TEXT;
+    if(window.A11y) A11y.announce(text);
+    speak(text, {force:true, interrupt:true});
+    if(R.userMuted){ R.lastSpeakEnd = Date.now(); resumeSoon(); }       // tắt âm thanh: vẫn chờ đủ 8 giây
+    setStatus();
+  }
+  function requestCommands(){ armVoice('Đã bật điều khiển giọng nói.'); }
+  function wakeCommands(text){
+    const n = norm(text);
+    if(!startsWithPhrase(n, WAKE_WORD)) return false;
+    R.voiceArmed = true; R.robotOn = true; R.started = true;
+    ss(ROBOT_KEY, '1'); applyUi();
+    const rest = tokensOf(text).slice(4).map(t => t.o).filter(Boolean).join(' ').trim();
+    // Silent acknowledgment keeps the mic available for the next command.
+    R.voiceOff = false;
+    if(rest){ scriptLine('Đã bật điều khiển giọng nói.', 'heard'); route(rest); }
+    else armVoice('Đã bật điều khiển giọng nói.');
+    return true;
+  }
+
+
+/* ============================================================================
+ * JS-11.07 · ĐÁNH GIÁ TẠP ÂM VÀ TIẾNG VỌNG
+ * Theo dõi mức âm lượng/nền ồn, độ tin cậy và nội dung vừa phát để sàng lọc kết quả nhận dạng.
+ * ========================================================================== */
+  /* ======================= LỌC TẠP ÂM XUNG QUANH =======================
+     1) Mở micro với bộ lọc của trình duyệt: khử tiếng vọng, giảm ồn, tự cân âm lượng;
+        trình duyệt hỗ trợ thì cho bộ nhận dạng nghe QUA luồng đã lọc này.
+     2) Đo độ ồn nền liên tục (lọc dải tiếng nói 120–4000 Hz). Câu nghe được mà tiếng
+        quá nhỏ so với nền (tiếng TV, tiếng nói xa, quạt…) → bỏ qua.
+     3) Câu máy nghe không chắc (độ tin cậy thấp) mà không phải lệnh → bỏ qua, hiện chữ "nghe chưa rõ".
+     4) Bỏ tiếng đệm: ờ, à, ừm, ơ… ở đầu/cuối câu. */
+  const NG = {stream:null, track:null, ctx:null, an:null, buf:null, floor:0.004, level:0, hist:[], n:0, useTrack:true, trackStartAt:0, noisyFor:0, warned:false};
+  async function initNoiseGate(){
+    if(NG.stream || NG.busy || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    NG.busy = true;
+    try{
+      NG.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true, autoGainControl:true, channelCount:1}});
+      NG.track = NG.stream.getAudioTracks()[0] || null;
+      if(NG.track) NG.track.enabled = !!(R.rec && !R.recStopping && !R.speaking);
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(AC){
+        NG.ctx = new AC();
+        const src = NG.ctx.createMediaStreamSource(NG.stream);
+        const hp = NG.ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 120;
+        const lp = NG.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 4000;
+        NG.an = NG.ctx.createAnalyser(); NG.an.fftSize = 1024;
+        src.connect(hp); hp.connect(lp); lp.connect(NG.an);
+        NG.buf = new Float32Array(NG.an.fftSize);
+        setInterval(sampleNoise, 80);
+        if(NG.ctx.state === 'suspended'){                     // cần 1 lần chạm/phím mới chạy được
+          const wake = () => { try{ NG.ctx.resume().catch(() => {}); }catch(e){} ['pointerdown','keydown'].forEach(t => document.removeEventListener(t, wake, true)); };
+          ['pointerdown','keydown'].forEach(t => document.addEventListener(t, wake, true));
+        }
+      }
+    }catch(e){ NG.stream = null; }
+    NG.busy = false;
+  }
+  function sampleNoise(){
+    if(!NG.an || document.hidden || !R.listening || R.speaking || !NG.track || !NG.track.enabled) return;
+    if(NG.ctx.state !== 'running'){ return; }
+    NG.an.getFloatTimeDomainData(NG.buf);
+    let sum = 0; for(let i = 0; i < NG.buf.length; i += 2) sum += NG.buf[i] * NG.buf[i];
+    const rms = Math.sqrt(sum / (NG.buf.length / 2));
+    NG.level = rms; NG.n++;
+    // độ ồn nền: giảm nhanh khi yên lặng, tăng rất chậm khi có tiếng
+    NG.floor = rms < NG.floor ? NG.floor * 0.85 + rms * 0.15 : NG.floor * 0.997 + rms * 0.003;
+    NG.floor = Math.max(0.0015, NG.floor);
+    const now = Date.now();
+    NG.hist.push([now, rms]); while(NG.hist.length && now - NG.hist[0][0] > 8000) NG.hist.shift();
+    // môi trường ồn liên tục > 6 giây → nhắc 1 lần
+    if(NG.floor > 0.03){ NG.noisyFor += 80; if(NG.noisyFor > 6000 && !NG.warned && isActive() && !R.speaking){ NG.warned = true; scriptLine('Xung quanh khá ồn — nói gần micro hơn sẽ nghe rõ hơn.', 'warn'); } }
+    else NG.noisyFor = 0;
+    if(!NG.meters) NG.meters = document.querySelectorAll('.vr-meter i');
+    const sc = 'scaleX(' + Math.min(1, rms / Math.max(0.02, NG.floor * 6)).toFixed(2) + ')';
+    NG.meters.forEach(m => { m.style.transform = sc; });
+  }
+  /** Tiếng to nhất trong khoảng thời gian câu vừa nói (so với nền) */
+  function segPeak(since){
+    let p = 0; NG.hist.forEach(([t, v]) => { if(t >= since && v > p) p = v; });
+    return p;
+  }
+  function gateReady(){ return !!(NG.an && NG.ctx && NG.ctx.state === 'running' && NG.n > 25); }
+  // tiếng đệm (đã bỏ dấu): ờ/ơ/à/ừm/hừm… ở đầu câu · à/nha/nhé ở cuối câu
+  const FILLERS = new Set(['o','a','um','uhm','hm','hmm','ha','ui','e','uh','ah','eh','oi']);
+  const TAIL_FILLERS = new Set(['o','a','um','uhm','hm','ha','nha','nhe']);
+  function stripFillers(text){
+    if(R.spell) return String(text || '').trim();          // đang đánh vần: "a", "ơ"… là chữ cái, không phải tiếng đệm
+    const words = String(text || '').trim().split(/\s+/).filter(w => norm(w));
+    let i = 0, j = words.length;
+    while(i < j - 1 && FILLERS.has(norm(words[i]))) i++;
+    while(j > i + 1 && TAIL_FILLERS.has(norm(words[j - 1]))) j--;
+    if(j - i === 1 && FILLERS.has(norm(words[i])) && !R.gateOpen) return '';
+    return words.slice(i, j).join(' ');
+  }
+  /** Chọn câu tốt nhất trong các phương án máy nghe được; trả về null nếu là tạp âm */
+  function pickHeard(result){
+    const alts = [];
+    for(let k = 0; k < result.length; k++) if(result[k] && result[k].transcript) alts.push(result[k]);
+    if(!alts.length) return null;
+    let best = alts[0];
+    if(!R.gateOpen){
+      const cmdAlt = alts.find(a => isInputCommand(norm(a.transcript)) || matchCommand(norm(a.transcript), true));
+      if(cmdAlt && !matchCommand(norm(best.transcript), true)) best = cmdAlt;
+    }
+    const text = stripFillers(best.transcript);
+    const n = norm(text);
+    if(!n) return null;
+    const conf0 = best.confidence || 0;
+    if(STOP_WORDS.includes(n) && !R.spell && !R.awaitField && !stopOk(n, conf0, Math.max((R.segAt || 0) - 400, Date.now() - 6000))){ R.dropped = 'dừng?'; return null; }
+    const isCmd = STOP_WORDS.includes(n) || isInputCommand(n) || !!matchCommand(n, true) || R.gateOpen;
+    // (2) tiếng quá nhỏ so với nền → tạp âm
+    if(gateReady() && R.segAt){
+      const peak = segPeak(Math.max(R.segAt - 400, Date.now() - 6000));
+      if(peak > 0 && peak < NG.floor * 2.2 && !isCmd){ R.dropped = 'nhỏ'; return null; }
+    }
+    // (3) máy nghe không chắc
+    const conf = best.confidence || 0;
+    if(conf > 0 && conf < 0.42 && !isCmd && !R.spell && !R.awaitField){ R.dropped = 'mờ'; return null; }
+    if(n.length < 2 && !isCmd && !R.spell) return null;
+    return text;
+  }
+  const STOP_WORDS = ['dung','dung lai','im','im lang','im di','thoi','ngung','ngung doc','dung doc','ngung lai','thoi dung','dung noi'];
+  /* Lệnh dừng chống tạp âm:
+     - cụm 2 từ ("dừng lại", "im lặng", "ngừng đọc"…) → dừng ngay;
+     - 1 từ ("dừng", "thôi", "im", "ngừng") rất dễ bị tạp âm/tiếng người xung quanh nghe nhầm
+       → chỉ dừng khi tiếng nói ĐỦ TO so với nền (nói gần micro) và máy nghe chắc chắn. */
+  const STOP_STRONG = ['dung lai','im lang','im di','ngung doc','dung doc','ngung lai','thoi dung','dung noi'];
+  function loudSince(since){
+    if(!gateReady()) return null;                         // chưa đo được độ ồn
+    return segPeak(since) >= Math.max(NG.floor * 3.5, 0.015);
+  }
+  function stopOk(n, conf, since, interim){
+    if(STOP_STRONG.includes(n)) return true;
+    if(!STOP_WORDS.includes(n)) return false;
+    if(conf > 0 && conf < 0.6) return false;
+    const loud = loudSince(since || Date.now() - 2500);
+    if(loud === null) return !interim;                    // không đo được → đợi câu chốt rồi mới dừng
+    return loud;
+  }
+  /** Phần trợ lý ĐÃ đọc ra loa (tiếng vọng chỉ có thể chứa phần này) */
+  function spokenSoFar(){
+    let t = R.echoDone || '';
+    const c = R.curUtter;
+    if(c){
+      const byTime = (Date.now() - c.t0) / 1000 * 20 * (R.rate || 1);     // ước lượng rộng tay ~20 ký tự/giây
+      const idx = Math.max(c.idx || 0, byTime);
+      t += ' ' + norm(c.text.slice(0, Math.min(c.text.length, idx + 50)));
+    }
+    return t.slice(-500);
+  }
+  function isEcho(n){
+    if(!n) return true;
+    if(STOP_WORDS.includes(n)) return false;                         // lệnh dừng luôn được nghe
+    if(R.speaking){
+      const said = spokenSoFar(); if(!said.trim()) return false;
+      if(said.indexOf(n) !== -1) return true;                        // trùng với phần vừa phát ra loa
+      // câu KHÔNG phải lệnh mà trùng với bất kỳ đoạn nào trợ lý đang/sắp đọc → coi là tiếng vọng (tránh điền nhầm vào ô)
+      const isCmd = matchCommand(n, true) || /^(vung|muc|phan|doc|den|toi|chuyen|sang|qua|dung|thoi)\b/.test(n);
+      if(!isCmd){
+        const full = (R.echoDone || '') + ' ' + norm((R.curUtter ? R.curUtter.text : '') + ' ' + R.queue.join(' '));
+        if(full.indexOf(n) !== -1) return true;
+      }
+      const words = n.split(' ').filter(w => w.length > 1);
+      if(words.length < 3) return false;
+      const set = new Set(said.split(' '));
+      return words.filter(w => set.has(w)).length / words.length >= 0.7;
+    }
+    // vừa đọc xong: chỉ lọc nếu trùng mấy từ CUỐI trợ lý vừa nói (tiếng vọng đến muộn)
+    const since = Date.now() - (R.lastSpeakEnd || 0);
+    if(!R.echoDone || since > 2000 || R.echoDone.slice(-80).indexOf(n) === -1) return false;
+    if(R.lastSegDuringSpeech === false) return false;     // học sinh bắt đầu nói SAU khi trợ lý dứt lời → không phải tiếng vọng
+    if(R.lastSegDuringSpeech === true) return true;       // bắt đầu nghe từ lúc trợ lý còn nói → tiếng vọng
+    return since < 700;
+  }
+  function releaseMicWaiters(){
+    const waiters = R.micWaiters.splice(0);
+    waiters.forEach(resolve => resolve());
+  }
+
+/* ============================================================================
+ * JS-11.08 · NHẬN DIỆN GIỌNG NÓI
+ * Tạo SpeechRecognition tiếng Việt; xử lý kết quả tạm/kết quả cuối, bắt đầu, tạm dừng và hẹn nghe lại.
+ * ========================================================================== */
+  function ensureRec(){
+    if(!SR) return null;
+    if(R.rec) return R.rec;
+    const rec = new SR();
+    rec.lang = 'vi-VN'; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 3;
+    const current = () => R.rec === rec;
+    const accepting = () => current() && R.listening && !R.recStopping && shouldListen();
+    rec.onstart = () => {
+      if(!current()) return;
+      R.recStarting = false;
+      if(R.recStopping || !shouldListen()){
+        R.recStopping = true; R.micState = 'stopping';
+        try{ rec.abort(); }catch(e){} return;
+      }
+      R.listening = true; R.micState = 'listening'; R.recStartedAt = Date.now(); setStatus();
+    };
+    rec.onspeechstart = () => { if(accepting()) R.segAt = Date.now(); };
+    rec.onresult = (e) => {
+      if(!accepting()) return;
+      let interim = '';
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        if(!accepting()) break; // A command may abort this session or begin TTS.
+        const result = e.results[i];
+        if(!commandListening()){
+          if(result.isFinal){
+            const a = Array.from({length:result.length}, (_, k) => result[k]).find(a =>
+              a && startsWithPhrase(norm(a.transcript), WAKE_WORD) && (!a.confidence || a.confidence >= 0.55));
+            if(a) wakeCommands(a.transcript);
+          }
+          continue; // Never show, dictate, store or execute ambient speech in wake mode.
+        }
+        const txt = result[0] ? result[0].transcript : '';
+        if(result.isFinal){
+          const heard = pickHeard(result);
+          if(heard) onHeard(heard);
+          else if(txt && !R.speaking) showIgnored(txt);
+        } else interim += txt;
+      }
+      if(interim && accepting() && commandListening()){
+        showHeard(interim, true);
+        if(!isInputCommand(norm(interim))) chatInterim(interim);
+      }
+    };
+    rec.onerror = (e) => {
+      if(!current() || R.recStopping) return;
+      const err = e && e.error;
+      if(err === 'not-allowed' || err === 'service-not-allowed'){
+        R.micDenied = true; clearIdleWait(); pauseListening(); setStatus(); micHelp(false);
+      } else if(err === 'audio-capture' && NG.useTrack && NG.trackStartAt && Date.now() - NG.trackStartAt < 3000){
+        NG.useTrack = false;
+      } else if(err === 'audio-capture'){
+        R.micDenied = true; pauseListening(); setStatus();
+        scriptLine('Không tìm thấy micro. Cậu kiểm tra micro rồi bấm bật lại nhé.', 'warn');
+      } else if(err === 'network') R.restartDelay = Math.min(R.restartDelay * 2, 5000);
+    };
+    rec.onend = () => {
+      if(!current()) return;
+      clearTimeout(R.micStopGuard);
+      R.listening = R.recStarting = R.recStopping = false;
+      R.rec = null; R.micState = R.micDenied ? 'blocked' : 'idle'; R.ttsMuted = false;
+      if(NG.track) NG.track.enabled = false;
+      setStatus(); releaseMicWaiters();
+      if(shouldListen()) scheduleRestart();
+    };
+    R.rec = rec; return rec;
+  }
+  function startListening(){
+    if(!shouldListen() || R.rec || R.recStarting || R.recStopping) return;
+    const rec = ensureRec(); if(!rec) return;
+    R.ttsMuted = true; R.recStarting = true; R.micState = 'starting';
+    clearInterval(CAP.tick);
+    if(NG.track) NG.track.enabled = true;
+    if(NG.ctx && NG.ctx.state === 'suspended') NG.ctx.resume().catch(() => {});
+    try{
+      if(NG.track && NG.useTrack && NG.track.readyState === 'live'){
+        try{ rec.start(NG.track); R.lastStart = NG.trackStartAt = Date.now(); setStatus(); return; }
+        catch(e){ if(e && e.name === 'InvalidStateError') throw e; NG.useTrack = false; }
+      }
+      rec.start(); R.lastStart = Date.now(); setStatus();
+    }catch(e){
+      R.rec = null; R.recStarting = false; R.ttsMuted = false; R.micState = 'idle';
+      if(NG.track) NG.track.enabled = false;
+      if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) R.micDenied = true;
+      setStatus(); releaseMicWaiters();
+      if(shouldListen()) scheduleRestart();
+    }
+  }
+  function pauseListening(){
+    clearTimeout(R.restartTimer);
+    if(NG.track) NG.track.enabled = false;
+    if(!R.rec){ R.listening = false; R.ttsMuted = false; return Promise.resolve(); }
+    const done = new Promise(resolve => R.micWaiters.push(resolve));
+    if(!R.recStopping){
+      R.recStopping = true; R.listening = false; R.micState = 'stopping';
+      try{ R.rec.abort(); }catch(e){}
+      // Fail closed: never assume an unacknowledged abort has released the mic.
+      R.micStopGuard = setTimeout(() => {
+        if(R.recStopping) scriptLine('Đang chờ micro dừng. Nếu trạng thái này kéo dài, cậu tải lại trang nhé.', 'warn');
+      }, 3000);
+    }
+    return done;
+  }
+  function scheduleRestart(){
+    clearTimeout(R.restartTimer);
+    if(!shouldListen()) return;
+    const quick = Date.now() - R.lastStart < 1500;
+    R.restartTimer = setTimeout(startListening, quick ? Math.max(R.restartDelay, 1000) : R.restartDelay);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden){ clearIdleWait(); pauseListening(); }
+    else if(!R.speaking) resumeSoon();
+  });
+  window.addEventListener('pagehide', () => {
+    R.voiceReady = false; stopSpeaking({resume:false}); pauseListening();
+    if(NG.stream) NG.stream.getTracks().forEach(t => t.stop());
+    NG.stream = NG.track = null;
+  });
+
+
+/* ============================================================================
+ * JS-11.09 · TẠO GIAO DIỆN TRỢ LÝ
+ * Thêm màn chọn chế độ, khung trợ lý, nút trợ giúp và các nút chức năng vào DOM khi khởi động.
+ * ========================================================================== */
+  /* ======================= GIAO DIỆN ======================= */
+  function injectUi(){
+    const wrap = document.createElement('div');
+    wrap.innerHTML =
+      '<div class="vr-sr-only" id="vrLive" aria-live="assertive" role="status"></div>' +
+      '<div class="vr-gate hidden" id="vrGate" data-state="choose" role="dialog" aria-modal="true" aria-labelledby="vrGateTitle">' +
+        '<div class="vr-gate-card">' +
+          '<div class="vr-gate-robot"><i data-lucide="bot"></i></div>' +
+          '<div class="vr-gate-kicker">Trợ lý Nhịp Khỏe</div>' +
+          '<div class="vr-gate-choose">' +
+            '<h2 id="vrGateTitle">Cậu muốn vào trang nào?</h2>' +
+            '<p class="vr-gate-lead">Hãy nói <strong>“khiếm thị”</strong> hoặc <strong>“bình thường”</strong> — hoặc bấm chọn bên dưới.</p>' +
+            '<div class="vr-gate-choices">' +
+              '<button type="button" class="vr-choice vr-choice-blind" data-mode="blind" aria-label="Học sinh khiếm thị. Nhấn Enter để vào trang có trợ lý đọc to và điều khiển bằng giọng nói."><span class="vr-choice-key">1</span><span class="vr-choice-icon"><i data-lucide="ear"></i></span><strong>Học sinh khiếm thị</strong><small>Trợ lý luôn bật · đọc to nội dung · nói tên mục để tự chuyển trang</small></button>' +
+              '<button type="button" class="vr-choice vr-choice-regular" data-mode="regular"><span class="vr-choice-key">2</span><span class="vr-choice-icon"><i data-lucide="eye"></i></span><strong>Học sinh thông thường</strong><small>Trợ lý mặc định tắt · nói “điều khiển giọng nói” để bật</small></button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="vr-gate-resume">' +
+            '<h2>Trang dành cho học sinh khiếm thị</h2>' +
+            '<p class="vr-gate-lead">Nhấn <strong>phím bất kỳ</strong> hoặc <strong>chạm vào màn hình</strong> để trợ lý bắt đầu đọc.</p>' +
+            '<button type="button" class="btn btn-ghost btn-sm vr-gate-rechoose" id="vrRechoose">Chọn lại trang</button>' +
+          '</div>' +
+          '<div class="vr-gate-status"><span class="vr-dot"></span><span id="vrGateStatus">Đang khởi động trợ lý…</span></div>' +
+          '<div class="vr-gate-voice"><i data-lucide="volume-2"></i> <span id="vrGateVoice"></span></div>' +
+          '<div class="vr-gate-tap" id="vrGateTap"><i data-lucide="hand"></i> Chạm vào màn hình hoặc nhấn phím bất kỳ để trợ lý bắt đầu nói</div>' +
+        '</div>' +
+      '</div>' +
+
+      /* KHUNG ĐIỀU KHIỂN TRỢ LÝ AI — gọn: biểu tượng · trạng thái · dòng lời trợ lý đang đọc · 4 nút */
+      '<div class="vr-dock hidden" id="vrBar" role="region" aria-label="Khung điều khiển Trợ lý AI">' +
+        '<button type="button" class="vr-orb" id="vrOrb" aria-label="Trợ lý"><i data-lucide="bot"></i></button>' +
+        '<div class="vr-dock-body">' +
+          '<div class="vr-dock-meta">' +
+            '<span class="vr-dock-state" id="vrBarStatus">Đang khởi động</span>' +
+            '<span class="vr-meter" title="Âm lượng micro (đã lọc tạp âm)"><i></i></span>' +
+            '<button type="button" class="vr-dock-where hidden" id="vrWhere" aria-label="Các vùng của trang"></button>' +
+            '<span class="vr-dock-task hidden" id="vrTask"></span>' +
+          '</div>' +
+          '<div class="vr-script" id="vrScript" aria-hidden="true"><span class="vr-cap-done"></span><span class="vr-cap-rest">Nói “trợ giúp” để nghe các lệnh</span></div>' +
+        '</div>' +
+        '<div class="vr-dock-tools">' +
+          '<button type="button" class="vr-grip" data-act="move" aria-label="Di chuyển khung trợ lý AI: kéo, hoặc dùng phím mũi tên" title="Kéo để di chuyển khung">⠿</button>' +
+          '<button type="button" class="vr-collapse" data-act="collapse" aria-expanded="true" aria-label="Thu gọn khung trợ lý AI" title="Thu gọn khung trợ lý AI">–</button>' +
+          '<button type="button" data-act="prev" aria-label="Vùng trước" title="Vùng trước"><i data-lucide="chevron-up"></i></button>' +
+          '<button type="button" data-act="next" aria-label="Vùng tiếp theo" title="Vùng tiếp theo"><i data-lucide="chevron-down"></i></button>' +
+          '<button type="button" data-act="repeat" aria-label="Đọc lại" title="Đọc lại"><i data-lucide="repeat"></i></button>' +
+          '<button type="button" data-act="more" aria-label="Thêm chức năng" title="Thêm chức năng" aria-haspopup="menu" aria-expanded="false"><i data-lucide="ellipsis"></i></button>' +
+        '</div>' +
+        '<div class="vr-menu hidden" id="vrMenu" role="menu" aria-label="Chức năng trợ lý">' +
+          '<div class="vr-menu-voice" id="vrBarVoice"></div>' +
+          '<button type="button" role="menuitemcheckbox" data-act="mute" aria-checked="false"><i data-lucide="volume-x"></i><span id="vrMuteLbl">Tắt âm thanh</span></button>' +
+          '<button type="button" role="menuitem" data-act="voice"><i data-lucide="volume-2"></i><span>Đổi giọng đọc</span></button>' +
+          '<button type="button" role="menuitem" data-act="finger" class="vr-only-desktop"><i data-lucide="pointer"></i><span>Camera ngón tay</span></button>' +
+          '<button type="button" role="menuitem" data-act="vk" class="vr-only-mobile"><i data-lucide="keyboard"></i><span>Bàn phím trợ năng</span></button>' +
+          '<button type="button" role="menuitemcheckbox" data-act="hover" aria-checked="true" class="vr-only-desktop"><i data-lucide="mouse-pointer"></i><span id="vrHoverLbl">Đọc khi rê chuột: Bật</span></button>' +
+          '<button type="button" role="menuitemcheckbox" data-act="captions" aria-checked="true"><i data-lucide="captions"></i><span id="vrCapLbl">Hiện lời trợ lý: Bật</span></button>' +
+          '<button type="button" role="menuitem" data-act="help"><i data-lucide="info"></i><span>Các lệnh giọng nói</span></button>' +
+          '<button type="button" role="menuitem" data-act="switch"><i data-lucide="arrow-left-right"></i><span>Đổi chế độ học sinh</span></button>' +
+          '<button type="button" role="menuitem" data-act="power" class="vr-only-regular"><i data-lucide="power"></i><span>Tắt trợ lý</span></button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="vr-frame hidden" id="vrFrame" aria-hidden="true"><span class="vr-frame-tag" id="vrFrameTag"></span></div>' +
+      /* NÚT TRỢ GIÚP TOÀN CỤC — luôn ở mép phải, ngay phía trên khung trợ lý */
+      '<div class="hp-help-wrap hidden" id="hpHelpWrap" role="group" aria-label="Nút trợ giúp">' +
+        '<button type="button" class="hp-help-fab" id="hpHelpBtn" aria-label="Trợ giúp: nghe hướng dẫn sử dụng trang web" aria-keyshortcuts="Alt+H" data-tip="Nghe hướng dẫn sử dụng (Alt + H)">' +
+          '<span class="hp-help-q" aria-hidden="true">?</span><span class="hp-help-txt">Trợ giúp</span></button>' +
+        '<span class="hp-help-tools">' +
+          '<button type="button" class="hp-mini vr-grip" id="hpHelpGrip" aria-label="Di chuyển nút trợ giúp: kéo, hoặc dùng phím mũi tên" title="Kéo để di chuyển">⠿</button>' +
+          '<button type="button" class="hp-mini" id="hpHelpCollapse" aria-expanded="true" aria-label="Thu gọn nút trợ giúp">–</button>' +
+        '</span></div>' +
+      '';
+    while(wrap.firstChild) document.body.appendChild(wrap.firstChild);
+
+    document.querySelectorAll('.vr-choice').forEach(b => b.addEventListener('click', () => chooseMode(b.dataset.mode)));
+    byId('vrRechoose').addEventListener('click', () => openGate());
+    const dock = byId('vrBar'), menu = byId('vrMenu');
+    const menuOpen = (on) => { menu.classList.toggle('hidden', !on); dock.querySelector('[data-act="more"]').setAttribute('aria-expanded', String(!!on)); };
+    dock.addEventListener('click', (e) => {
+      if(dock.classList.contains('vr-dock-off')) return setRobot(true);      // trợ lý tắt: bấm vào nút nhỏ là bật
+      const b = e.target.closest('[data-act]');
+      if(e.target.closest('#vrOrb')){
+        if(R.mode === 'regular') return setRobot(!R.robotOn);
+        return R.speaking ? stopSpeaking() : repeat();
+      }
+      if(e.target.closest('#vrWhere')) return listRegions();
+      if(!b) return;
+      const a = b.dataset.act;
+      if(a !== 'more') menuOpen(false);
+      if(a === 'move' || a === 'collapse') return;                  // do khung kéo / thu gọn xử lý
+      if(a === 'more') return menuOpen(menu.classList.contains('hidden'));
+      if(a === 'prev') return regionCommand('vung truoc');
+      if(a === 'next') return regionCommand('vung tiep theo');
+      if(a === 'repeat') return repeat();
+      if(a === 'mute') return setMuted(!R.userMuted);
+      if(a === 'voice') return cycleVoice();
+      if(a === 'finger') return fingerToggle();
+      if(a === 'vk') return openVirtualKeyboard();
+      if(a === 'hover') return setHoverRead(!R.hoverRead);
+      if(a === 'captions') return setCaptions(!R.captions);
+      if(a === 'help') return help();
+      if(a === 'switch') return openGate();
+      if(a === 'power') return setRobot(false);
+    });
+    document.addEventListener('pointerdown', (e) => { if(!e.target.closest('#vrBar')) menuOpen(false); }, true);
+    document.addEventListener('keydown', (e) => {
+      if(menu.classList.contains('hidden')) return;
+      if(e.key === 'Escape'){ menuOpen(false); const mb = dock.querySelector('[data-act="more"]'); if(mb) mb.focus(); return; }
+      if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){                       // di chuyển trong menu bằng phím mũi tên
+        const items = [...menu.querySelectorAll('button')].filter(b => b.offsetParent);
+        if(!items.length) return; e.preventDefault();
+        const i = items.indexOf(document.activeElement);
+        items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+      }
+    });
+    dock.querySelector('[data-act="more"]').addEventListener('click', () => setTimeout(() => {
+      if(!menu.classList.contains('hidden')){ const f = [...menu.querySelectorAll('button')].find(b => b.offsetParent); if(f) f.focus(); }
+    }, 0));
+    byId('hpHelpBtn').addEventListener('click', () => showGuide());
+    // khung kéo / thu gọn được — trợ lý nói ra mỗi thao tác
+    if(window.A11y && A11y.makeMovable){
+      A11y.makeMovable(dock, {key:'dock', name:'khung trợ lý AI', grip:dock.querySelector('[data-act="move"]'), collapseBtn:dock.querySelector('[data-act="collapse"]'),
+        onChange:() => { menuOpen(false); setTimeout(measureChrome, 0); }});
+      A11y.makeMovable(byId('hpHelpWrap'), {key:'help', name:'nút trợ giúp', grip:byId('hpHelpGrip'), collapseBtn:byId('hpHelpCollapse')});
+    }
+    const fingerToggle = () => { if(!window.FingerNav) return speak('Chức năng camera ngón tay chưa được nạp.'); if(FingerNav.on) FingerNav.stop(); else FingerNav.start(); };
+    updateToggles();
+    icons();
+  }
+  function setInert(on){ const app = byId('app'); if(app){ if(on) app.setAttribute('inert',''); else app.removeAttribute('inert'); } }
+
+  function statusText(){
+    if(R.recStopping && R.speaking){ R.phase = 'stopping'; return 'Đang dừng micro trước khi đọc'; }
+    if(R.speaking){ R.phase = 'speaking'; return 'AI đang đọc · micro tạm ngắt'; }
+    if(R.micDenied){ R.phase = 'blocked'; return 'Micro chưa được cho phép'; }
+    if(!SR){ R.phase = 'unsupported'; return 'Trình duyệt chưa hỗ trợ nhận giọng nói'; }
+    if(document.hidden){ R.phase = 'hidden'; return 'Đã tạm ngắt micro'; }
+    if(R.voiceOff && R.mode === 'regular' && !R.gateOpen){ R.phase = 'off'; return 'Điều khiển giọng nói đang tắt'; }
+    if(R.listenAfter > Date.now()){
+      R.phase = 'cooldown';
+      return 'Đang chuẩn bị… micro mở sau ' + Math.ceil((R.listenAfter - Date.now()) / 1000) + ' giây';
+    }
+    if(R.listening){
+      R.phase = commandListening() ? 'listening' : 'sleeping';
+      return commandListening() ? 'Có thể nói · đang nghe lệnh' : 'Chờ: “điều khiển giọng nói” · trợ lý tắt';
+    }
+    R.phase = 'idle';
+    if(R.userMuted) return 'Âm thanh đã tắt · bật lại để đọc tiếp';
+    if(!R.voiceReady) return 'Chạm màn hình để bắt đầu';
+    return commandListening() ? 'Đang chuẩn bị nghe lệnh' : 'Trợ lý tắt · nói “điều khiển giọng nói” để bật';
+  }
+
+  function setStatus(){
+    const s = statusText();
+    ['vrGateStatus','vrBarStatus'].forEach(id => { const el = byId(id); if(el && el.textContent !== s) el.textContent = s; });
+    const lab = engineLabel();
+    ['vrGateVoice','vrBarVoice'].forEach(id => { const el = byId(id); if(el && el.textContent !== lab) el.textContent = lab; });
+    const b = document.body;
+    b.classList.toggle('vr-speaking', R.speaking);
+    b.classList.toggle('vr-listening', R.listening && !R.speaking);
+    b.classList.toggle('vr-micoff', !!R.micDenied);
+    const orb = byId('vrOrb');
+    if(orb) orb.setAttribute('aria-label', R.mode === 'regular' ? (R.robotOn ? 'Tắt trợ lý' : 'Bật trợ lý') : (R.speaking ? 'Dừng đọc' : 'Đọc lại'));
+    updateChatVoice();
+  }
+  /** Dòng chữ trong khung điều khiển: lời trợ lý đang đọc (hoặc lời học sinh vừa nói) */
+  function scriptLine(text, kind){
+    const el = byId('vrScript'); if(!el) return;
+    clearInterval(CAP.tick); clearTimeout(CAP.hideT);
+    CAP.text = '';
+    el.firstChild.textContent = ''; el.lastChild.textContent = text;
+    el.dataset.kind = kind || '';
+    el.scrollTop = 0;
+  }
+  function showHeard(text, interim){
+    const s = (interim ? 'Đang nghe: “' : 'Cậu nói: “') + text + '”';
+    if(R.speaking){ const st = byId('vrBarStatus'); if(st) st.textContent = s.length > 60 ? s.slice(0, 58) + '…”' : s; return; }
+    scriptLine(s, 'heard');
+  }
+  function flashBubble(){}
+  /* Nghe nhầm / không khớp lệnh: KHÔNG đọc to, KHÔNG bắt học sinh nói lại.
+     Chỉ hiện 1 dòng mờ trong khung + 1 tiếng "tách" rất nhỏ, rồi tiếp tục nghe như bình thường. */
+  function quietMiss(heard, note){
+    const t = String(heard || '').trim();
+    scriptLine((note || 'Bỏ qua') + (t ? ': “' + (t.length > 60 ? t.slice(0, 58) + '…' : t) + '”' : '') + ' · cứ nói lệnh khác', 'warn');
+    const now = Date.now();
+    // Keep feedback visual while the mic owns the audio device.
+  }
+  function showIgnored(txt){
+    const el = byId('vrBarStatus'); if(el) el.title = 'Tạp âm đã bỏ qua: ' + txt;
+    scriptLine('Tạp âm, đã bỏ qua', 'warn');
+  }
+  function showSaid(text){
+    const el = byId('vrBarStatus');
+    if(el && R.mode === 'blind') el.title = text;
+  }
+  function applyUi(){
+    syncHover();
+    const b = document.body;
+    b.classList.toggle('vr-blind', R.mode === 'blind' && !R.gateOpen);
+    b.classList.toggle('vr-regular', R.mode === 'regular' && !R.gateOpen);
+    b.classList.toggle('vr-robot-on', R.mode === 'regular' && R.robotOn);
+    const dock = byId('vrBar');
+    dock.classList.toggle('hidden', !R.mode || R.gateOpen);
+    const hb = byId('hpHelpWrap'); if(hb) hb.classList.toggle('hidden', !R.mode || R.gateOpen);
+    if(window.A11y && A11y.panels) ['dock', 'help'].forEach(k => { const P = A11y.panels[k]; if(P) requestAnimationFrame(P.refit); });
+    const off = R.mode === 'regular' && !R.robotOn && !chatVoiceActive() && !R.speaking && !R.suspendedSpeech;      // Chatbot tự nói vẫn hiện lời trong khung
+    dock.classList.toggle('vr-dock-off', off);
+    dock.dataset.mode = R.mode || '';
+    if(off) scriptLine(R.voiceOff ? 'Điều khiển giọng nói đang tắt. Bấm biểu tượng hoặc Alt + V để bật.' : 'Trợ lý đang tắt. Nói “điều khiển giọng nói” hoặc bấm biểu tượng để bật.', 'idle');
+    setStatus();
+    renderRegionBar(); placeFrame();
+    measureChrome();
+  }
+  function updateToggles(){
+    const m = byId('vrMuteLbl'); if(m){ m.textContent = R.userMuted ? 'Bật âm thanh · đọc tiếp' : 'Tắt âm thanh'; m.parentElement.setAttribute('aria-checked', String(R.userMuted)); }
+    const h = byId('vrHoverLbl'); if(h){ h.textContent = 'Đọc khi rê chuột: ' + (R.hoverRead ? 'Bật' : 'Tắt'); h.parentElement.setAttribute('aria-checked', String(!!R.hoverRead)); }
+    const c = byId('vrCapLbl'); if(c){ c.textContent = 'Hiện lời trợ lý: ' + (R.captions ? 'Bật' : 'Tắt'); c.parentElement.setAttribute('aria-checked', String(!!R.captions)); }
+    document.body.classList.toggle('vr-noscript', !R.captions);
+  }
+  /** Đo chiều cao thật của thanh robot + thanh vùng → CSS chừa đúng khoảng trống, trang không bị che / lệch */
+  function measureChrome(){
+    const root = document.documentElement;
+    const bar = byId('vrBar');
+    const bh = bar && !bar.classList.contains('hidden') ? Math.ceil(bar.getBoundingClientRect().height) : 0;
+    if(root.style.getPropertyValue('--vr-bar-h') !== bh + 'px') root.style.setProperty('--vr-bar-h', bh + 'px');
+    // nút trợ giúp đặt theo chiều cao LỚN NHẤT của khung (không nhảy lên xuống mỗi khi phụ đề đổi số dòng)
+    const sig = (R.mode || '') + (bar && bar.classList.contains('is-collapsed') ? 'c' : '') + (bar && bar.classList.contains('vr-dock-off') ? 'o' : '') + window.innerWidth;
+    if(sig !== R.helpSig){ R.helpSig = sig; R.helpH = 0; }
+    if(bh > (R.helpH || 0)){ R.helpH = bh; root.style.setProperty('--vr-help-h', bh + 'px'); }
+    if(!bh){ R.helpH = 0; root.style.setProperty('--vr-help-h', '0px'); }
+    if(root.style.getPropertyValue('--vr-reg-h') !== '0px') root.style.setProperty('--vr-reg-h', '0px');
+  }
+  if('ResizeObserver' in window){
+    const chromeRO = new ResizeObserver(() => measureChrome());
+    setTimeout(() => { const e = byId('vrBar'); if(e) chromeRO.observe(e); }, 0);
+  }
+
+
+/* ============================================================================
+ * JS-11.10 · KÍCH HOẠT ÂM THANH
+ * Thử phát khi trang sẵn sàng; nếu trình duyệt cần thao tác người dùng, chờ chạm/nhấn phím để tiếp tục.
+ * ========================================================================== */
+  /* ============ KÍCH HOẠT (trình duyệt cần 1 lần chạm/nhấn phím) ============ */
+  function attachGesture(){
+    ['pointerup','touchend','click','keydown'].forEach(t => document.addEventListener(t, onGesture, true));
+  }
+  function detachGesture(){
+    ['pointerup','touchend','click','keydown'].forEach(t => document.removeEventListener(t, onGesture, true));
+  }
+  function onGesture(e){
+    if(NG.ctx && NG.ctx.state === 'suspended') try{ NG.ctx.resume().catch(() => {}); }catch(err){}
+    if(R.audioOk){ detachGesture(); hideTapHint(); R.started = true; if(!R.listening) startListening(); return; }
+    const onChoice = e.target && e.target.closest && e.target.closest('.vr-choice');
+    const choiceKey = e.type === 'keydown' && R.gateOpen && (e.key === '1' || e.key === '2');
+    if(onChoice || choiceKey){ R.pendingFirst = null; R.started = true; R.micDenied = false; detachGesture(); hideTapHint(); return; }
+    activate();
+  }
+  function activate(){
+    detachGesture(); hideTapHint();
+    clearTimeout(R.autoTimer);
+    R.started = true; R.micDenied = false;
+    const f = R.pendingFirst; R.pendingFirst = null;
+    if(f) f(); else startListening();
+    setStatus();
+  }
+  /** Thử tự bật ngay khi mở trang; nếu trình duyệt chặn thì chờ 1 lần chạm/nhấn phím. */
+  function tryAuto(first){
+    R.pendingFirst = first || null; attachGesture();
+    const ua = navigator.userActivation;
+    if(ua && ua.hasBeenActive){ activate(); return; }
+    if(first) first(); else startListening();
+    // Loading a voice model is not an autoplay error. Wait for an actual
+    // not-allowed callback; never cancel speech using an arbitrary watchdog.
+  }
+
+  /** Trình duyệt chặn phát tiếng: vẫn NGHE bình thường, chờ 1 phím/chạm bất kỳ để đọc lại. */
+  function onAudioBlocked(){
+    R.audioOk = false; R.started = false;
+    if(!R.pendingFirst) R.pendingFirst = R.gateOpen ? gatePrompt : (R.mode === 'blind' ? () => blindIntro() : (chatVoiceActive() ? () => { R.chatIntroDone = false; speak(chatIntroText()); } : null));
+    attachGesture();
+    showTapHint();
+    startListening();
+  }
+  function blindIntro(prefix){
+    speak(prefix || 'Trang dành cho học sinh khiếm thị. Trợ lý luôn bật.');
+    micNotice();
+    const view = activeView();
+    describeView(view, true).then(d => { if(R.mode === 'blind' && !R.gateOpen && activeView() === view) speak(d + ' Nói: trợ giúp, để nghe các lệnh; nói: bình thường, nếu cậu muốn đổi sang trang thông thường. Bấm nút dấu hỏi ở góc phải để nghe hướng dẫn. ' + ARM_TEXT, {queue:true}); });
+  }
+  function announceSR(text){
+    if(window.A11y){ A11y.announce(text, {assertive:true}); return; }
+    const el = byId('vrLive'); if(!el) return;
+    el.textContent = '';
+    setTimeout(() => { el.textContent = text; }, 120);
+  }
+  function showTapHint(){
+    announceSR('Trợ lý Nhịp Khỏe. Nhấn phím bất kỳ hoặc chạm vào màn hình để trợ lý bắt đầu đọc và điều khiển bằng giọng nói.');
+    const gate = byId('vrGate');
+    if(R.gateOpen){ gate.classList.add('vr-need-tap'); }
+    else if(R.mode === 'blind'){
+      gate.dataset.state = 'resume';
+      gate.classList.remove('hidden'); gate.classList.add('vr-need-tap');
+      setInert(true);
+    }
+    setStatus();
+  }
+  function hideTapHint(){
+    const gate = byId('vrGate');
+    gate.classList.remove('vr-need-tap');
+    if(!R.gateOpen){ gate.classList.add('hidden'); setInert(false); }
+  }
+
+
+/* ============================================================================
+ * JS-11.11 · ĐỌC THEO CHUỘT VÀ FOCUS
+ * Xác định phần tử/vùng đang trỏ tới, tạo mô tả, vẽ viền và đọc nội dung phù hợp chế độ hiện tại.
+ * ========================================================================== */
+  /* ======================= RÊ CHUỘT / PHÍM TAB → ĐỌC NỘI DUNG =======================
+     Hai cách điều khiển song song: GIỌNG NÓI hoặc RÊ CHUỘT. Chuột dừng trên khung nào
+     ~0,12 giây là trợ lý dừng câu cũ và đọc khung đó (nút, ô nhập, đoạn nội dung, lựa chọn ở màn hình đầu).
+     Chỉ lắng nghe sự kiện "chuột đi vào phần tử" (không tính toán liên tục) → không làm giật trang. */
+  /* Rê chuột để nghe đọc là dành cho học sinh KHÔNG nhìn thấy: mặc định BẬT ở trang khiếm thị (và màn hình chọn chế độ),
+     TẮT ở trang thường (điều khiển bằng giọng nói vẫn dùng cho mọi điều hướng). Mỗi trang nhớ lựa chọn riêng. */
+  function syncHover(){
+    if(!R.mode){ R.hoverRead = true; return; }
+    const v = lsGet('hp_hover_read:' + R.mode);
+    R.hoverRead = v == null ? R.mode === 'blind' : v === '1';
+  }
+  syncHover();
+  const HV = {el:null, timer:0, last:null, lastAt:0, mark:null, region:-1};
+  const HOVER_CTRL = 'button, a[href], [role="button"], input, select, textarea, .vr-choice, .vr-reg';
+  function hoverTarget(t){
+    if(!t || !t.closest || t.closest('#vrScript, .fn-cursor, .vr-frame, .vr-menu-voice, #vkBoard')) return null;
+    const ctl = t.closest(HOVER_CTRL);
+    if(ctl) return ctl;
+    const info = t.closest('#accountMenuSession, .account-menu-title, .brand, .vr-dock-state, .vr-dock-task, #stepNav');
+    if(info) return info;
+    if(R.gateOpen) return t.closest('.vr-gate-card h2, .vr-gate-lead, .vr-gate-status');
+    const view = activeViewEl();
+    const blk = t.closest(BLOCK_SEL);
+    return blk && view && view.contains(blk) ? blk : null;
+  }
+  /** Phần tử nằm ở đâu trên trang: "thuộc vùng 2 trên 5, Khảo sát nhanh" / "trên thanh điều hướng"… */
+  function placeOf(el){
+    if(el.closest('#vrBar')) return 'trong khung điều khiển trợ lý';
+    if(el.closest('#fnMenu')) return 'trong bảng chức năng ngón tay';
+    if(el.closest('#fsBoard')) return 'trong khung gõ ký hiệu tay';
+    if(el.closest('.account-menu')) return 'trong vùng chọn đăng nhập tài khoản';
+    if(el.closest('#stepNav')) return 'trên thanh các bước';
+    if(el.closest('.topbar')) return 'trên thanh điều hướng trên cùng';
+    if(el.closest('#settingsModal')) return 'trong cửa sổ cài đặt AI';
+    if(el.closest('#vrGate')) return 'ở màn hình chọn chế độ';
+    if(el.closest('#heightScan')) return 'trong màn hình quét chiều cao';
+    const regs = getRegions(); const i = regs.findIndex(r => r.contains(el));
+    if(i >= 0 && i === HV.region) return 'trong vùng số ' + (i + 1) + ', ' + regs[i].name;       // ký hiệu vùng vừa đọc ở câu trước
+    if(i >= 0) return 'thuộc vùng ' + regs[i].name + ', vùng ' + (i + 1) + ' trên ' + regs.length;
+    return '';
+  }
+  /* KÝ HIỆU VÙNG cho học sinh khiếm thị: rê chuột sang vùng MỚI → đọc trước "Vào vùng 2 trên 4: Biểu mẫu.
+     Ký hiệu vùng số 2 …" + cách quay lại bằng giọng nói; khung vàng và nhãn "V2" chuyển theo vùng đó. */
+  function regionSymbolFor(el){
+    if(R.gateOpen || !el || el.closest('#vrBar, #fnMenu, #fsBoard, #vkBoard, .topbar, #hpHelpWrap, #fnCam')) return '';
+    const view = activeViewEl(); if(!view || !view.contains(el)) return '';
+    const regs = getRegions(); const i = regs.findIndex(r => r.contains(el));
+    if(i < 0 || i === HV.region) return '';
+    HV.region = i;
+    if(i !== R.region) setRegion(i, {scroll:false, focus:false});
+    const reg = regs[i];
+    const fields = reg.els.reduce((n, e) => n + [...e.querySelectorAll('input:not([type=hidden]), select, textarea')].filter(visible).length, 0);
+    const btns = reg.els.reduce((n, e) => n + [...e.querySelectorAll('button, a[href]')].filter(visible).length, 0);
+    let s = 'Vào vùng ' + (i + 1) + ' trên ' + regs.length + ': ' + reg.name + '. Ký hiệu vùng số ' + (i + 1) + '.';
+    if(fields) s += ' Vùng có ' + fields + ' ô nhập' + (btns ? ' và ' + btns + ' nút' : '') + '.';
+    else if(btns) s += ' Vùng có ' + btns + ' nút.';
+    s += ' Nói: vùng số ' + (i + 1) + ', để nghe cả vùng. ';
+    return s;
+  }
+  /** "Ô số 2 trên 3 của vùng" — vị trí của ô nhập trong vùng đang đứng */
+  function fieldPosInRegion(el){
+    const regs = getRegions(); const reg = regs.find(r => r.contains(el)); if(!reg) return '';
+    const list = []; reg.els.forEach(e => e.querySelectorAll('input:not([type=hidden]), select, textarea').forEach(x => { if(visible(x)) list.push(x); }));
+    const k = list.indexOf(el);
+    return k >= 0 && list.length > 1 ? ' Ô số ' + (k + 1) + ' trên ' + list.length + ' của vùng.' : '';
+  }
+  /** Đang đăng nhập tài khoản nào */
+  function accountSpeech(short){
+    const a = acct();
+    if(!a) return 'Cậu chưa đăng nhập tài khoản nào.' + (short === 'voice' ? ' Nói: đăng nhập, để đăng nhập tài khoản học sinh; hoặc nói: giáo viên, để đăng nhập tài khoản giáo viên.' : short ? '' : ' Bấm vào đây để mở vùng chọn đăng nhập: đăng nhập học sinh, để làm khảo sát với Chatbot; hoặc đăng nhập giáo viên và ban giám hiệu, để xem kết quả. Cũng có thể nói: đăng nhập.');
+    const role = a.role === 'admin' ? 'giáo viên' : 'học sinh';
+    let sch = '';
+    try{ if(typeof isCompleteSchool === 'function' && isCompleteSchool(a)) sch = ', ' + schoolLabel(a); }catch(e){}
+    return 'Cậu đang đăng nhập tài khoản ' + role + ' ' + spellUser(a.username) + ', tên ' + a.displayName + sch + '.' +
+      (a.role === 'student' && a.khoi ? ' Khối ' + a.khoi + '.' : '') +
+      (short === 'voice' ? ' Nói: cập nhật thông tin, nếu tên, khối hoặc trường bị sai; đăng xuất, để thoát tài khoản; hoặc nói: đăng nhập, để đổi sang tài khoản khác.' : short ? '' : ' Bấm vào đây để mở menu tài khoản: đổi sang tài khoản khác, hoặc đăng xuất. Nói: đăng xuất, để thoát tài khoản.');
+  }
+  function spellUser(u){ return /\d/.test(u || '') ? String(u).replace(/(\d)/g, ' $1').replace(/\s+/g, ' ').trim() : (u || ''); }
+  function howToPress(el, label){
+    const say = label ? ' Hoặc nói: bấm, ' + label.toLowerCase() + '.' : '';
+    return R.mode === 'blind' ? ' Nhấn Enter hoặc bấm chuột để chọn.' + say : ' Bấm để chọn.' + (R.robotOn ? say : '');
+  }
+  function hoverDescribe(el){
+    const where = placeOf(el);
+    const at = where ? ', ' + where + '.' : '.';
+    if(el.classList.contains('vr-choice')){
+      const k = el.dataset.mode === 'blind' ? 'phím số 1' : 'phím số 2';
+      const sm = textOf(el.querySelector('small')).replace(/\s*·\s*/g, ', ').replace(/[.!?…]*$/, '.');
+      return 'Lựa chọn ' + textOf(el.querySelector('strong')) + ', ở màn hình chọn chế độ. ' + sm + ' Bấm chuột, nhấn ' + k + ', hoặc nói: ' + (el.dataset.mode === 'blind' ? 'khiếm thị.' : 'bình thường.');
+    }
+    if(el.id === 'accountMenuBtn') return 'Nút tài khoản, trên thanh điều hướng trên cùng. ' + accountSpeech();
+    if(el.id === 'accountMenuSession') return accountSpeech(true) + ' Đây là thông tin tài khoản trong vùng chọn đăng nhập.';
+    if(el.classList.contains('account-menu-title')) return 'Vùng chọn đăng nhập tài khoản. Có 2 lựa chọn: học sinh, và giáo viên hoặc ban giám hiệu. ' + accountSpeech(true);
+    if(el.classList.contains('account-option')){
+      const who = textOf(el.querySelector('strong')), what = textOf(el.querySelector('small'));
+      const a = acct();
+      return 'Lựa chọn đăng nhập ' + who + ': ' + what + ', trong vùng chọn đăng nhập. Bấm để mở trang đăng nhập ' + who.toLowerCase() + '.' +
+        (a ? ' Hiện cậu đang đăng nhập tài khoản ' + spellUser(a.username) + '; chọn mục này nếu muốn đổi tài khoản.' : '');
+    }
+    if(el.id === 'topbarLogoutBtn') return 'Nút Đăng xuất, trên thanh điều hướng trên cùng. ' + accountSpeech(true) + ' Bấm để thoát tài khoản này.';
+    if(el.id === 'settingsBtn') return 'Nút Cài đặt AI, trên thanh điều hướng. Mở cửa sổ dán khóa API Gemini để Chatbot trả lời thông minh hơn.';
+    if(el.classList.contains('brand')) return 'Tên trang web: Nhịp Khỏe Học Đường, trên thanh điều hướng trên cùng.';
+    if(el.id === 'stepNav') return 'Thanh các bước: Trang chủ, Chatbot, đo BMI' + (typeof state !== 'undefined' && state.admin ? ', Dashboard' : '') + '. Bước đang mở có chấm màu đỏ.';
+    if(el.classList.contains('step')) return 'Bước ' + textOf(el) + ', trên thanh các bước' + (el.classList.contains('active') ? ', đang mở.' : '. Bấm để chuyển tới.');
+    if(el.classList.contains('vr-dock-state')) return 'Trạng thái trợ lý: ' + statusText() + '.' + (R.micDenied ? ' ' + MIC_MSG : '');
+    if(el.classList.contains('vr-dock-task')) return textOf(el);
+    if(el.id === 'vrWhere') return 'Vị trí hiện tại: ' + textOf(el) + ', trong khung điều khiển trợ lý. Bấm để nghe danh sách các vùng của trang.';
+    if(el.id === 'vrOrb') return R.mode === 'regular' ? 'Nút bật tắt trợ lý, ' + (R.robotOn ? 'đang bật. Bấm để tắt.' : 'đang tắt. Bấm để bật.') : 'Nút trợ lý. Bấm để ' + (R.speaking ? 'dừng đọc.' : 'đọc lại câu vừa rồi.');
+    if(/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)){
+      const lb = fieldLabel(el) || 'nhập liệu';
+      if(el.tagName === 'SELECT') return 'Ô chọn ' + lb + at + fieldPosInRegion(el) + (el.value ? ' Đang chọn ' + textOf(el.options[el.selectedIndex]) + '.' : ' Chưa chọn.') + ' Các lựa chọn: ' + optionList(el) + '.' + (R.mode === 'blind' ? ' Nói tên lựa chọn để chọn.' : '');
+      if(el.type === 'checkbox' || el.type === 'radio') return 'Ô đánh dấu ' + lb + at + (el.checked ? ' Đang chọn.' : ' Chưa chọn.');
+      const v = el.type === 'password' ? (el.value ? ' Đã nhập ' + el.value.length + ' ký tự.' : ' Đang trống.') : (el.value ? ' Đang là: ' + el.value + '.' : ' Đang trống.');
+      const how = R.mode === 'blind' ? inputWays(el) : ' Bấm vào ô để gõ' + (R.robotOn ? ', hoặc nói: ' + lb.toLowerCase() + ', rồi nội dung cần điền.' : '.');
+      return 'Ô nhập ' + lb + at + fieldPosInRegion(el) + v + how;
+    }
+    if(el.matches('a[href]')){ const lb = btnLabel(el) || textOf(el); return 'Liên kết ' + lb + at + (el.target === '_blank' ? ' Mở ở thẻ mới.' : '') + howToPress(el, ''); }
+    if(el.classList.contains('vr-reg')) return 'Vùng ' + textOf(el) + '. Bấm để nghe vùng này.';
+    if(el.matches('button, [role="button"]')){
+      const lb = btnLabel(el) || textOf(el);
+      if(el.disabled) return 'Nút ' + lb + at + ' Nút đang tạm khóa.';
+      return 'Nút ' + lb + at + howToPress(el, el.closest('#vrBar, #fnMenu, #fsBoard') ? '' : lb);
+    }
+    const t = el.matches(BLOCK_SEL) ? blockText(el) : textOf(el);
+    if(!t) return '';
+    return t.slice(0, 600).replace(/[\s.:;,…]*$/, '.') + (where ? ' Nội dung này ' + where + '.' : '');
+  }
+  function hoverMark(el){
+    if(HV.mark) HV.mark.classList.remove('vr-hover');
+    HV.mark = el; if(el) el.classList.add('vr-hover');
+  }
+  /* Giống trình đọc màn hình thật: chuột / Tab sang chỗ MỚI → DỪNG NGAY câu đang đọc và đọc chỗ mới.
+     (Không còn điều kiện "đang nói thì bỏ qua"; speak(..., {interrupt:true}) gọi speechSynthesis.cancel()
+     và dừng <audio> Piper / giọng trực tuyến trước khi đọc.) */
+  const HOVER_DEBOUNCE_MS = 120;           // lướt chuột thật nhanh qua nhiều khung thì chỉ đọc khung dừng lại
+  function hoverSpeak(el){
+    if(el !== HV.el || !el.isConnected || R.userMuted) return;
+    if(Date.now() < (window.__hpQuietHoverUntil || 0) && !tabbing){ HV.el = null; return; }   // vừa thu gọn / di chuyển khung
+    if(el === HV.last && Date.now() - HV.lastAt < 5000 && (R.speaking || HV.lastSpoke === R.lastSpoken)) return;   // vừa đọc đúng chỗ này
+    const sym = regionSymbolFor(el);                           // ký hiệu vùng khi vừa sang vùng mới
+    let text = sym + (hoverDescribe(el) || '');
+    const echo = takeInputEcho();                               // "Cậu vừa nhập …" của ô vừa rời (Tab) đọc trước
+    if(echo) text = echo + ' ' + (text || '');
+    if(!text) return;
+    HV.last = el; HV.lastAt = Date.now();
+    speak(text, {force:R.gateOpen || !!echo, interrupt:true});
+    HV.lastSpoke = R.lastSpoken;
+  }
+  function hoverOn(){ return R.hoverRead && (R.gateOpen ? !byId('hpLoader') : isNavActive()); }
+  document.addEventListener('pointerover', (e) => {
+    if(e.pointerType && e.pointerType !== 'mouse') return;              // chỉ chuột (cảm ứng / bút không tính)
+    if(!hoverOn()) return;
+    // chuột ĐỨNG YÊN mà nội dung bên dưới đổi chỗ (khung thu gọn, chữ phụ đề dài ra…) → không tính là rê sang vùng mới
+    if(e.clientX === HV.px && e.clientY === HV.py) return;
+    HV.px = e.clientX; HV.py = e.clientY;
+    const el = hoverTarget(e.target);
+    if(el === HV.el) return;
+    HV.el = el; clearTimeout(HV.timer); hoverMark(el);
+    if(el) HV.timer = setTimeout(() => hoverSpeak(el), HOVER_DEBOUNCE_MS);
+  }, {passive:true});
+  document.addEventListener('mouseleave', () => { HV.el = null; HV.region = -1; clearTimeout(HV.timer); hoverMark(null); });
+  // phím Tab chuyển ô / nút → đọc ngay (học sinh khiếm thị dùng bàn phím)
+  let tabbing = false;
+  document.addEventListener('keydown', (e) => { if(e.key === 'Tab') tabbing = true; }, true);
+  document.addEventListener('mousedown', () => { tabbing = false; }, true);
+  document.addEventListener('focusin', (e) => {
+    if(!tabbing || !(isNavActive() || R.gateOpen) || (window.BrailleInput && BrailleInput.active) || (e.target.closest && e.target.closest('#vkBoard'))) return;
+    const el = e.target && e.target.closest && e.target.closest(HOVER_CTRL);
+    if(!el) return;
+    HV.el = el; HV.last = null; hoverMark(el); hoverSpeak(el);
+  });
+  function setHoverRead(on){
+    R.hoverRead = !!on; lsSet('hp_hover_read:' + (R.mode || 'blind'), on ? '1' : '0');
+    if(!on){ clearTimeout(HV.timer); hoverMark(null); }
+    updateToggles();
+    speak(on ? 'Đã bật đọc khi rê chuột: chuột dừng ở đâu, mình đọc chỗ đó.' : 'Đã tắt đọc khi rê chuột.', {force:true});
+  }
+  function setCaptions(on){
+    R.captions = !!on; lsSet('hp_captions', on ? '1' : '0');
+    updateToggles();
+    speak(on ? 'Đã bật hiện lời trợ lý: câu mình đang đọc hiện thành chữ trong khung điều khiển.' : 'Đã ẩn lời trợ lý trong khung điều khiển.', {force:true});
+  }
+  /** Hướng dẫn cách nhập cho học sinh khiếm thị (lần đầu nói đủ, sau đó nói gọn) */
+  function inputWays(el){
+    if(R.mode !== 'blind' || !el || el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'radio') return '';
+    const mobile = isMobileDev();
+    if(!R.waysTold){
+      R.waysTold = true; ss('hp_ways', '1');
+      return mobile
+        ? ' Cậu có 2 cách nhập. Một: nói nội dung, mình tự nhận diện và điền vào ô. Hai: nói: bàn phím trợ năng, để mở bàn phím lớn có chữ A đến Z, chữ hoa chữ thường, Cách, Xóa một ký tự, Xóa hết, Xong và Thoát.'
+        : ' Cậu có 3 cách nhập. Một: nói nội dung, mình tự nhận diện và điền vào ô. Hai: nói: chữ nổi, rồi gõ chữ nổi ngay trên bàn phím máy tính, dùng 6 phím F, D, S, J, K, L; phím F và J có gờ nổi để cậu đặt ngón trỏ. Ba: nói: ký hiệu tay, rồi làm ký hiệu chữ cái ngón tay trước camera.';
+    }
+    return mobile ? ' Nói nội dung; hoặc nói: bàn phím trợ năng.' : ' Nói nội dung; hoặc nói: chữ nổi, hay: ký hiệu tay.';
+  }
+
+
+/* ============================================================================
+ * JS-11.12 · CHỌN CHẾ ĐỘ SỬ DỤNG
+ * Mở/đóng cổng chọn, hiểu câu trả lời và đặt chế độ thường hoặc khiếm thị.
+ * ========================================================================== */
+  /* ======================= CỔNG CHỌN TRANG ======================= */
+  const GATE_TEXT = 'Xin chào! Mình là Trợ lý Nhịp Khỏe, trợ lý giọng nói của trang web. ' +
+    'Nếu cậu là học sinh khiếm thị, hãy nói: khiếm thị, hoặc nhấn phím số 1. ' +
+    'Nếu cậu là học sinh bình thường, hãy nói: bình thường, hoặc nhấn phím số 2. ' +
+    'Nếu cậu không trả lời, mình sẽ tự mở trang dành cho học sinh khiếm thị.';
+  const AUTO_BLIND_MS = 25000;
+  function gatePrompt(){ R.gatePrompts++; speak(GATE_TEXT, {force:true}); micNotice(); }
+  function openGate(initial){
+    stopSpeaking({resume:false}); pauseListening();
+    R.gateOpen = true; R.gatePrompts = 0; R.awaitField = null; R.voiceArmed = true;
+    R.gateInitial = initial === true; R.gateOpenedAt = Date.now(); R.sightedSignal = false;
+    const gate = byId('vrGate');
+    gate.dataset.state = 'choose';
+    gate.classList.remove('hidden');
+    setInert(true);
+    applyUi();
+    setTimeout(() => { const b = gate.querySelector('.vr-choice'); if(b) b.focus(); }, 30);
+    if(R.started) gatePrompt();
+  }
+  function closeGate(){
+    R.gateOpen = false;
+    const gate = byId('vrGate');
+    gate.classList.add('hidden'); gate.classList.remove('vr-need-tap');
+    setInert(false);
+  }
+  function gateAnswer(n){
+    if(has(n,'khong khiem thi') || has(n,'binh thuong') || has(n,'thong thuong') || has(n,'sang mat') ||
+       n === '2' || n === 'hai' || has(n,'so 2') || has(n,'so hai') || has(n,'trang thuong')) return chooseMode('regular');
+    if(has(n,'khiem thi') || has(n,'kiem thi') || has(n,'khiem') || has(n,'mat kem') || has(n,'nhin kem') ||
+       has(n,'khong nhin') || n === '1' || n === 'mot' || has(n,'so 1') || has(n,'so mot')) return chooseMode('blind');
+    quietMiss(n);                                   // không bắt nói lại — vẫn đợi câu tiếp theo
+  }
+  // Chuột di chuyển = có người nhìn thấy màn hình → không tự chọn thay
+  let lastMouse = null;
+  document.addEventListener('mousemove', (e) => {
+    if(!R.gateOpen) return;
+    if(lastMouse && Math.abs(e.clientX - lastMouse[0]) + Math.abs(e.clientY - lastMouse[1]) > 40) R.sightedSignal = true;
+    lastMouse = [e.clientX, e.clientY];
+  });
+  setInterval(() => {
+    if(!R.gateOpen) return;
+    const now = Date.now();
+    const quiet = now - Math.max(R.lastHeardAt, R.lastSpeakEnd) > 6000 && !R.speaking;
+    // Lần đầu mở web, không ai trả lời → tự vào trang khiếm thị (robot vẫn bật cho mọi người)
+    if(R.gateInitial && !R.sightedSignal && quiet && now - R.gateOpenedAt > AUTO_BLIND_MS &&
+       R.lastHeardAt < R.gateOpenedAt && (R.gatePrompts >= 2 || !R.audioOk)){
+      chooseMode('blind', {auto:true});
+      return;
+    }
+    if(R.started && R.gatePrompts < 3 && now - Math.max(R.lastHeardAt, R.lastSpeakEnd) > 12000 && !R.speaking) gatePrompt();
+  }, 3000);
+
+  function chooseMode(mode, opts = {}){
+    if(mode !== 'blind' && mode !== 'regular') return;
+    stopSpeaking({resume:false}); pauseListening();
+    R.mode = mode; ss(MODE_KEY, mode); R.voiceReady = true; R.voiceOff = false;
+    R.voiceArmed = mode === 'blind'; R.robotOn = mode === 'blind';
+    R.chatVoice = mode === 'blind'; R.autoRead = false; R.userMuted = false;
+    R.pendingFirst = null; R.chatIntroDone = false; R.chatState = '';
+    clearTimeout(R.viewTimer); R.pendingView = null;
+    R.form = null; R.awaitField = null; R.appendField = null; spellCancel(true); closeInputs();
+    ss(ROBOT_KEY, R.robotOn ? '1' : '0'); updateToggles();
+    closeGate();
+    if(R.audioOk || !opts.auto) R.started = true;
+    applyUi();
+    const view = activeView();
+    if(mode === 'blind'){
+      if(opts.auto && !R.audioOk){
+        // tiếng đang bị chặn: chờ 1 phím/chạm bất kỳ rồi đọc
+        R.pendingFirst = () => blindIntro('Mình đã mở trang dành cho học sinh khiếm thị. Trợ lý luôn bật.');
+        onAudioBlocked();
+      } else {
+        blindIntro(opts.auto
+          ? 'Mình chưa nghe cậu chọn, nên mình mở trang dành cho học sinh khiếm thị. Trợ lý luôn bật, đọc to nội dung và nghe lệnh của cậu.'
+          : 'Đã vào trang dành cho học sinh khiếm thị. Trợ lý luôn bật, đọc to nội dung và nghe lệnh của cậu.');
+      }
+      focusHeading(view);
+    } else {
+      scriptLine('Trợ lý đang tắt. Nói “điều khiển giọng nói” để bắt đầu nhận lệnh.', 'idle');
+    }
+    startListening();
+  }
+  function setRobot(on){
+    if(R.mode !== 'regular'){ chooseMode('regular'); if(!on) return; }
+    R.robotOn = !!on; R.voiceArmed = !!on; R.voiceReady = true;
+    ss(ROBOT_KEY, on ? '1' : '0'); R.awaitField = null;
+    if(on){
+      detachGesture();
+      armVoice('Trợ lý đã bật. Đọc xong thông báo này, cậu nói tên mục cần mở; nói trợ giúp để nghe các lệnh.');
+    } else {
+      R.voiceOff = true;
+      R.chatVoice = false; R.autoRead = false; R.chatState = '';
+      clearChatInterim();
+      if(R.speaking && Date.now() - R.armedAt < 20000) stopSpeaking({resume:false});   // đang đọc thông báo bật → dừng luôn
+      clearIdleWait(); pauseListening();                                                  // hủy bộ đếm 8 giây, tắt micro
+      applyUi();
+      if(window.A11y) A11y.announce('Đã tắt điều khiển giọng nói.');
+      if(!R.speaking) scriptLine('Điều khiển giọng nói đã tắt. Bấm nút trợ lý hoặc Alt + V để bật lại.', 'idle');
+    }
+  }
+
+  function setAutoRead(on){
+    R.autoRead = !!on; ss(AUTOREAD_KEY, on ? '1' : '0');
+    speak(on ? 'Đã bật tự đọc tin nhắn của Chatbot.' : 'Đã tắt tự đọc tin nhắn của Chatbot.');
+  }
+  function focusHeading(id){
+    if(R.mode !== 'blind') return;
+    const v = byId(id); if(!v) return;
+    const h = v.querySelector('h1, h2');
+    if(h && visible(h)){ h.setAttribute('tabindex','-1'); try{ h.focus({preventScroll:true}); }catch(e){} }
+  }
+
+
+/* ============================================================================
+ * JS-11.13 · HIỂU NỘI DUNG MÀN HÌNH
+ * Lấy nhãn ô, nút, tin nhắn và tóm tắt để tạo lời đọc/hướng dẫn cho vị trí hiện tại.
+ * ========================================================================== */
+  /* ======================= ĐỌC NỘI DUNG TRANG ======================= */
+  function lastAiText(){
+    const els = document.querySelectorAll('#chatLog .msg.ai');
+    return els.length ? textOf(els[els.length - 1]) : '';
+  }
+  function summaryText(){
+    const c = document.querySelector('.view.active .weekly-summary-card');
+    if(!c) return '';
+    const q = s => textOf(c.querySelector(s));
+    const btn = c.querySelector('[data-summary-action]');
+    const tried = btn && btn.disabled;
+    return 'Tổng kết tuần. Mức vận động: ' + q('.level-badge').toLowerCase() + '. Khoảng ' + q('.weekly-minutes') + '. ' +
+      q('.weekly-summary-description') + ' Gợi ý thử trong tuần này: ' + q('.weekly-suggestion p') + ' ' +
+      q('.weekly-summary-feedback') + ' ' +
+      (tried ? 'Cậu đã đánh dấu là đã thử hoạt động này.' : 'Nếu cậu sẽ thử, hãy nói: mình đã thử.');
+  }
+  /** Tên ô: label → aria-label / aria-labelledby → nhãn trong .field → placeholder → data-label */
+  function fieldLabel(el){
+    const l = el.id ? document.querySelector('label[for="' + el.id + '"]') : null;
+    if(l && textOf(l)) return textOf(l);
+    const aria = el.getAttribute && el.getAttribute('aria-label');
+    if(aria) return aria.trim();
+    const lb = el.getAttribute && el.getAttribute('aria-labelledby');
+    if(lb){ const t = lb.split(/\s+/).map(id => textOf(byId(id))).filter(Boolean).join(' '); if(t) return t; }
+    const f = el.closest('.field');
+    const fl = f && f.querySelector('.field-label');
+    if(fl && textOf(fl)) return textOf(fl);
+    return el.placeholder || (el.dataset && (el.dataset.label || el.dataset.name)) || '';
+  }
+  function visibleFields(){
+    const list = [];
+    const scopes = [activeViewEl()];
+    if(isModalOpen()) scopes.push(byId('settingsModal'));
+    if(scannerOpen()) scopes.push(byId('heightScan'));
+    scopes.forEach(sc => sc && sc.querySelectorAll('input[type=text], input[type=password], input[type=number], select').forEach(el => {
+      if(visible(el) && !el.disabled && el.id !== 'chatInput') list.push(el);
+    }));
+    return list;
+  }
+  function hintFor(el){
+    const id = el.id || '';
+    if(/^(khoiSelect|studentGrade|profileGrade)$/.test(id)) return 'khối, ví dụ: khối 10';
+    if(/Level$/.test(id)) return 'cấp học, ví dụ: cấp học trung học phổ thông';
+    if(/Ward$/.test(id)) return 'phường, rồi đọc tên phường hoặc xã';
+    if(/District$/.test(id)) return 'quận, rồi đọc tên quận hoặc huyện';
+    if(/Province$/.test(id)) return 'tỉnh, rồi đọc tên tỉnh hoặc thành phố';
+    if(/SchoolName$|^schoolName$/.test(id)) return 'tên trường, rồi đọc tên trường';
+    if(id === 'bmiSex') return 'giới tính: nam hoặc nữ';
+    if(id === 'bmiAge') return 'tuổi, ví dụ: 15 tuổi';
+    if(id === 'bmiMonths') return 'số tháng lẻ, hoặc bỏ qua và nói: tính BMI';
+    if(id === 'bmiHeight') return 'chiều cao, ví dụ: cao 1 mét 60';
+    if(id === 'bmiWeight') return 'cân nặng, ví dụ: nặng 50 ký';
+    return (fieldLabel(el) || 'ô tiếp theo').toLowerCase() + ', rồi đọc nội dung';
+  }
+  function btnLabel(el){ return String(el.getAttribute('aria-label') || el.textContent || el.title || '').replace(/\s+/g,' ').trim(); }
+  function primaryButton(){
+    const v = activeViewEl(); if(!v) return null;
+    return [...v.querySelectorAll('.btn-primary')].find(b => visible(b) && !b.disabled) || null;
+  }
+  function nextHint(){
+    if(R.mode !== 'blind' || R.form) return '';
+    const empty = visibleFields().find(el => !el.value && el.id !== 'khoiFilter' && el.id !== 'geminiKeyInput');
+    if(empty) return 'Tiếp theo, hãy nói: ' + hintFor(empty) + '.';
+    const btn = primaryButton();
+    return btn ? 'Đã điền đủ. Nói: ' + btnLabel(btn).toLowerCase() + ', để tiếp tục.' : '';
+  }
+
+/* ============================================================================
+ * JS-11.14 · CUỘN VÀ ĐỌC NỘI DUNG HIỂN THỊ
+ * Tìm các khối trong khung nhìn, cuộn trang và đọc phần vừa xuất hiện sau khi cuộn.
+ * ========================================================================== */
+  /* ======================= TRƯỢT TRANG & ĐỌC PHẦN ĐANG HIỆN ======================= */
+  const BLOCK_SEL = ['h1','h2','h3','h4','p','li','tr','.field','.stat','.intro-card','.future-card','.lib-card','.msg-row',
+    '.bmi-stat','.bmi-block','.weekly-summary-card','.empty-dash','.empty-lib','.bmi-empty','.qcount','.btn','.hero-eyebrow',
+    '.chat-kicker','.survey-kicker','.future-kicker','.future-badge','.bar-row','.stat-card','.conversation-item','.err-text',
+    '.bmi-chip','.bmi-big','.bmi-meta','.auth-note','.bmi-note','.survey-note','.bmi-disclaimer','.future-note','.chat-footnote',
+    '.admin-title','label.field-label','.auth-tab','.atab2','.bmi-age-note'].join(',');
+  function viewBox(){
+    let top = 0, bottom = window.innerHeight;
+    const tb = document.querySelector('.topbar');
+    if(tb && getComputedStyle(tb).position === 'sticky'){ const r = tb.getBoundingClientRect(); if(r.bottom > 0) top = r.bottom; }
+    const bar = byId('vrBar'); if(bar && visible(bar)) bottom = Math.min(bottom, bar.getBoundingClientRect().top);
+    return {top, bottom};
+  }
+  function controlOf(el){
+    if(el.matches('input,select,textarea')) return el;
+    if(el.matches('label') && el.htmlFor) return byId(el.htmlFor);
+    return el.querySelector('input,select,textarea');
+  }
+  function controlState(c){
+    if(!c) return '';
+    if(c.tagName === 'SELECT'){
+      const o = c.options[c.selectedIndex];
+      return c.value ? 'đang chọn ' + textOf(o) : 'chưa chọn. Các lựa chọn: ' + [...c.options].filter(x => x.value).slice(0, 8).map(textOf).join(', ');
+    }
+    if(c.type === 'password') return c.value ? 'đã nhập' : 'đang trống';
+    return c.value ? 'đang là ' + c.value : 'đang trống';
+  }
+  function blockText(el){
+    if(el.matches('.field, label.field-label')){
+      const c = controlOf(el); if(!c || !visible(c)) return textOf(el);
+      return 'Ô ' + (fieldLabel(c) || 'nhập liệu') + ': ' + controlState(c) + '.';
+    }
+    if(el.matches('.btn, .auth-tab, .atab2')) return 'Nút ' + btnLabel(el) + '.';
+    if(el.matches('tr')){
+      // hàng trong bảng: đọc kèm tên cột → "Kỳ: Tuần 3; Từ ngày đến ngày: …"
+      const tb = el.closest('table'), head = tb && tb.querySelector('thead tr');
+      const hs = head && head !== el ? [...head.children].map(textOf) : null;
+      const cells = [...el.children].map(textOf);
+      if(hs && el.parentElement && el.parentElement.tagName === 'TBODY') return cells.map((c, i) => (hs[i] ? hs[i] + ': ' : '') + (c || 'trống')).join('; ') + '.';
+      return cells.filter(Boolean).join(', ') + '.';
+    }
+    if(el.matches('.msg-row')) return (el.classList.contains('user') ? 'Cậu: ' : 'Trợ lý: ') + textOf(el);
+    const t = layoutText(el);
+    return t.length > 380 ? t.slice(0, 380) + '…' : t;
+  }
+  function layoutText(el){
+    const raw = String(el.innerText || el.textContent || '');
+    return raw.split(/\n+/).map(x => x.replace(/\s+/g, ' ').trim()).filter(Boolean)
+      .map(x => /[.!?:;,…]$/.test(x) ? x : x + '.').join(' ');
+  }
+  function blocksInView(){
+    const root = activeViewEl(); if(!root) return [];
+    const all = [...root.querySelectorAll(BLOCK_SEL)].filter(el => visible(el) && !el.closest('[aria-hidden="true"]'));
+    const set = new Set(all);
+    const outer = all.filter(el => { for(let p = el.parentElement; p && p !== root; p = p.parentElement){ if(set.has(p)) return false; } return true; });
+    const box = viewBox();
+    return outer.map(el => ({el, r:el.getBoundingClientRect()}))
+      .filter(b => b.r.height > 0 && b.r.top >= box.top - 6 && b.r.top < box.bottom - 12)
+      .map(b => ({el:b.el, text:blockText(b.el)})).filter(b => b.text && b.text.replace(/[\s.,:]/g, '').length > 1);
+  }
+  function atBottom(){ return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8; }
+  function readViewport(prefix){
+    if(!R.readSet) R.readSet = new WeakSet();
+    const blocks = blocksInView().filter(b => !R.readSet.has(b.el));
+    if(!blocks.length) return false;
+    const out = []; let len = 0, i = 0, emptyField = null;
+    for(; i < blocks.length; i++){
+      const t = blocks[i].text;
+      if(len && len + t.length > 900) break;
+      out.push(t); len += t.length; R.readSet.add(blocks[i].el);
+      const c = blocks[i].el.matches('.field, label.field-label') ? controlOf(blocks[i].el) : null;
+      if(c && !emptyField && !c.value && c.id !== 'khoiFilter' && visible(c) && !c.disabled) emptyField = c;
+    }
+    let tail;
+    if(i < blocks.length) tail = ' Nói: đọc tiếp, để nghe thêm.';
+    else if(atBottom()) tail = ' Đã đến cuối trang.';
+    else tail = ' Nói: trượt xuống, để đọc tiếp.';
+    if(emptyField && !R.form){
+      R.awaitField = emptyField;
+      tail += ' Ô ' + (fieldLabel(emptyField) || 'nhập liệu') + ' đang trống: cậu nói nội dung, mình điền giúp.' + inputWays(emptyField) + ' Hoặc nói: điền giúp, để mình hỏi lần lượt từng ô.';
+    }
+    speak((prefix || '') + out.join(' ') + tail);
+    return true;
+  }
+  /* Cuộn mượt có quán tính (vẩy tay) — chỉ đổi scrollY theo requestAnimationFrame, không giật */
+  let flingRaf = 0;
+  function smoothScrollBy(dy, ms, done){
+    cancelAnimationFrame(flingRaf);
+    const y0 = window.scrollY, t0 = performance.now();
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const y1 = Math.max(0, Math.min(max, y0 + dy));
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / ms);
+      const e = 1 - Math.pow(1 - p, 3);                 // chậm dần như vuốt điện thoại
+      window.scrollTo(0, y0 + (y1 - y0) * e);
+      if(p < 1) flingRaf = requestAnimationFrame(step); else if(done) done();
+    };
+    flingRaf = requestAnimationFrame(step);
+  }
+  /** dir: 'down' | 'up' | 'top' | 'bottom'.  opts.px: quãng cuộn; opts.smooth: cuộn quán tính (ms) */
+  function scrollRead(dir, opts){
+    opts = opts || {};
+    const box = viewBox();
+    const step = opts.px || Math.max(200, (box.bottom - box.top) * 0.85);
+    const before = window.scrollY;
+    R.awaitField = null;
+    if(dir === 'top' || dir === 'up') R.readSet = new WeakSet();
+    if(opts.smooth && (dir === 'down' || dir === 'up') && !(window.A11y && A11y.reducedMotion())){
+      smoothScrollBy(dir === 'down' ? step : -step, opts.smooth, () => afterScroll(dir, before));
+      return;
+    }
+    if(dir === 'top') window.scrollTo(0, 0);
+    else if(dir === 'bottom') window.scrollTo(0, document.documentElement.scrollHeight);
+    else window.scrollBy(0, dir === 'down' ? step : -step);
+    afterScroll(dir, before);
+  }
+  function afterScroll(dir, before){
+    const moved = Math.abs(window.scrollY - before) > 2;
+    R.regionRest = null;
+    setTimeout(() => {
+      syncRegionToScroll(true);
+      if(dir === 'down' || dir === 'bottom'){
+        if(readViewport(dir === 'bottom' ? 'Cuối trang. ' : '')) return;
+        speak(!moved || atBottom() ? 'Đã đến cuối trang, bên dưới không còn nội dung. Nói: lên đầu trang, hoặc: trượt lên.'
+                                  : 'Đoạn này chưa có nội dung. Cậu nói: trượt xuống, để xem tiếp nhé.');
+      } else {
+        if(readViewport(!moved ? 'Đang ở đầu trang. ' : (dir === 'top' ? 'Đầu trang. ' : ''))) return;
+        speak(!moved ? 'Đã ở đầu trang.' : 'Đoạn này chưa có nội dung. Cậu nói: trượt lên, để xem tiếp nhé.');
+      }
+    }, 150);
+  }
+  function readOn(){
+    if(R.regionRest && R.regionRest.length){ readRegionRest(); return; }
+    if(!readViewport()) scrollRead('down');
+  }
+
+
+/* ============================================================================
+ * JS-11.15 · PHÂN VÙNG TRANG
+ * REGION_MAP và các hàm liên quan chia trang thành vùng, tìm vùng hiện tại và xử lý lệnh chuyển vùng.
+ * ========================================================================== */
+  /* ======================= PHÂN VÙNG TRANG ======================= */
+  // Mỗi trang chia thành các vùng có tên. Trợ lý đọc trọn một vùng, khung sáng + thanh vùng cho biết đang ở đâu.
+  // Mỗi vùng = {name, els:[…]} — có thể gồm nhiều phần tử (VD tiêu đề + đoạn giới thiệu).
+  // Mục: [tên, selector hoặc [các selector]]  ·  {each: selector, name(el, i)} để tạo nhiều vùng (mỗi tài liệu, mỗi bảng…)
+  const REGION_MAP = {
+    'view-landing': [
+      ['Giới thiệu', '.landing-info'], ['Khảo sát nhanh', '.landing-survey'], ['Số liệu vận động', '.stat-row'],
+      ['Thông tin chung', '.intro-grid'], ['Định hướng phát triển', '.future-section']],
+    'view-chat': [
+      ['Lịch sử trò chuyện', '.conversation-panel'], ['Tiêu đề và tiến độ', ['.chat-head', '.qcount']],
+      ['Tin nhắn', '#chatLog'], ['Ô trả lời', ['.chat-input-row', '.chat-footnote']]],
+    'view-library': [
+      ['Giới thiệu tư liệu', ['.lib-wrap > h2', '.lib-wrap > p']],
+      {each:'#libraryList > .lib-card', name:(el, i) => 'Tài liệu ' + (i + 1) + ': ' + textOf(el.querySelector('.lib-title'))},
+      ['Thông báo', '#libraryList > .empty-lib']],
+    'view-studentAuth': [
+      ['Giới thiệu cổng học sinh', ['.auth-kicker', '#studentAuthTitle', '#studentAuthSubtitle']],
+      ['Chọn đăng nhập hoặc tạo tài khoản', '#studentAuthTabs'], ['Biểu mẫu', '.card'], ['Liên kết khác', '#studentAuthSwitch']],
+    'view-adminAuth': [
+      ['Giới thiệu khu quản trị', ['#adminAuthTitle', '#adminAuthSubtitle']],
+      ['Chọn đăng nhập hoặc tạo tài khoản', '#adminAuthTabs'], ['Biểu mẫu', '.card'], ['Liên kết khác', '#adminAuthSwitch']],
+    'view-bmi': [
+      ['Giới thiệu đo BMI', '.bmi-head'], ['Nhập số đo', '.bmi-form-card'], ['Kết quả', '#bmiResult'],
+      ['Chuẩn tham chiếu', '#bmiReference'], ['Lịch sử đo', '#bmiHistory'], ['Lưu ý', '.bmi-disclaimer']],
+    'view-data': [
+      ['Giới thiệu kho dữ liệu', '.hd-head'], ['Chọn kiểu xem', '.hd-tabs'],
+      ['Tuần và tháng hiện tại', '.hd-cards'], ['Biểu đồ và bảng thống kê', '#dataBody .hd-panel'], ['Xuất dữ liệu', '.hd-export'], ['Thông báo', '#dataBody > .hd-empty']],
+    'view-profile': [
+      ['Giới thiệu', ['#profileKicker', '#profileTitle', '#profileInfo']],
+      ['Thông tin cá nhân', ['#profileUsername', '#profileName', '#profileGradeField']],
+      ['Trường học', '#profileSchoolFields'], ['Đổi mật khẩu', ['#profilePassBox', '#profileOldPass']],
+      ['Lưu hoặc hủy', '.profile-actions']],
+    'view-adminHome': [
+      ['Khu vực quản trị', '.admin-header'], ['Các thẻ chức năng', '.admin-tabs'],
+      {each:'.admin-panel.active > *', name:(el, i) => textOf(el.querySelector('h3')) || (el.matches('.stat-card-row') ? 'Số liệu tổng quan' : 'Phần ' + (i + 1))}]
+  };
+  function makeRegion(name, els){
+    return {name, els, el:els[0],
+      contains(node){ return this.els.some(e => e === node || e.contains(node)); },
+      rect(){
+        let t = Infinity, l = Infinity, b = -Infinity, r = -Infinity;
+        this.els.forEach(e => { const q = e.getBoundingClientRect(); if(!q.width && !q.height) return; t = Math.min(t, q.top); l = Math.min(l, q.left); b = Math.max(b, q.bottom); r = Math.max(r, q.right); });
+        return t === Infinity ? null : {top:t, left:l, bottom:b, right:r, width:r - l, height:b - t};
+      }};
+  }
+  let regCache = null;
+  function invalidateRegions(){ regCache = null; }
+  function getRegions(){
+    const view = activeViewEl(); if(!view) return [];
+    if(regCache && regCache.view === view && Date.now() - regCache.t < 1500 &&
+       regCache.list.every(r => r.els.every(e => e.isConnected) && visible(r.el))) return regCache.list;
+    const list = computeRegions(view);
+    regCache = {view, t:Date.now(), list};
+    return list;
+  }
+  function hasContent(el){ return !!(String(el.textContent || '').replace(/\s+/g, '').length > 1 || el.querySelector('input,select,button,textarea')); }
+  function computeRegions(view){
+    const list = [];
+    const taken = el => list.some(r => r.els.some(e => e === el || e.contains(el) || el.contains(e)));
+    const norm1 = el => (el.closest('.panel-card') && !el.matches('.panel-card') && view.contains(el.closest('.panel-card'))) ? el.closest('.panel-card') : el;
+    const resolve = sel => [].concat(sel).map(q => view.querySelector(q)).filter(Boolean).map(norm1)
+      .filter((e, i, arr) => arr.indexOf(e) === i && visible(e) && hasContent(e));
+    (REGION_MAP[view.id] || []).forEach(item => {
+      if(Array.isArray(item)){
+        const els = resolve(item[1]).filter(e => !taken(e));
+        if(els.length) list.push(makeRegion(item[0], els));
+      } else if(item && item.each){
+        [...view.querySelectorAll(item.each)].filter(e => visible(e) && hasContent(e) && !taken(e))
+          .forEach((e, i) => list.push(makeRegion(item.name(e, i), [e])));
+      }
+    });
+    if(!list.length){
+      [...view.querySelectorAll(':scope > * > *')].filter(e => visible(e) && hasContent(e)).slice(0, 12)
+        .forEach((c, i) => { if(!taken(c)) list.push(makeRegion(textOf(c.querySelector('h1,h2,h3')) || 'Phần ' + (i + 1), [c])); });
+    }
+    // sắp xếp theo vị trí trên trang (trên → dưới, trái → phải); tính vị trí 1 lần
+    const pos = new Map(list.map(r => { const q = r.rect() || {top:0, left:0}; return [r, Math.round(q.top / 8) * 8 + q.left / 10000]; }));
+    list.sort((x, y) => pos.get(x) - pos.get(y));
+    return list;
+  }
+  function curIndex(regs){
+    regs = regs || getRegions();
+    if(!R.regionEl) return -1;
+    return regs.findIndex(r => r.el === R.regionEl || r.contains(R.regionEl));
+  }
+  function regionBlocks(reg){
+    const out = [];
+    reg.els.forEach(root => {
+      const all = [...root.querySelectorAll(BLOCK_SEL)].filter(x => visible(x) && !x.closest('[aria-hidden="true"]'));
+      if(root.matches(BLOCK_SEL) && !all.length) all.push(root);
+      if(!all.length && hasContent(root)) all.push(root);
+      const set = new Set(all);
+      all.filter(x => { for(let p = x.parentElement; p && p !== root; p = p.parentElement){ if(set.has(p)) return false; } return true; })
+        .forEach(x => out.push({el:x, text:blockText(x)}));
+    });
+    return out.filter(b => b.text && b.text.replace(/[\s.,:]/g, '').length > 1);
+  }
+  function scrollToRegion(reg){
+    const box = viewBox();
+    const q = reg.rect(); if(!q) return;
+    window.scrollTo(0, Math.max(0, window.scrollY + q.top - box.top - 14));
+  }
+  function setRegion(i, opts = {}){
+    const regs = getRegions();
+    if(!regs.length){ if(opts.read) speak('Trang này chưa chia vùng.'); return; }
+    i = Math.max(0, Math.min(regs.length - 1, i));
+    const reg = regs[i];
+    R.region = i; R.regionEl = reg.el; R.regionName = reg.name; R.regionRest = null;
+    R.regionLock = Date.now() + 1500;          // không để việc cuộn tự động ghi đè vùng vừa chọn
+    if(opts.scroll !== false) scrollToRegion(reg);
+    if(opts.focus !== false) try{ reg.el.setAttribute('tabindex', '-1'); if(R.mode === 'blind') reg.el.focus({preventScroll:true}); }catch(e){}
+    renderRegionBar(regs); placeFrame(true);
+    if(opts.read) readRegion(regs, i, opts.prefix, opts.full);
+    else if(opts.announce) speak('Vùng ' + (i + 1) + ' trên ' + regs.length + ': ' + reg.name + '.');
+  }
+  function readRegion(regs, i, prefix, full){
+    const blocks = regionBlocks(regs[i]);
+    R.readSet = R.readSet || new WeakSet();
+    blocks.forEach(b => R.readSet.add(b.el));
+    R.regionRest = blocks.slice();
+    readRegionRest((prefix || '') + 'Vùng ' + (i + 1) + ' trên ' + regs.length + ': ' + regs[i].name + '. ', full ? 6000 : 1100);
+  }
+  function readRegionRest(prefix, limit){
+    const rest = R.regionRest || [];
+    const out = []; let len = 0, emptyField = null;
+    while(rest.length){
+      const b = rest[0];
+      if(len && len + b.text.length > (limit || 1100)) break;
+      rest.shift(); out.push(b.text); len += b.text.length;
+      const c = b.el.matches('.field, label.field-label') ? controlOf(b.el) : null;
+      if(c && !emptyField && !c.value && c.id !== 'khoiFilter' && visible(c) && !c.disabled) emptyField = c;
+    }
+    const regs = getRegions(); const cur = curIndex(regs);
+    let tail;
+    if(rest.length) tail = ' Vùng này còn nữa, nói: đọc tiếp.';
+    else if(cur >= 0 && cur < regs.length - 1) tail = ' Hết vùng ' + (cur + 1) + '. Nói: vùng tiếp theo, để sang ' + regs[cur + 1].name + '.';
+    else tail = ' Đây là vùng cuối của trang.';
+    if(emptyField && !R.form){
+      R.awaitField = emptyField;
+      tail += ' Ô ' + (fieldLabel(emptyField) || 'nhập liệu') + ' đang trống: cậu nói nội dung, mình điền giúp.' + inputWays(emptyField) + ' Hoặc nói: điền giúp.';
+    }
+    if(!out.length) out.push('Vùng này chưa có nội dung.');
+    speak((prefix || '') + out.join(' ') + tail);
+  }
+  function listRegions(){
+    const regs = getRegions();
+    if(!regs.length) return speak('Trang này chưa chia vùng.');
+    speak('Trang này có ' + regs.length + ' vùng: ' + regs.map((r, i) => (i + 1) + ', ' + r.name).join('; ') +
+      '. Nói: vùng kèm số, hoặc tên vùng, ví dụ: đọc lại vùng ' + regs[Math.min(1, regs.length - 1)].name + '.');
+    renderRegionBar(regs);
+  }
+  // cập nhật vùng hiện tại theo vị trí cuộn (không đọc)
+  function syncRegionToScroll(force){
+    const regs = getRegions(); if(!regs.length) return;
+    const cur = curIndex(regs);
+    if(!force && R.regionLock && Date.now() < R.regionLock){ if(cur >= 0) R.region = cur; renderRegionBar(regs); placeFrame(); return; }
+    const box = viewBox();
+    // giữ vùng hiện tại nếu nó vẫn còn chiếm phần lớn khung nhìn
+    if(!force && cur >= 0){ const q = regs[cur].rect(); if(q && q.bottom > box.top + 60 && q.top < box.bottom - 60){ R.region = cur; renderRegionBar(regs); placeFrame(); return; } }
+    let idx = regs.findIndex(r => { const q = r.rect(); return q && q.bottom > box.top + 60; });
+    if(idx < 0) idx = regs.length - 1;
+    R.region = idx; R.regionEl = regs[idx].el; R.regionName = regs[idx].name;
+    renderRegionBar(regs); placeFrame(true);
+  }
+  /** Lệnh theo vùng: "vùng tiếp theo", "vùng 3", "đọc lại mục kết quả", "đến vùng khảo sát nhanh"… */
+  function regionCommand(n, needKeyword){
+    const regs = getRegions(); if(!regs.length) return false;
+    const cur = curIndex(regs);
+    const tight = (k) => startsWithPhrase(n, k) && wc(n) <= wc(k) + 1;
+    const exact = (k) => n === k;
+    if(['vung tiep theo','vung tiep','sang vung tiep','qua vung tiep','vung sau','vung ke tiep','vung ke','muc tiep theo','muc tiep','phan tiep theo','phan tiep','chuyen vung','sang vung khac'].some(tight) || (!R.form && ['tiep theo','ke tiep'].some(exact))){
+      if(cur >= regs.length - 1){ speak('Đây là vùng cuối của trang. Nói: vùng 1, để về vùng đầu.'); return true; }
+      setRegion(cur + 1, {read:true}); return true; }
+    if(['vung truoc','vung phia truoc','quay lai vung truoc','muc truoc','phan truoc','vung o tren'].some(tight) || (!R.form && cur >= 0 && ['quay lai','lui lai'].some(exact))){
+      if(cur <= 0){ speak('Đây là vùng đầu tiên của trang.'); if(cur < 0) setRegion(0, {read:true}); return true; }
+      setRegion(cur - 1, {read:true}); return true; }
+    if(['vung dau','vung dau tien','vung cuoi','vung cuoi cung'].some(exact)){ setRegion(n.indexOf('cuoi') >= 0 ? regs.length - 1 : 0, {read:true}); return true; }
+    if(['doc lai vung','doc lai vung nay','doc vung nay','doc lai muc nay','doc het vung','doc ca vung','doc lai muc'].some(k => n === k)){
+      if(cur < 0) setRegion(0, {read:true}); else setRegion(cur, {read:true}); return true; }
+    if(['cac vung','co nhung vung nao','danh sach vung','trang co may vung','cac muc','co nhung muc nao','danh sach muc'].some(tight)){ listRegions(); return true; }
+    if(['dang o vung nao','vung nay la gi','dang o dau'].some(tight)){
+      if(cur < 0) syncRegionToScroll(true);
+      const c = Math.max(0, curIndex(regs));
+      speak('Cậu đang ở vùng ' + (c + 1) + ' trên ' + regs.length + ': ' + regs[c].name + '.'); return true; }
+    // "vùng 3", "mục số 2", "đến vùng 4", "đọc lại vùng 2"
+    const WN = {'mot':1,'hai':2,'ba':3,'bon':4,'tu':4,'nam':5,'sau':6,'bay':7,'tam':8,'chin':9,'muoi':10};
+    let m = n.match(/^(?:(?:doc lai|doc|den|toi|chuyen den|chuyen toi|mo|sang|ve)\s+)?(?:vung|muc|phan)\s+(?:so\s+)?(\d{1,2}|mot|hai|ba|bon|tu|nam|sau|bay|tam|chin|muoi)$/);
+    if(m){ const k = /^\d+$/.test(m[1]) ? +m[1] : WN[m[1]]; if(k >= 1 && k <= regs.length){ setRegion(k - 1, {read:true}); return true; } speak('Trang này chỉ có ' + regs.length + ' vùng.'); return true; }
+    // theo tên: "đọc lại mục kết quả", "đến vùng nhập số đo", "vùng lịch sử"
+    m = n.match(/^(?:doc lai|doc|den|toi|chuyen den|chuyen toi|mo|sang|ve)?\s*(?:vung|muc|phan)\s+(.+)$/) ||
+        (!needKeyword && activeView() !== 'view-chat' ? n.match(/^(?:doc lai|den|toi|chuyen den|chuyen toi)\s+(.+)$/) : null);
+    if(m){
+      const q = m[1].trim();
+      let best = -1, score = 0;
+      regs.forEach((r, i) => {
+        const nm = norm(r.name);
+        let sc = 0;
+        if(nm === q) sc = 3; else if(startsWithPhrase(nm, q) || startsWithPhrase(q, nm)) sc = 2; else if(q.length >= 3 && (has(nm, q) || q.split(' ').filter(w => w.length > 1 && has(nm, w)).length >= Math.min(2, q.split(' ').length))) sc = 1;
+        if(sc > score){ score = sc; best = i; }
+      });
+      if(best >= 0){ setRegion(best, {read:true}); return true; }
+    }
+    return false;
+  }
+
+  /* ---------- Khung sáng + thanh vùng ---------- */
+  function renderRegionBar(regs){
+    const w = byId('vrWhere'); if(!w) return;
+    regs = regs || getRegions();
+    if(!isNavActive() || R.gateOpen || !regs.length){ w.classList.add('hidden'); return; }
+    const cur = curIndex(regs);
+    const t = cur >= 0 ? 'Vùng ' + (cur + 1) + '/' + regs.length + ' · ' + regs[cur].name : regs.length + ' vùng · nói “các vùng”';
+    if(w.textContent !== t) w.textContent = t;
+    w.classList.remove('hidden');
+  }
+  // Khung sáng nằm theo toạ độ TRANG (position:absolute) → cuộn theo trang tự nhiên, không phải tính lại mỗi lần cuộn.
+  function placeFrame(animate){
+    const f = byId('vrFrame'); if(!f) return;
+    const view = activeViewEl();
+    const regs = regCache && regCache.view === view ? regCache.list : getRegions();
+    const cur = curIndex(regs);
+    if(cur < 0 || !isNavActive() || R.gateOpen || !view){ f.classList.add('hidden'); return; }
+    const q = regs[cur].rect();
+    if(!q || q.height < 8){ f.classList.add('hidden'); return; }
+    const pad = 8;
+    const left = Math.max(2, q.left - pad) + window.scrollX, top = q.top - pad + window.scrollY;
+    const width = Math.min(document.documentElement.clientWidth - 4, q.right + pad) - Math.max(2, q.left - pad);
+    f.classList.toggle('vr-frame-anim', !!animate);
+    f.classList.remove('hidden');
+    f.style.transform = 'translate(' + left + 'px,' + top + 'px)';
+    f.style.width = width + 'px'; f.style.height = (q.height + pad * 2) + 'px';
+    const tag = byId('vrFrameTag');
+    const txt = 'V' + (cur + 1) + ' · Vùng ' + (cur + 1) + '/' + regs.length + ' · ' + regs[cur].name;
+    if(tag.textContent !== txt) tag.textContent = txt;
+  }
+  let frameRaf = 0;
+  const frameSoon = () => { cancelAnimationFrame(frameRaf); frameRaf = requestAnimationFrame(() => placeFrame(false)); };
+  // Chỉ kiểm tra vùng khi NGỪNG cuộn (không làm gì trong lúc đang cuộn → không giật)
+  window.addEventListener('scroll', () => { clearTimeout(R.syncTimer); R.syncTimer = setTimeout(() => { if(isNavActive() && !R.gateOpen) syncRegionToScroll(); }, 350); }, {passive:true});
+  window.addEventListener('resize', () => { invalidateRegions(); frameSoon(); });
+  // Nội dung trong trang đổi kích thước (kết quả BMI hiện ra, tin nhắn mới…) → cập nhật khung
+  const regionRO = ('ResizeObserver' in window) ? new ResizeObserver(() => { invalidateRegions(); frameSoon(); }) : null;
+  function watchView(){
+    if(!regionRO) return;
+    regionRO.disconnect();
+    const v = activeViewEl(); if(v) regionRO.observe(v);
+  }
+
+
+/* ============================================================================
+ * JS-11.16 · ĐIỀN BIỂU MẪU THEO TỪNG Ô
+ * Tạo câu hỏi/hướng dẫn cho ô đang chọn, nhận câu trả lời và chuyển sang ô tiếp theo.
+ * ========================================================================== */
+  /* ======================= ĐIỀN BIỂU MẪU TỪNG Ô BẰNG GIỌNG NÓI ======================= */
+  function formFields(){ return visibleFields().filter(el => el.id !== 'khoiFilter' && el.id !== 'chatInput' && !el.disabled); }
+  function questionFor(el){
+    const label = fieldLabel(el) || 'nhập liệu';
+    if(el.tagName === 'SELECT') return 'Ô ' + label + (el.value ? ', đang chọn ' + textOf(el.options[el.selectedIndex]) + '. Nói lựa chọn khác, hoặc nói: giữ nguyên.' : '. Các lựa chọn: ' + optionList(el) + '.');
+    if(el.type === 'password') return 'Ô ' + label + (el.value ? ', đã có. Nói mật khẩu mới, hoặc nói: giữ nguyên.' : '. Cậu nói mật khẩu nhé, nói nhỏ thôi; hoặc nói: chữ nổi, để gõ kín bằng 6 phím.');
+    if(el.value) return 'Ô ' + label + ', đang là ' + el.value + '. Nói nội dung mới, hoặc nói: giữ nguyên.';
+    return 'Ô ' + label + '. ' + exampleFor(el) + inputWays(el);
+  }
+  function exampleFor(el){
+    const id = el.id || '';
+    if(/Username$/.test(id)) return 'Cậu đọc tên đăng nhập, không dấu, ví dụ: an 1 2 3.';
+    if(/^(studentName|adminFullName)$/.test(id)) return 'Cậu nói họ và tên đầy đủ.';
+    if(/SchoolName$|^schoolName$/.test(id)) return 'Cậu nói tên trường, ví dụ: Trường trung học phổ thông Phan Châu Trinh.';
+    if(/Ward$/.test(id)) return 'Cậu nói tên phường hoặc xã, ví dụ: Hải Châu.';
+    if(/District$/.test(id)) return 'Cậu nói tên quận hoặc huyện.';
+    if(/Province$/.test(id)) return 'Cậu nói tên tỉnh hoặc thành phố, ví dụ: Đà Nẵng.';
+    if(id === 'bmiAge') return 'Cậu nói số tuổi, ví dụ: 15.';
+    if(id === 'bmiMonths') return 'Cậu nói số tháng lẻ, hoặc nói: bỏ qua.';
+    if(id === 'bmiHeight') return 'Cậu nói chiều cao, ví dụ: 1 mét 60.';
+    if(id === 'bmiWeight') return 'Cậu nói cân nặng, ví dụ: 50 ký.';
+    if(id === 'hsRef') return 'Cậu nói độ cao vạch mốc, tính bằng xăng ti mét.';
+    return 'Cậu nói nội dung cần điền.';
+  }
+  function startForm(){
+    const list = formFields();
+    if(!list.length){ speak('Phần này không có ô nào để điền.'); return; }
+    R.form = {list, i:-1};
+    formGo(0, 'Mình sẽ hỏi lần lượt ' + list.length + ' ô. Nói: bỏ qua, để sang ô tiếp; quay lại, để về ô trước; dừng điền, để dừng. ');
+  }
+  function formGo(idx, prefix, queue){
+    const F = R.form; if(!F) return;
+    while(idx < F.list.length && !visible(F.list[idx])) idx++;
+    if(idx >= F.list.length){
+      R.form = null; R.awaitField = null;
+      const btn = primaryButton();
+      if(btn) try{ btn.scrollIntoView({block:'center'}); }catch(e){}
+      speak((prefix || '') + 'Đã hỏi hết các ô. ' + (btn ? 'Nói: ' + btnLabel(btn).toLowerCase() + ', để gửi.' : ''), {queue:!!queue});
+      return;
+    }
+    F.i = Math.max(0, idx);
+    const el = F.list[F.i];
+    try{ el.scrollIntoView({block:'center'}); el.focus({preventScroll:true}); }catch(e){}
+    R.awaitField = el;
+    speak((prefix || '') + questionFor(el), {queue:!!queue});
+  }
+  function formAnswer(text, n){
+    const F = R.form; const el = F.list[F.i];
+    if(['bo qua','giu nguyen','de trong','tiep','ke tiep','o tiep theo','sang o tiep','khong co'].some(k => n === k || startsWithPhrase(n, k) && wc(n) <= wc(k) + 1)){ formGo(F.i + 1); return true; }
+    if(['quay lai','o truoc','lui lai'].some(k => n === k || startsWithPhrase(n, k) && wc(n) <= wc(k) + 1)){ formGo(Math.max(0, F.i - 1)); return true; }
+    if(['dung dien','thoi dien','ket thuc dien','huy dien','dung lai'].some(k => n === k || startsWithPhrase(n, k) && wc(n) <= wc(k) + 1)){
+      R.form = null; R.awaitField = null; speak('Đã dừng điền. Nói: điền giúp, nếu muốn điền tiếp.'); return true;
+    }
+    if(['danh van','nhap tung chu','go tung chu'].some(k => n === k)){ spellStart(el); return true; }
+    if(['chu noi','go chu noi','ban phim','braille','chu braille'].some(k => n === k)){ openBraille(el); return true; }
+    if(['ban phim tro nang','ban phim ao','ban phim lon'].some(k => n === k)){ openVirtualKeyboard(el); return true; }
+    if(['ky hieu tay','ky hieu','go ky hieu'].some(k => n === k)){ openFingerSign(el); return true; }
+    if(regionCommand(n, true)){ R.form = null; return true; }
+    const cmd = matchCommand(n, true);
+    if(cmd){ R.form = null; R.awaitField = null; runCommand(cmd); return true; }
+    if(!el || !visible(el)){ formGo(F.i + 1); return true; }
+    const before = el.value;
+    fillField(el, text);
+    const moved = el.value && (el.value !== before || el.tagName === 'SELECT');
+    if(moved) formGo(F.i + 1, '', true);
+    else R.awaitField = el;
+    return true;
+  }
+
+/* ============================================================================
+ * JS-11.17 · ĐÁNH VẦN VÀ CÁC CÁCH NHẬP
+ * Phối hợp VNInput, BrailleInput và FingerNav; đồng bộ bản xem trước, thêm/xóa chữ và hoàn tất nhập.
+ * ========================================================================== */
+  /* ======================= NHẬP CHỮ: ĐÁNH VẦN / CHỮ NỔI / KÝ HIỆU TAY ======================= */
+  function previewInputs(){ if(window.FingerNav) FingerNav.updatePreview(); if(window.BrailleInput) BrailleInput.updatePreview(); }
+  function closeInputs(){ if(window.FingerNav) FingerNav.closeKeyboard(true); if(window.BrailleInput) BrailleInput.close(true); }
+  const V = () => window.VNInput;
+  function noTelex(el){ return !!el && (/Username$|refUrl$/.test(el.id || '') || el.type === 'password' || el.type === 'number'); }
+  function editable(el){
+    return !!(el && el.matches && el.matches('input:not([type=checkbox]):not([type=radio]),textarea,select') &&
+      !el.disabled && !el.readOnly && visible(el));
+  }
+  function spellTarget(){
+    const choices = [R.spell && R.spell.el, R.awaitField, R.form && R.form.list[R.form.i], document.activeElement, R.lastInput];
+    const el = choices.find(editable); if(el) return el;
+    const chat = byId('chatInput');
+    if(activeView() === 'view-chat' && editable(chat)) return chat;
+    return formFields().find(el => el.tagName !== 'SELECT' && !el.value) || null;
+  }
+  function reconcileSpell(){
+    const S = R.spell;
+    if(S && S.el.value !== S.rendered){ S.raw = S.el.value; S.rendered = S.el.value; S.state = {}; }
+    return S;
+  }
+  function renderSpell(S){ return noTelex(S.el) ? S.raw : (V() ? V().telex(S.raw) : S.raw); }
+  function writeSpell(){
+    const S = R.spell; if(!S) return '';
+    const text = renderSpell(S); S.rendered = text; S.el.value = text;
+    fire(S.el); previewInputs(); return text;
+  }
+  function cancelPendingInput(el){
+    R.inputRevision++;
+    if(el && el.id === 'chatInput'){
+      R.cvInterim = false; el.classList.remove('vr-cv-typing');
+      R.pendingChat = ''; clearInterval(R.pendingChatT); R.pendingChatT = null;
+    }
+    // Results from before a clear/manual edit cannot repopulate the field.
+    pauseListening();
+    if(!R.speaking) resumeSoon();
+  }
+  function clearInput(el, opts = {}){
+    el = el || (activeView() === 'view-chat' && R.pendingChat ? byId('chatInput') : spellTarget());
+    // A queued chat answer can still be cancelled while its editor is disabled.
+    if(!el || !visible(el) || el.readOnly || !el.matches('input:not([type=checkbox]):not([type=radio]),textarea,select')){
+      if(!opts.silent) speak('Cậu chọn ô muốn xóa trước nhé.'); return false;
+    }
+    cancelPendingInput(el);
+    if(R.spell && R.spell.el === el){ R.spell.raw = ''; R.spell.rendered = ''; R.spell.state = {}; }
+    R.appendField = null; R.lastInput = el;
+    if(!R.spell) R.awaitField = el;
+    el.value = '';
+    if(window.BrailleInput && BrailleInput.resetInputState) BrailleInput.resetInputState(el);
+    if(window.FingerNav && FingerNav.resetInputState) FingerNav.resetInputState(el);
+    fire(el); previewInputs();
+    if(!opts.silent) speak('Đã xóa hết ký tự trong ô ' + (fieldLabel(el) || 'nhập liệu') + '.', {force:!!opts.force, interrupt:!!opts.force});
+    return true;
+  }
+  const CLEAR_INPUT_WORDS = /^(?:xoa|xoat) (?:het|tat ca)(?: (?:cac )?(?:ky tu|chu|noi dung)(?: (?:vua |da )?go| vua nhap| da nhap| trong o| o nay)?)?(?: giup (?:toi|minh))?$/;
+  const MORE_INPUT_WORDS = /^(?:doc them tu moi|doc tu moi|them tu moi|nhap them tu moi|nhap them|go them)(?:\s+|$)/;
+  function isInputCommand(n){ return CLEAR_INPUT_WORDS.test(n) || MORE_INPUT_WORDS.test(n) || n === 'lam trong o'; }
+  function appendInput(el, text){
+    if(!editable(el)) return;
+    if(R.spell && R.spell.el === el){
+      reconcileSpell();
+      const old = renderSpell(R.spell);
+      R.spell.raw = old + (old && !/\s$/.test(old) ? ' ' : '') + text.trim();
+      writeSpell();
+    } else {
+      const value = el.value + (el.value && !/\s$/.test(el.value) ? ' ' : '') + text.trim();
+      el.value = V() ? V().forField(el, value) : value; fire(el); previewInputs();
+    }
+    speak(el.type === 'password' ? 'Đã thêm ký tự vào mật khẩu.' : 'Đã thêm: ' + text.trim() + '.');
+  }
+  function handleInputCommand(text, n){
+    if(CLEAR_INPUT_WORDS.test(n) || n === 'lam trong o'){ clearInput(); return true; }
+    const more = n.match(MORE_INPUT_WORDS);
+    if(!more) return false;
+    const el = spellTarget();
+    if(!editable(el)){ speak('Cậu chọn một ô để nhập từ mới nhé.'); return true; }
+    reconcileSpell(); R.lastInput = el;
+    const rest = tokensOf(text).slice(wc(more[0].trim())).map(t => t.o).filter(Boolean).join(' ');
+    if(rest) appendInput(el, rest);
+    else {
+      if(!R.spell){ R.appendField = el; R.awaitField = el; }
+      speak((el.value ? 'Mình sẽ thêm vào nội dung hiện tại. ' : 'Ô đang trống. ') + 'Cậu đọc từ mới nhé.');
+    }
+    return true;
+  }
+  document.addEventListener('focusin', e => { if(editable(e.target)) R.lastInput = e.target; });
+  document.addEventListener('input', e => {
+    if(!editable(e.target)) return;
+    reconcileSpell();
+    if(e.isTrusted) cancelPendingInput(e.target);
+    if(!e.target.value && R.spell && R.spell.el === e.target){ R.spell.raw = ''; R.spell.state = {}; R.spell.rendered = ''; }
+    previewInputs();
+  });
+
+  function spellDisplay(){
+    const S = reconcileSpell(); return S ? renderSpell(S) : '';
+  }
+  function spellStart(el, opts = {}){
+    if(!el){ speak('Cậu chọn một ô chữ trước nhé. Ví dụ nói: tên trường, rồi nói: đánh vần.'); return; }
+    R.awaitField = null;
+    R.spell = {el, raw:el.value || '', rendered:el.value || '', state:{}}; R.lastInput = el;
+    if(!opts.noFocus) try{ el.focus({preventScroll:false}); }catch(e){}           // bàn phím trợ năng: không mở bàn phím điện thoại
+    if(!opts.silent) speak('Đánh vần cho ô ' + (fieldLabel(el) || 'này') + '. Nói từng chữ, ví dụ: bê, a, dấu huyền. Nói: cách, để cách chữ; xóa, để xóa; viết hoa. Nói: xong, khi đánh vần xong.');
+  }
+  /** opts.say: tên đọc to thay cho phím cuối (VD chữ nổi "ơ" kèm dấu huyền → đọc "ơ") */
+  function spellKeys(keys, opts){
+    const S = reconcileSpell(); if(!S || !V()) return;
+    if(keys.includes('⌧')){ clearInput(S.el); return; }
+    const before = spellDisplay();
+    S.raw = V().applyKeys(S.raw, keys, S.state);
+    const text = writeSpell();
+    const last = keys[keys.length - 1];
+    const TONE = {'s':'dấu sắc','f':'dấu huyền','r':'dấu hỏi','x':'dấu ngã','j':'dấu nặng'};
+    // s, f, r, x, j: thành DẤU khi đứng sau nguyên âm; nếu chữ dài thêm thì đó là CHỮ CÁI (VD "tr", "ph")
+    const asTone = TONE[String(last).toLowerCase()] && !noTelex(S.el) && text.replace(/\s/g, '').length <= before.replace(/\s/g, '').length;
+    const upper = /^[A-ZĐ]$/.test(last);
+    const name = (opts && opts.say) || (asTone ? TONE[last.toLowerCase()] || TONE[last] : (V().KEY_NAMES[last] && !TONE[last] ? V().KEY_NAMES[last] : (upper ? 'chữ hoa ' + last : last)));
+    const word = (text.split(' ').pop() || '').trim();
+    const pw = sensitiveField(S.el);
+    if(opts && opts.quiet) return;
+    speak(name + (pw ? '' : (word && last !== '␠' ? '. ' + word : '')), {force:!!(opts && opts.force), interrupt:!!(opts && opts.interrupt)});
+  }
+  function spellFinish(fopts = {}){
+    const S = reconcileSpell(); if(!S) return;
+    const sayF = (t) => speak(t, {force:!!fopts.force, interrupt:!!fopts.force});
+    const el = S.el; R.spell = null; R.appendField = null;
+    const val = V() ? V().forField(el, noTelex(el) ? S.raw : V().telex(S.raw)) : S.raw;
+    el.value = val; fire(el);
+    previewInputs();
+    if(el.id === 'chatInput' && activeView() === 'view-chat'){      // gõ xong tin nhắn chat (bàn phím / ký hiệu tay) → gửi luôn
+      const send = byId('sendBtn');
+      if(val && !(send && send.disabled) && typeof Hdtl !== 'undefined'){ speak('Đã gửi: ' + val + '.'); Hdtl.sendAnswer(); }
+      else speak(val ? 'Đã điền ô chat: ' + val + '. Chatbot đang trả lời, cậu đợi rồi nói: gửi.' : 'Ô chat đang trống.');
+      return;
+    }
+    const lb = (fieldLabel(el) || 'ô').toLowerCase();
+    const said = sensitiveField(el) ? 'Cậu đã nhập ' + val.length + ' ký tự vào ô ' + lb + '.' : (val ? 'Cậu vừa nhập ' + lb + ': ' + (/Username$/.test(el.id) ? val.split('').join(' ') : val) + '.' : 'Ô ' + lb + ' đang trống.');
+    if(R.form){ sayF(said + ' '); formGo(R.form.i + 1, '', true); }
+    else sayF(said + ' ' + nextHint());
+  }
+  function spellCancel(silent){
+    if(!R.spell) return; R.spell = null;
+    if(!silent) speak('Đã dừng đánh vần.');
+  }
+  function handleSpell(text, n){
+    const tight = k => n === k || (startsWithPhrase(n, k) && wc(n) <= wc(k) + 1);
+    if(['xong','xong roi','ket thuc','hoan tat','dien vao','xac nhan'].some(tight)){ spellFinish(); closeInputs(); return; }
+    if(['huy','thoat','thoat danh van','dung danh van','thoi danh van','dong ban phim','thoat ky hieu','tat ky hieu'].some(tight)){ spellCancel(); closeInputs(); return; }
+    if(window.FingerNav && FingerNav.voice && FingerNav.voice(n)) return;   // chữ hoa / chữ thường / chế độ ký hiệu tay
+    if(window.BrailleInput && BrailleInput.voice(n, text)) return;          // hỏi mã chữ nổi khi đang gõ
+    const keys = V() ? V().spell(text) : null;
+    if(keys && keys.length){ spellKeys(keys); return; }
+    const cmd = matchCommand(n, true);
+    if(cmd){ spellCancel(true); closeInputs(); runCommand(cmd); return; }
+    // nói cả từ/câu → thêm thẳng vào ô (đã có dấu sẵn)
+    const S = reconcileSpell();
+    S.raw = (noTelex(S.el) ? S.raw : spellDisplay()) + (S.raw && !/\s$/.test(S.raw) ? ' ' : '') + text.trim();
+    writeSpell();
+    speak('Đã thêm: ' + text.trim() + '. Nói: xong, khi xong.');
+  }
+
+  function waitFor(check, timeout){
+    return new Promise(res => {
+      const t0 = Date.now();
+      (function loop(){ if(check() || Date.now() - t0 > timeout) return res(); setTimeout(loop, 150); })();
+    });
+  }
+  async function describeView(id, verbose){
+    const v = byId(id); if(!v) return '';
+    const a = acct();
+    if(id === 'view-landing'){
+      let s = 'Trang chủ Nhịp Khỏe Học Đường.';
+      if(!verbose) return s;
+      s += ' Trang giúp cậu tự đánh giá mức vận động qua vài câu trò chuyện với AI, theo khuyến cáo của Bộ Y tế: học sinh nên vận động ít nhất 60 phút mỗi ngày.';
+      s += a ? ' Cậu đang đăng nhập với tên ' + a.displayName + '.' : ' Cậu chưa đăng nhập. Nói: đăng nhập, hoặc: tạo tài khoản.';
+      s += ' Để làm khảo sát, cậu nói lần lượt: khối, ví dụ khối 10; tên trường; cấp học; phường; quận; tỉnh. Rồi nói: mở chatbot.';
+      const h = nextHint(); if(h) s += ' ' + h;
+      return s;
+    }
+    if(id === 'view-chat'){
+      let s = 'Trang Chatbot. ' + textOf(byId('qcount')) + '.';
+      if(!verbose) return s;
+      const last = lastAiText();
+      if(last) s += ' Tin nhắn gần nhất của trợ lý: ' + last;
+      if(v.querySelector('.weekly-summary-card')) s += ' Có thẻ tổng kết tuần. Nói: đọc kết quả, để nghe.';
+      if(R.mode === 'blind') s += ' Cậu cứ nói câu trả lời, trợ lý sẽ gửi giúp cậu.';
+      return s;
+    }
+    if(id === 'view-library'){
+      await waitFor(() => !/Đang tải/.test(textOf(byId('libraryList'))), 6000);
+      const cards = [...v.querySelectorAll('.lib-card')];
+      if(!cards.length) return 'Trang tư liệu tham khảo. ' + (textOf(v.querySelector('.empty-lib')) || 'Chưa có tài liệu.');
+      let s = 'Trang tư liệu tham khảo. Có ' + cards.length + ' tài liệu.';
+      if(!verbose) return s;
+      cards.slice(0, 10).forEach((c, i) => { s += ' Số ' + (i + 1) + ': ' + textOf(c.querySelector('.lib-title')) + '.'; });
+      return s + ' Nói: mở tài liệu số 1, để mở; hoặc: đọc tài liệu số 1, để nghe mô tả.';
+    }
+    if(id === 'view-profile'){
+      const a = acct();
+      let s = 'Trang cập nhật thông tin tài khoản' + (a ? ' ' + (a.role === 'admin' ? 'giáo viên ' : 'học sinh ') + spellUser(a.username) : '') + '.';
+      if(!verbose) return s;
+      const val = i => (byId(i) && byId(i).value) || 'trống';
+      s += ' Họ và tên đang là: ' + val('profileName') + '.';
+      if(a && a.role === 'student') s += ' Khối: ' + val('profileGrade') + '.';
+      s += ' Trường: ' + val('profileSchoolName') + ', cấp ' + val('profileSchoolLevel') + ', phường ' + val('profileSchoolWard') + ', quận ' + val('profileSchoolDistrict') + ', tỉnh ' + val('profileSchoolProvince') + '.';
+      s += ' Chỗ nào sai thì nói tên ô rồi nội dung mới, ví dụ: họ và tên Nguyễn Văn An; khối 10; tên trường THPT Phan Châu Trinh.' +
+        ' Muốn đổi mật khẩu nói: đổi mật khẩu. Đổi trường hoặc mật khẩu thì cần điền thêm mật khẩu hiện tại. Xong thì nói: lưu thay đổi.';
+      return s;
+    }
+    if(id === 'view-studentAuth' || id === 'view-adminAuth'){
+      const title = textOf(v.querySelector('h2'));
+      let s = title + '.';
+      if(!verbose) return s;
+      const sub = textOf(v.querySelector('p.muted')); if(sub) s += ' ' + sub;
+      const labels = visibleFields().map(fieldLabel).filter(Boolean);
+      if(labels.length) s += ' Các ô cần điền: ' + labels.join(', ') + '.';
+      s += ' Cách nói: tên ô rồi nội dung, ví dụ: tên đăng nhập an123; mật khẩu 123456.';
+      const btn = primaryButton(); if(btn) s += ' Điền xong, nói: ' + btnLabel(btn).toLowerCase() + '.';
+      const pre = id === 'view-studentAuth' ? 'student' : 'admin';
+      const reg = byId(pre + 'TabRegister');
+      if(reg && visible(reg) && !reg.classList.contains('active')) s += ' Chưa có tài khoản thì nói: tạo tài khoản.';
+      return s;
+    }
+    if(id === 'view-bmi' && window.BMI) return verbose ? BMI.describe() : 'Trang đo BMI.';
+    if(id === 'view-data' && window.HealthStore){ await waitFor(() => !/Đang tải/.test(textOf(byId('dataBody'))), 5000); return verbose ? HealthStore.speech() : 'Trang kho dữ liệu sức khỏe.'; }
+    if(id === 'view-adminHome'){
+      let s = 'Khu vực quản trị.';
+      if(!verbose) return s;
+      await waitFor(() => textOf(byId('dashTotal')) !== '0', 2500);
+      s += ' Tổng lượt khảo sát: ' + textOf(byId('dashTotal')) + '. Khối cần ưu tiên: ' + textOf(byId('dashWorstKhoi')) +
+        '. Mức vận động phổ biến nhất: ' + textOf(byId('dashTopLevel')) + '.';
+      return s + ' Nói: tư liệu, để quản lý tư liệu; nói: khối 10, để lọc biểu đồ theo khối.';
+    }
+    return 'Đã mở ' + (VIEW_NAMES[id] || 'trang mới') + '.';
+  }
+  async function announceView(verbose){ const view = activeView(); const text = await describeView(view, verbose); if(view === activeView()) speak(text); }
+  function readLastAi(){
+    if(activeView() !== 'view-chat') return speak('Hãy nói: chatbot, để mở trang trò chuyện trước nhé.');
+    speak(lastAiText() || 'Chưa có tin nhắn nào.');
+  }
+  function readSummary(){
+    const s = summaryText();
+    speak(s || 'Chưa có kết quả tổng kết. Cậu hoàn thành khảo sát trong Chatbot để xem kết quả nhé.');
+  }
+  function clickables(){
+    const scopes = scannerOpen() ? [byId('heightScan')] : [activeViewEl(), document.querySelector('.topbar')];
+    if(isModalOpen()) scopes.push(byId('settingsModal'));
+    const out = [];
+    scopes.forEach(sc => sc && sc.querySelectorAll('button, a[href], [role="button"]').forEach(el => {
+      if(visible(el) && !el.disabled && btnLabel(el)) out.push(el);
+    }));
+    return out;
+  }
+  function listItems(){
+    const labels = [...new Set(clickables().map(btnLabel))].slice(0, 15);
+    speak(labels.length ? 'Các mục có thể bấm: ' + labels.join('; ') + '. Nói: bấm, rồi tên mục.' : 'Trang này không có nút nào.');
+  }
+  function repeat(){ speak(R.lastSpoken || 'Mình chưa nói gì cả.', {force:true, interrupt:true}); }
+
+/* ============================================================================
+ * JS-11.18 · NỘI DUNG TRỢ GIÚP
+ * Tạo hướng dẫn theo chế độ hiện tại và mở phần trợ giúp từ nút hoặc lệnh giọng nói.
+ * ========================================================================== */
+  /* ======================= HƯỚNG DẪN TỔNG THỂ (nút "?" Trợ giúp) =======================
+     Nội dung đổi theo: máy tính / điện thoại · trang khiếm thị / thông thường · trạng thái điều khiển giọng nói · trang đang mở */
+  function guideText(){
+    const mobile = isMobileDev(), blind = R.mode === 'blind', view = activeView();
+    const voiceOn = blind || (R.robotOn && !R.voiceOff);
+    let s = 'Đây là AI HealthPulse. ';
+    s += mobile ? 'Cậu có thể dùng trang web bằng cách chạm màn hình, hoặc bằng giọng nói. '
+                : 'Cậu có thể dùng trang web bằng chuột, bàn phím hoặc giọng nói. ';
+    if(!mobile){
+      s += R.hoverRead ? 'Rê chuột vào nội dung để nghe trợ lý đọc; chuyển sang chỗ khác, trợ lý dừng câu cũ và đọc ngay chỗ mới. '
+                       : 'Đọc khi rê chuột đang tắt; mở nút ba chấm trong khung trợ lý để bật. ';
+      s += 'Nhấn phím Tab để đi qua các nút và ô nhập, trợ lý đọc tên từng mục; phím Escape để dừng đọc. ';
+    }
+    if(R.micDenied) s += 'Micro chưa được cho phép, nên lúc này mình chưa nghe được giọng nói; cậu nhờ người bên cạnh cho phép micro trên trình duyệt. ';
+    else if(blind) s += 'Ở trang khiếm thị, trợ lý luôn bật. Khi trợ lý đọc, micro tạm tắt; đọc xong, chờ 8 giây không thao tác thì micro mở để cậu nói lệnh, ví dụ: trợ giúp; vùng tiếp theo; trò chuyện; đo bê em i. ';
+    else if(voiceOn) s += 'Điều khiển giọng nói đang bật. Khi trợ lý đọc, micro tạm tắt; đọc xong, chờ 8 giây không thao tác thì micro mở, khung trợ lý hiện: có thể nói. Nói tên mục cần mở, ví dụ: tư liệu, trò chuyện, đo bê em i. ';
+    else s += 'Điều khiển giọng nói đang tắt. Muốn bật, bấm nút trợ lý ở góc phải dưới màn hình' + (mobile ? '' : ', hoặc nhấn Alt V') + '; trợ lý sẽ nhắc cậu chờ 8 giây rồi mới mở micro. ';
+    s += mobile
+      ? 'Trên điện thoại, mình không dùng camera nhận diện ký hiệu tay. Khi cần nhập thông tin, cậu có thể gõ bằng bàn phím điện thoại, đọc bằng giọng nói, hoặc nói: bàn phím trợ năng, để mở bàn phím lớn có chữ A đến Z, nút chữ hoa chữ thường, Cách, Xóa một ký tự, Xóa hết, Xong và Thoát. '
+      : 'Trên máy tính, cậu có thể dùng camera để nhập bằng ký hiệu tay: nói ký hiệu tay; bảng có hai chế độ, đang gõ chữ và đang điều khiển, giơ ngón cái để chuyển. Khi cần nhập thông tin, cậu có thể gõ phím, đọc bằng giọng nói, hoặc nói: chữ nổi, để gõ chữ nổi bằng 6 phím F D S J K L. ';
+    s += 'Rời một ô nhập, mình đọc lại nội dung cậu vừa nhập; mật khẩu thì chỉ nói số ký tự. ';
+    s += 'Khung trợ lý, nút trợ giúp và khung webcam đều có nút chấm vuông để kéo di chuyển và nút gạch ngang để thu gọn; hoặc nói, ví dụ: thu gọn khung trợ lý; di chuyển khung webcam sang phải; đặt lại vị trí khung trợ lý. ';
+    if(!mobile && R.hoverRead) s += 'Rê chuột sang vùng mới, mình đọc ký hiệu vùng, ví dụ vùng số 2, để cậu nói: vùng số 2, khi muốn nghe lại cả vùng. ';
+    if(view && VIEW_NAMES[view]) s += 'Cậu đang ở ' + VIEW_NAMES[view] + '. ';
+    s += voiceOn ? 'Nói: trợ giúp, để nghe danh sách lệnh giọng nói. ' : '';
+    s += 'Bấm nút dấu hỏi' + (mobile ? '' : ' hoặc nhấn Alt H') + ' để nghe lại hướng dẫn này.';
+    return s;
+  }
+  function showGuide(){
+    clearTimeout(R.viewTimer); R.pendingView = null;
+    const t = guideText();
+    if(window.A11y) A11y.announce('Đang đọc hướng dẫn sử dụng trang web.');
+    speak(t, {force:true, interrupt:true});        // dừng câu đang đọc và đọc hướng dẫn ngay
+  }
+  function help(){
+    const v = activeView();
+    let s = 'Các lệnh chung: trang chủ; trò chuyện; đo BMI; tư liệu; đăng nhập; tạo tài khoản; giáo viên; đăng xuất. ' +
+      'Đọc trang: trượt xuống; trượt lên; đọc tiếp; lên đầu trang; cuối trang; đọc lại; dừng lại. ' +
+      'Theo vùng: các vùng; vùng tiếp theo; vùng trước; vùng số 2; đọc lại vùng, kèm tên vùng. ' +
+      'Ngón tay: nói bật camera ngón tay; chỉ một ngón trỏ vào vùng cần nghe; giữ yên ngón tay 5 giây trên nút để chọn, hoặc chụm hai ngón; duỗi hai ngón rồi vẩy xuống để trượt xuống, vẩy lên để trượt lên. Nói: ký hiệu tay, để gõ chữ bằng bảng chữ cái ngón tay. ' +
+      'Nhập chữ: nói nội dung, mình tự nhận diện; hoặc nói: chữ nổi, để gõ chữ nổi 6 phím F D S J K L; hoặc nói: ký hiệu tay, để dùng ký hiệu trước camera; hoặc nói: đánh vần. ' +
+      'Rê chuột: chuột dừng ở đâu mình đọc chỗ đó; nói: tắt đọc khi rê chuột, để tắt. Phụ đề: nói tắt phụ đề, hoặc bật phụ đề. ' +
+      'Điền thông tin: nói tên ô rồi nội dung, hoặc nói: điền giúp, để mình hỏi từng ô. Bấm nút: nói bấm, rồi tên nút. Đổi trang: nói đổi trang. ' +
+      'Khung: thu gọn khung trợ lý; mở rộng khung trợ lý; di chuyển khung webcam sang trái, sang phải, lên trên, xuống dưới, góc phải trên hoặc giữa màn hình; đặt lại vị trí nút trợ giúp; vị trí khung trợ lý.';
+    if(v === 'view-landing') s += ' Ở trang chủ: nói khối 10; tên trường, rồi đọc tên trường; cấp học trung học phổ thông; phường; quận; tỉnh; sau đó nói: mở chatbot.';
+    if(v === 'view-chat') s += (R.mode === 'blind' || R.chatVoice)
+      ? ' Ở Chatbot: Chatbot tự đọc câu hỏi, sau 8 giây không thao tác thì micro mở để cậu nói câu trả lời, mình tự gửi. Nói: đọc lại, để nghe lại câu hỏi; cuộc trò chuyện mới, để bắt đầu lại; đọc kết quả, để nghe tổng kết' + (R.mode === 'blind' ? '.' : '; tắt giọng chatbot, nếu chỉ muốn xem chữ.')
+      : ' Ở Chatbot: lời cậu nói sẽ được điền vào ô chat, nói: gửi, để gửi. Nói: bật giọng chatbot, để Chatbot tự đọc và tự mở micro.';
+    if(v === 'view-studentAuth' || v === 'view-adminAuth') s += ' Ở trang đăng nhập: nói tên ô rồi nội dung, ví dụ: tên đăng nhập an123; mật khẩu 123456; sau đó nói: đăng nhập.';
+    if(v === 'view-library') s += ' Ở trang tư liệu: nói mở tài liệu số 1, hoặc đọc tài liệu số 1.';
+    if(v === 'view-profile') s += ' Ở trang Cập nhật thông tin: nói tên ô rồi nội dung mới, ví dụ: họ và tên Nguyễn Văn An; khối 10; nói: đổi mật khẩu; rồi nói: lưu thay đổi.';
+    else if(acct()) s += ' Nói: cập nhật thông tin, để sửa họ tên, khối, trường hoặc mật khẩu nếu bị sai.';
+    if(v === 'view-data') s += ' Ở trang Kho dữ liệu: nói tổng quan; theo tuần; theo tháng; theo ngày; đọc thống kê tuần này; đọc thống kê tháng này; xuất dữ liệu tuần, tháng hoặc ngày.';
+    if(v === 'view-bmi') s += ' Ở trang BMI: nói một câu như: nữ, 14 tuổi, cao 1 mét 55, nặng 45 ký. Nói: tính BMI; đọc kết quả; đo lại; quét camera.';
+    s += ' Xóa chữ: nói xóa hết ký tự gõ. Để nhập tiếp, nói đọc thêm từ mới. Về giọng đọc: nói đổi giọng; đọc nhanh hơn; hoặc đọc chậm hơn. Khi trợ lý đọc, micro tạm ngắt; đọc xong, chờ 8 giây không thao tác thì micro mở lại. Bấm nút trợ lý hoặc phím Escape để dừng đọc.';
+    if(R.mode === 'regular') s += ' Nói: tắt trợ lý, hoặc bấm nút Trợ lý ở góc phải để tắt. Nói điều khiển giọng nói để đánh thức trợ lý.';
+    speak(s, {force:true});
+  }
+
+
+/* ============================================================================
+ * JS-11.19 · ÁNH XẠ LỜI NÓI VÀO Ô NHẬP
+ * Tìm ô theo tên gọi, hiểu lựa chọn của select và chuẩn hóa nội dung trước khi điền giá trị.
+ * ========================================================================== */
+  /* ======================= ĐIỀN Ô NHẬP ======================= */
+  function A(a, extra){ return Object.assign({a}, extra || {}); }
+  const FIELD_MAP = [
+    [/SchoolName$|^schoolName$/, [A('ten truong'), A('truong', {vn:'trường', keep:true})]],
+    [/Level$/, [A('cap hoc'), A('cap', {vn:'cấp'})]],
+    [/Ward$/, [A('phuong xa'), A('phuong', {vn:'phường'}), A('xa', {vn:'xã'})]],
+    [/District$/, [A('quan huyen'), A('quan', {vn:'quận'}), A('huyen', {vn:'huyện'})]],
+    [/Province$/, [A('tinh thanh pho'), A('tinh thanh'), A('thanh pho'), A('tinh', {vn:'tỉnh'})]],
+    [/^(studentName|adminFullName|profileName)$/, [A('ho va ten'), A('ho ten')]],
+    [/^profileOldPass$/, [A('mat khau hien tai'), A('mat khau cu')]],
+    [/^profileNewPass2$/, [A('nhap lai mat khau moi'), A('nhap lai mat khau')]],
+    [/^profileNewPass$/, [A('mat khau moi')]],
+    [/Username$/, [A('ten dang nhap'), A('tai khoan')]],
+    [/PasswordConfirm$/, [A('nhap lai mat khau'), A('xac nhan mat khau'), A('mat khau nhap lai')]],
+    [/Password$/, [A('mat khau')]],
+    [/^(khoiSelect|studentGrade|profileGrade)$/, [A('khoi lop'), A('khoi', {vn:'khối'})]],
+    [/^refTitle$/, [A('tieu de')]],
+    [/^refDesc$/, [A('mo ta ngan'), A('mo ta')]],
+    [/^refUrl$/, [A('duong dan'), A('lien ket'), A('link')]],
+    [/^bmiHeight$/, [A('chieu cao'), A('cao', {vn:'cao'})]],
+    [/^bmiWeight$/, [A('can nang'), A('nang', {vn:'nặng'}), A('can', {vn:'cân'})]],
+    [/^bmiAge$/, [A('tuoi', {vn:'tuổi'})]],
+    [/^bmiMonths$/, [A('so thang'), A('thang', {vn:'tháng'})]],
+    [/^bmiSex$/, [A('gioi tinh')]],
+    [/^hsRef$/, [A('do cao vach moc'), A('vach moc')]]
+  ];
+  function fieldAliases(el){
+    const out = [];
+    const lab = norm(fieldLabel(el));
+    if(lab && wc(lab) >= 2) out.push(A(lab));
+    FIELD_MAP.forEach(([re, list]) => { if(re.test(el.id || '')) out.push(...list); });
+    return out;
+  }
+  function tokensOf(text){
+    const out = [];
+    String(text).split(/\s+/).forEach(o => {
+      norm(o).split(' ').filter(Boolean).forEach((w, i) => out.push({o: i === 0 ? o : '', n: w}));
+    });
+    return out;
+  }
+  function matchAt(toks, start, al){
+    const ws = al.a.split(' ');
+    for(let i = 0; i < ws.length; i++){ if(!toks[start + i] || toks[start + i].n !== ws[i]) return 0; }
+    if(al.vn && ws.length === 1 && toks[start].o.toLowerCase().normalize('NFC') !== al.vn) return 0;
+    return ws.length;
+  }
+  const FILL_PREFIX = ['nhap','dien','go','ghi','chon'];
+  function fieldCommand(text){
+    const fields = visibleFields(); if(!fields.length) return false;
+    const toks = tokensOf(text);
+    let best = null;
+    [0, 1].forEach(skip => {
+      if(skip === 1 && !(toks[0] && FILL_PREFIX.includes(toks[0].n))) return;
+      let start = skip;
+      if(toks[start] && toks[start].n === 'o' && toks[start].o.toLowerCase() === 'ô') start++;
+      fields.forEach(el => fieldAliases(el).forEach(al => {
+        const len = matchAt(toks, start, al);
+        if(len && (!best || len > best.len)) best = {el, al, len, start, prefixed: skip === 1};
+      }));
+    });
+    if(!best) return false;
+    let i = best.start + best.len;
+    while(toks[i] && ['là','bằng',':'].includes(toks[i].o.toLowerCase())) i++;
+    let value = toks.slice(i).map(t => t.o).filter(Boolean).join(' ').trim();
+    if(best.al.keep && value) value = toks.slice(best.start, best.start + best.len).map(t => t.o).join(' ') + ' ' + value;
+    if(!value){ focusAwait(best.el); return true; }
+    const ok = fillField(best.el, value);
+    return ok || best.prefixed;
+  }
+  function focusAwait(el){
+    R.awaitField = el;
+    try{ el.focus({preventScroll:false}); }catch(e){}
+    if(el.tagName === 'SELECT') speak('Cậu chọn ' + fieldLabel(el).toLowerCase() + '. Các lựa chọn là: ' + optionList(el) + '.');
+    else speak('Mời cậu đọc nội dung cho ô ' + fieldLabel(el).toLowerCase() + '.');
+  }
+  function optionList(sel){ return [...sel.options].filter(o => o.value).map(o => textOf(o)).join(', '); }
+  function bestOption(sel, value){
+    let v = norm(value);
+    [['trung hoc co so','thcs'],['trung hoc pho thong','thpt'],['lien cap','thcs thpt'],['cap 2','thcs'],['cap hai','thcs'],['cap 3','thpt'],['cap ba','thpt']]
+      .forEach(([x, y]) => { v = (' ' + v + ' ').replace(' ' + x + ' ', ' ' + y + ' ').trim(); });
+    if(/Level$/.test(sel.id)){ if(v === '2' || v === 'hai') v = 'thcs'; if(v === '3' || v === 'ba') v = 'thpt'; }
+    if(NUM_WORDS[v] !== undefined) v = String(NUM_WORDS[v]);
+    const digits = (v.match(/\d+/) || [])[0];
+    let best = null, score = 0;
+    [...sel.options].forEach(o => {
+      if(!o.value) return;
+      const t = norm(o.textContent);
+      let s = 0;
+      if(t === v || norm(o.value) === v) s = 4;
+      else if(digits && o.value === digits) s = 3;
+      else if(v && has(t, v)) s = 2;
+      else if(t && has(v, t)) s = 1;
+      if(s > score){ score = s; best = o; }
+    });
+    return best;
+  }
+  function compact(value){
+    const toks = norm(value).split(' ').filter(Boolean);
+    if(toks.length && toks.every(t => DIGIT_WORDS[t] !== undefined)) return toks.map(t => DIGIT_WORDS[t]).join('');
+    return String(value).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').replace(/\s+/g,'');
+  }
+  function smartCase(value){
+    return String(value).split(/\s+/).filter(Boolean).map(w => {
+      const n = norm(w);
+      if(n === 'thpt' || n === 'thcs') return w.toUpperCase();
+      return w.charAt(0).toLocaleUpperCase('vi-VN') + w.slice(1);
+    }).join(' ');
+  }
+  function spell(v){ return String(v).split('').join(' '); }
+  function fillField(el, value){
+    const label = (fieldLabel(el) || 'ô này').toLowerCase();
+    if(el.tagName === 'SELECT'){
+      const opt = bestOption(el, value);
+      if(!opt){ speak('Không có lựa chọn ' + value + ' trong mục ' + label + '. Các lựa chọn là: ' + optionList(el) + '.'); return false; }
+      el.value = opt.value; fire(el);
+      speak('Đã chọn ' + label + ': ' + textOf(opt) + '. ' + nextHint());
+      return true;
+    }
+    const id = el.id || '';
+    let v;
+    if(el.type === 'number'){
+      const B = window.BMI;
+      const n = id === 'bmiHeight' && B ? B._parseHeight(value) : id === 'bmiWeight' && B ? B._parseWeight(value) :
+        parseFloat(String(compact(value)).replace(',', '.'));
+      if(!isFinite(n)){ quietMiss(value, 'Chưa thấy con số cho ô ' + label); return true; }
+      el.value = String(n); fire(el);
+      if(id === 'bmiHeight' && B) B.setHeightSource('manual');
+      speak('Cậu vừa nhập ' + label + ': ' + String(n).replace('.', ',') + '. ' + nextHint());
+      return true;
+    }
+    if(/Username$/.test(id)) v = compact(value).toLowerCase();
+    else if(el.type === 'password') v = compact(value);
+    else if(/refUrl$/.test(id)) v = compact(value).toLowerCase();
+    else if(/^ref/.test(id)) v = value.charAt(0).toLocaleUpperCase('vi-VN') + value.slice(1);
+    else v = smartCase(value);
+    el.value = v; fire(el);
+    if(sensitiveField(el)) speak('Cậu đã nhập ' + v.length + ' ký tự vào ô ' + label + '. ' + nextHint());
+    else if(/Username$/.test(id)) speak('Cậu vừa nhập tên đăng nhập: ' + spell(v) + '. ' + nextHint());
+    else speak('Cậu vừa nhập ' + label + ': ' + v + '. ' + nextHint());
+    return true;
+  }
+  function gradeCommand(n){
+    const m = n.match(/(?:^|\s)khoi(?:\s+lop)?(?:\s+la)?\s+(\d{1,2}|muoi mot|muoi hai|muoi|sau|bay|tam|chin|tat ca)(?:\s|$)/);
+    if(!m) return false;
+    const root = activeViewEl();
+    const sel = ['khoiSelect','studentGrade','profileGrade','khoiFilter'].map(byId).find(el => el && root && root.contains(el) && visible(el));
+    if(!sel) return false;
+    const target = m[1] === 'tat ca' ? 'all' : String(/^\d+$/.test(m[1]) ? Number(m[1]) : NUM_WORDS[m[1]]);
+    if(![...sel.options].some(o => o.value === target)){ speak('Chỉ có từ khối 6 đến khối 12 thôi.'); return true; }
+    sel.value = target; fire(sel);
+    speak((target === 'all' ? 'Đã chọn tất cả các khối.' : 'Đã chọn khối ' + target + '.') + ' ' + (sel.id === 'khoiFilter' ? '' : nextHint()));
+    return true;
+  }
+
+
+/* ============================================================================
+ * JS-11.20 · THAO TÁC NÚT VÀ LIÊN KẾT
+ * So khớp lời nói với nút/tài liệu và kích hoạt hành động tương ứng trên giao diện.
+ * ========================================================================== */
+  /* ======================= BẤM NÚT / MỞ LINK ======================= */
+  const CLICK_PREFIX = ['bam','nhan','an','click','cham','chon','mo'];
+  function matchButton(n){
+    let target = n, prefixed = false;
+    const first = n.split(' ')[0];
+    if(CLICK_PREFIX.includes(first) && wc(n) > 1){
+      target = n.slice(first.length + 1); prefixed = true;
+      if(target.indexOf('nut ') === 0) target = target.slice(4);
+    }
+    if(!target) return null;
+    let best = null, score = 0;
+    clickables().forEach(el => {
+      const raw = btnLabel(el); if(!raw) return;
+      // so khớp cả tên hiển thị lẫn tên đã Việt hóa mà trợ lý đọc (VD "Mở Chatbot" = "mở trợ lý trò chuyện")
+      [norm(raw), norm(speakable(raw))].forEach(lab => {
+        let s = 0;
+        if(lab === target) s = 3;
+        else if(prefixed && startsWithPhrase(lab, target)) s = 2;
+        else if(prefixed && target.length >= 3 && has(lab, target)) s = 1;
+        if(s > score){ score = s; best = el; }
+      });
+    });
+    if(!prefixed && score < 3) return null;
+    return best;
+  }
+  function openLink(a, label){
+    const w = window.open(a.href, '_blank');
+    if(w){ try{ w.opener = null; }catch(e){} speak('Đã mở ' + label + ' trong tab mới.'); }
+    else { try{ a.focus(); }catch(e){} speak('Trình duyệt chặn mở tab mới. Cậu nhấn phím Enter để mở tài liệu nhé.'); }
+  }
+  function clickEl(el){
+    const label = btnLabel(el);
+    if(el.tagName === 'A' && el.target === '_blank') return openLink(el, label);
+    if(R.mode === 'blind') speak('Đã bấm: ' + label + '.');
+    el.click();
+  }
+  function openDocCommand(n){
+    const m = n.match(/(?:^|\s)(mo|xem|doc)\s+tai lieu(?:\s+so)?\s+(\d+|mot|hai|ba|bon|nam|sau|bay|tam|chin|muoi)(?:\s|$)/);
+    if(!m) return false;
+    const idx = /^\d+$/.test(m[2]) ? Number(m[2]) : NUM_WORDS[m[2]];
+    const cards = [...(activeViewEl() || document).querySelectorAll('.lib-card')].filter(visible);
+    if(!cards.length){ speak('Trang này chưa có tài liệu. Nói: tư liệu, để mở trang tư liệu tham khảo.'); return true; }
+    const card = cards[idx - 1];
+    if(!card){ speak('Chỉ có ' + cards.length + ' tài liệu thôi.'); return true; }
+    const title = textOf(card.querySelector('.lib-title'));
+    if(m[1] === 'doc'){ speak('Tài liệu số ' + idx + ': ' + title + '. ' + textOf(card.querySelector('.lib-desc'))); return true; }
+    const link = card.querySelector('a.lib-link');
+    if(link) openLink(link, 'tài liệu số ' + idx + ', ' + title);
+    return true;
+  }
+
+
+/* ============================================================================
+ * JS-11.21 · NHẬP VÀ GỬI CHAT BẰNG GIỌNG NÓI
+ * Đưa lời nhận dạng vào ô chat rồi gửi theo trạng thái và lệnh đang được xử lý.
+ * ========================================================================== */
+  /* ======================= GỬI CHAT BẰNG GIỌNG NÓI ======================= */
+  function dictateChat(text){
+    const input = byId('chatInput'), send = byId('sendBtn');
+    if(!input) return;
+    if(R.mode === 'regular' && !chatVoiceActive()){
+      input.value = text; fire(input); try{ input.focus(); }catch(e){}
+      speak('Đã điền vào ô chat. Nói: gửi, để gửi.');
+      return;
+    }
+    if(input.disabled || (send && send.disabled)){
+      // Chatbot đang bận → giữ câu trả lời lại, tự gửi khi rảnh (không bắt học sinh nói lại)
+      const revision = R.inputRevision;
+      R.pendingChat = text; scriptLine('Đã nhớ câu trả lời, sẽ tự gửi: “' + text + '”', 'heard');
+      clearInterval(R.pendingChatT); const t0 = Date.now();
+      R.pendingChatT = setInterval(() => {
+        const i2 = byId('chatInput'), s2 = byId('sendBtn');
+        if(revision !== R.inputRevision || activeView() !== 'view-chat' || !R.pendingChat || Date.now() - t0 > 30000 || !i2){ clearInterval(R.pendingChatT); return; }
+        if(i2.disabled || (s2 && s2.disabled) || R.speaking) return;
+        clearInterval(R.pendingChatT); const tx = R.pendingChat; R.pendingChat = ''; dictateChat(tx);
+      }, 400);
+      return;
+    }
+    input.value = text; fire(input);
+    speak(R.mode === 'blind' ? 'Cậu vừa trả lời: ' + text + '. Đang gửi.' : 'Đã gửi: ' + text + '.');
+    if(typeof Hdtl !== 'undefined') Hdtl.sendAnswer();
+  }
+  function sendTyped(){
+    const input = byId('chatInput'), send = byId('sendBtn');
+    if(!input || !input.value.trim()) return speak('Ô chat đang trống.');
+    if(send && send.disabled) return speak('Chatbot đang trả lời, cậu đợi một chút nhé.');
+    speak('Đã gửi.');
+    if(typeof Hdtl !== 'undefined') Hdtl.sendAnswer();
+  }
+
+
+/* ============================================================================
+ * JS-11.22 · DANH SÁCH VÀ BỘ SO KHỚP LỆNH
+ * Khai báo các câu lệnh điều hướng/đăng nhập/nhập liệu và chọn hành động phù hợp với lời nói.
+ * ========================================================================== */
+  /* ======================= LỆNH ======================= */
+  function authPrefix(){ return activeView() === 'view-studentAuth' ? 'student' : 'admin'; }
+  function authObj(){ return activeView() === 'view-studentAuth' ? (typeof StudentAuth !== 'undefined' ? StudentAuth : null) : (typeof AdminAuth !== 'undefined' ? AdminAuth : null); }
+  function authCurrentTab(){
+    const p = authPrefix();
+    const tabs = byId(p + 'AuthTabs');
+    if(!tabs || !visible(tabs)) return 'other';
+    if(byId(p + 'TabRegister') && byId(p + 'TabRegister').classList.contains('active')) return 'register';
+    if(byId(p + 'TabLogin') && byId(p + 'TabLogin').classList.contains('active')) return 'login';
+    return 'other';
+  }
+  function authSwitch(tab){
+    const o = authObj(); if(!o) return;
+    o.switchTab(tab);
+    setTimeout(() => describeView(activeView(), R.mode === 'blind').then(d => speak(d)), 60);
+  }
+  function authSubmit(kind){
+    const tab = authCurrentTab();
+    if(kind === 'login' && tab === 'register') return authSwitch('login');
+    if(kind === 'register' && tab !== 'register' && tab !== 'other') return authSwitch('register');
+    const btn = byId(authPrefix() + 'SubmitBtn');
+    if(!btn) return;
+    speak('Đang xử lý…');
+    btn.click();
+  }
+  const COMMANDS = [
+    {keys:['tat am thanh','tat tieng'], strictOnly:true, run:() => setMuted(true)},
+    {keys:['bat am thanh','bat tieng'], strictOnly:true, run:() => setMuted(false)},
+    {keys:['dung lai','dung doc','im lang','im di','ngung doc','ngung lai','dung','thoi','im'], strictOnly:true, run:() => stopSpeaking()},
+    {keys:['doc lai','nhac lai','noi lai','lap lai'], run:() => repeat()},
+    {keys:['tro giup','huong dan','danh sach lenh','co nhung lenh nao','giup toi','giup minh','giup do'], run:() => help()},
+    {keys:['doc trang','doc noi dung','dang o dau','day la dau','trang nay la gi','day la trang nao','mo ta trang','doc man hinh'], run:() => announceView(true)},
+    {keys:['co nhung muc nao','cac muc','co nhung nut nao','danh sach nut','doc cac nut'], run:() => listItems()},
+    {keys:['doc tin nhan','doc cau hoi','cau hoi la gi','doc cau tra loi','doc lai cau hoi','doc tin nhan cuoi'], run:() => readLastAi()},
+    {keys:['doc ket qua','ket qua','tong ket','doc tong ket'], run:() => readSummary()},
+    {keys:['trang chu','ve trang chu','man hinh chinh','home','quay ve'], run:() => App.goLanding()},
+    {keys:['mo chatbot','mo chat bot','mo tro ly tro chuyen','mo tro chuyen','bat dau khao sat','bat dau','lam khao sat','khao sat'], run:() => { if(activeView() === 'view-landing') App.startSurvey(); else App.goChat(); }},
+    {keys:['chatbot','chat bot','chat','tro chuyen','noi chuyen','hoi dap'], run:() => App.goChat()},
+    {keys:['cuoc tro chuyen moi','tro chuyen moi','chat moi','cuoc moi','lam lai tu dau'], run:() => { if(typeof ChatHistory !== 'undefined') ChatHistory.newConversation(); }},
+    {keys:['tu lieu','tai lieu','tham khao','thu vien','xem tu lieu'], run:() => App.goLibrary()},
+    {keys:['do bmi','bmi','be em i','bi em ai','chi so bmi','chi so khoi co the','do chieu cao can nang','can nang chieu cao','do chieu cao'], run:() => App.goBmi && App.goBmi()},
+    {views:['view-bmi'], keys:['tinh bmi','tinh','tinh ket qua','tinh di','xem ket qua'], run:() => window.BMI && BMI.calc()},
+    {keys:['kho du lieu','du lieu suc khoe','mo kho du lieu','xem kho du lieu','luu tru du lieu','kho luu tru'], run:() => App.goData && App.goData()},
+    {views:['view-data'], keys:['tong quan'], run:() => { HealthStore.setTab('overview'); setTimeout(() => speak(HealthStore.speech()), 300); }},
+    {views:['view-data'], keys:['theo tuan','bang tuan','xem theo tuan'], run:() => { HealthStore.setTab('weeks'); speak('Đã mở bảng thống kê theo tuần, mỗi tuần đúng 7 ngày. Nói: đọc thống kê tuần này, hoặc: vùng tiếp theo, để nghe bảng.'); }},
+    {views:['view-data'], keys:['theo thang','bang thang','xem theo thang'], run:() => { HealthStore.setTab('months'); speak('Đã mở bảng thống kê theo tháng, mỗi tháng đúng 30 ngày. Nói: đọc thống kê tháng này.'); }},
+    {views:['view-data'], keys:['theo ngay','tung ngay','xem theo ngay'], run:() => { HealthStore.setTab('days'); speak('Đã mở bảng dữ liệu từng ngày.'); }},
+    {when:notChat, keys:['thong ke tuan nay','doc thong ke tuan nay','tuan nay','thong ke tuan','doc thong ke tuan'], run:() => speak(HealthStore.answer('thống kê tuần này').text)},
+    {when:notChat, keys:['thong ke thang nay','doc thong ke thang nay','thang nay','thong ke thang','doc thong ke thang'], run:() => speak(HealthStore.answer('thống kê tháng này').text)},
+    {when:notChat, keys:['thong ke tuan truoc','tuan truoc'], run:() => speak(HealthStore.answer('thống kê tuần trước').text)},
+    {when:notChat, keys:['thong ke thang truoc','thang truoc'], run:() => speak(HealthStore.answer('thống kê tháng trước').text)},
+    {when:notChat, keys:['xuat du lieu tuan','tai du lieu tuan','xuat file tuan'], run:() => { HealthStore.download('weeks', HealthStore.user); speak('Đã tải file thống kê theo tuần.'); }},
+    {when:notChat, keys:['xuat du lieu thang','tai du lieu thang','xuat file thang'], run:() => { HealthStore.download('months', HealthStore.user); speak('Đã tải file thống kê theo tháng.'); }},
+    {when:notChat, keys:['xuat du lieu ngay','tai du lieu ngay','xuat file ngay','xuat du lieu'], run:() => { HealthStore.download('days', HealthStore.user); speak('Đã tải file dữ liệu theo ngày.'); }},
+    {views:['view-bmi'], keys:['doc ket qua','ket qua','nghe ket qua','doc lai ket qua'], run:() => speak(window.BMI ? BMI.speech() : '')},
+    {views:['view-bmi'], keys:['quet camera','quet chieu cao','do bang camera','dung camera','mo camera','quet'], run:() => window.BMI && BMI.openScanner()},
+    {views:['view-bmi'], keys:['do lai','xoa so do','nhap lai'], run:() => window.BMI && BMI.reset()},
+    {keys:['bat camera ngon tay','mo camera ngon tay','dieu huong bang ngon tay','che do ngon tay','bat ngon tay','dung ngon tay','chi tay','camera ngon tay'],
+      run:() => window.FingerNav ? FingerNav.start() : speak('Chức năng ngón tay chưa được nạp.')},
+    {keys:['tat camera ngon tay','tat ngon tay','tat che do ngon tay'], run:() => window.FingerNav && FingerNav.stop()},
+    {keys:['danh van','nhap tung chu','go tung chu','danh van o nay','danh van tung chu'], run:() => spellStart(spellTarget())},
+    {keys:['chu noi','go chu noi','bang chu noi','chu braille','braille','ban phim','mo ban phim','ban phim chu noi','go bang chu noi'], run:() => openBraille()},
+    {keys:['ban phim tro nang','mo ban phim tro nang','ban phim ao','ban phim lon','ban phim cam ung'], run:() => openVirtualKeyboard()},
+    {keys:['tro giup trang web','huong dan su dung','huong dan trang web','nut tro giup'], run:() => showGuide()},
+    {keys:['tai khoan','tai khoan nao','dang dang nhap tai khoan nao','toi la ai','minh la ai','dang nhap chua','kiem tra tai khoan'], run:() => speak(accountSpeech('voice'))},
+    {keys:['tat phu de','an phu de','tat chu phu de','an loi tro ly'], run:() => setCaptions(false)},
+    {keys:['bat phu de','hien phu de','mo phu de','hien loi tro ly'], run:() => setCaptions(true)},
+    {keys:['tat doc khi re chuot','tat re chuot','tat doc chuot'], run:() => setHoverRead(false)},
+    {keys:['bat doc khi re chuot','bat re chuot','doc khi re chuot','bat doc chuot'], run:() => setHoverRead(true)},
+    {keys:['ky hieu tay','go ky hieu','go bang ky hieu','go bang tay','chu cai ngon tay','bang chu ngon tay','ngon ngu ky hieu','danh van ngon tay','ky hieu'], run:() => openFingerSign()},
+    {keys:['tat camera'], strictOnly:true, when:() => !!(window.FingerNav && FingerNav.on) && !scannerOpen(), run:() => FingerNav.stop()},
+    {keys:['bat camera'], when:scannerOpen, run:() => { const b = document.querySelector('#heightScan [data-hs="start"]'); if(b) b.click(); }},
+    {keys:['dung so do','dung ket qua','dung so do nay','lay so do'], when:scannerOpen, run:() => { const b = document.querySelector('#heightScan [data-hs="use"]'); if(b) b.click(); }},
+    {keys:['do lai','quet lai'], when:scannerOpen, run:() => { const b = document.querySelector('#heightScan [data-hs="again"]'); if(b) b.click(); }},
+    {keys:['dong','dong camera','thoat','huy'], strictOnly:true, when:scannerOpen, run:() => { window.HeightScan && HeightScan.close(); speak('Đã đóng chế độ quét camera.'); }},
+    {keys:['dang nhap hoc sinh','dang nhap'], run:() => App.goStudentAuth('login')},
+    {keys:['tao tai khoan','dang ky','dang ki','tao tai khoan hoc sinh'], run:() => App.goStudentAuth('register')},
+    {keys:['giao vien','quan tri','ban giam hieu','admin','dang nhap giao vien','thay co'], run:() => App.goAdminAuth()},
+    {keys:['dashboard','bang dieu khien','thong ke'], run:() => {
+      if(typeof state !== 'undefined' && state.admin){ showView('view-adminHome'); if(typeof AdminNav !== 'undefined') AdminNav.switchTab('overview'); }
+      else App.goAdminAuth();
+    }},
+    {keys:['cap nhat thong tin','sua thong tin','doi thong tin','cap nhat tai khoan','sua tai khoan','thong tin ca nhan','sua ho ten','doi ten','sua ten','doi truong','sua truong','doi khoi','sua khoi','thong tin bi sai'],
+      run:() => { if(!acct()) return speak('Cậu chưa đăng nhập. Nói: đăng nhập, trước nhé.'); App.goProfile(); }},
+    {keys:['doi mat khau','thay mat khau'], run:() => {
+      if(!acct()) return speak('Cậu chưa đăng nhập. Nói: đăng nhập, trước nhé.');
+      if(!byId('view-profile').classList.contains('active')) App.goProfile();
+      const box = byId('profilePassBox'); if(box) box.open = true;
+      speak('Đã mở phần đổi mật khẩu. Nói: mật khẩu mới, rồi đọc mật khẩu; nhập lại mật khẩu mới; mật khẩu hiện tại; rồi nói: lưu thay đổi.');
+    }},
+    {views:['view-profile'], keys:['luu thay doi','luu thong tin','luu lai','luu'], run:() => Profile.save()},
+    {views:['view-profile'], keys:['huy','huy bo','khong luu'], run:() => Profile.cancel()},
+    {keys:['dang xuat','thoat tai khoan'], run:() => { if(acct()) AccountMenu.logout(); else speak('Cậu chưa đăng nhập tài khoản nào.'); }},
+    {keys:['che do khiem thi','trang khiem thi','chuyen khiem thi','khiem thi'], run:() => chooseMode('blind')},
+    {keys:['che do thuong','che do binh thuong','trang binh thuong','trang thong thuong','che do thong thuong','trang thuong'], run:() => chooseMode('regular')},
+    {keys:['binh thuong','thong thuong','toi nhin thay','minh nhin thay'], strictOnly:true, run:() => chooseMode('regular')},
+    {keys:['doi che do','chuyen che do','chon lai che do','doi trang','chon lai trang'], run:() => openGate()},
+    {views:['view-chat'], keys:['tat giong chatbot','tat giong chat bot','tat giong tro ly tro chuyen','tat giong noi chatbot','tat doc chatbot','chi xem chu','tat tu mo micro'], run:() => setChatVoice(false)},
+    {keys:['bat giong chatbot','bat giong chat bot','bat giong tro ly tro chuyen','bat giong noi chatbot','bat doc chatbot','bat tu mo micro'], run:() => setChatVoice(true)},
+    {views:['view-chat'], keys:['doc lai','nhac lai','noi lai','lap lai','doc lai cau hoi','hoi lai'], run:() => readLastAi()},
+    {keys:['tat robot','tat ro bot','tat giong noi','tat tro ly','tat micro'], run:() => {
+      if(chatVoiceActive() && R.mode !== 'blind') return setChatVoice(false);
+      if(R.mode === 'blind') speak('Ở trang khiếm thị, trợ lý luôn bật để hỗ trợ cậu. Nếu muốn tắt, hãy nói: trang thường.');
+      else setRobot(false);
+    }},
+    {keys:['doi giong','doi giong doc','giong khac','doi giong noi'], run:() => cycleVoice()},
+    {keys:['giong nam','giong con trai','giong nam gioi'], run:() => voiceByGender('nam')},
+    {keys:['giong nu','giong con gai','giong nu gioi'], run:() => voiceByGender('nữ')},
+    {keys:['giong gi','dang dung giong gi','giong nao'], run:() => speak(engineLabel(), {force:true})},
+    {keys:['doc nhanh hon','noi nhanh hon','doc nhanh len','nhanh hon','nhanh len'], run:() => setRate(0.15)},
+    {keys:['doc cham hon','noi cham hon','doc cham lai','noi cham lai','cham hon','cham lai'], run:() => setRate(-0.15)},
+    {keys:['bat doc tu dong','tu dong doc','doc tu dong'], run:() => setAutoRead(true)},
+    {keys:['tat doc tu dong','tat tu dong doc'], run:() => setAutoRead(false)},
+    {keys:['truot xuong','luot xuong','cuon xuong','keo xuong','xuong duoi','truot xuong nua','luot xuong nua','xuong nua','truot tiep','xuong tiep','xem tiep'], run:() => scrollRead('down')},
+    {keys:['truot len','luot len','cuon len','keo len','len tren','truot len nua','len nua'], run:() => scrollRead('up')},
+    {keys:['len dau trang','ve dau trang','dau trang','len tren cung','doc tu dau'], run:() => scrollRead('top')},
+    {keys:['xuong cuoi trang','cuoi trang','xuong duoi cung'], run:() => scrollRead('bottom')},
+    {keys:['doc tiep','tiep tuc doc','doc nua','doc phan tiep'], run:() => readOn()},
+    {keys:['dien giup','dien thong tin','dien form','dien bieu mau','giup toi dien','giup minh dien','dien tat ca','bat dau dien','dien ho'], run:() => startForm()},
+    {keys:['dong','dong lai','dong cua so','dong cai dat','huy'], strictOnly:true, when:isModalOpen, run:() => { Settings.close(); speak('Đã đóng cửa sổ.'); }},
+    // ---- lệnh riêng theo trang (được ưu tiên) ----
+    {views:['view-studentAuth','view-adminAuth'], keys:['dang nhap','bam dang nhap'], run:() => authSubmit('login')},
+    {views:['view-studentAuth','view-adminAuth'], keys:['xac nhan','hoan tat','tiep tuc','luu lai'], run:() => authSubmit('any')},
+    {views:['view-studentAuth','view-adminAuth'], keys:['tao tai khoan','dang ky','dang ki'], run:() => authSubmit('register')},
+    {views:['view-studentAuth','view-adminAuth'], keys:['chuyen sang dang nhap','da co tai khoan','quay lai dang nhap'], run:() => authSwitch('login')},
+    {views:['view-adminAuth'], keys:['quen mat khau','quen tai khoan'], run:() => authSwitch('forgot')},
+    {views:['view-chat'], keys:['gui','gui di','gui tin nhan','gui cau tra loi'], strictOnly:true, run:() => sendTyped()},
+    {views:['view-adminHome'], keys:['quan ly tu lieu','tu lieu','tai lieu','them tai lieu'], run:() => { AdminNav.switchTab('library'); speak('Đã mở mục quản lý tư liệu tham khảo.'); }},
+    {views:['view-adminHome'], keys:['tong quan','dashboard','thong ke','bang dieu khien'], run:() => { AdminNav.switchTab('overview'); speak('Đã mở Dashboard.'); }}
+  ];
+  function matchCommand(n, strict){
+    const view = activeView();
+    let best = null, bestScore = 0;
+    COMMANDS.forEach(cmd => {
+      if(cmd.views && !cmd.views.includes(view)) return;
+      if(cmd.when && !cmd.when()) return;
+      cmd.keys.forEach(key => {
+        const tight = startsWithPhrase(n, key) && wc(n) <= wc(key) + 1;
+        const ok = (strict || cmd.strictOnly) ? tight : has(n, key);
+        if(!ok) return;
+        const score = key.length + (cmd.views ? 100 : 0);
+        if(score > bestScore){ bestScore = score; best = cmd; }
+      });
+    });
+    return best;
+  }
+  const isMobileDev = () => !!(window.Device && Device.isMobile());
+  /** Bàn phím trợ năng (điện thoại) */
+  function openVirtualKeyboard(el){
+    if(!window.FingerNav || !FingerNav.openVK) return speak('Bàn phím trợ năng chưa được nạp.');
+    el = el || spellTarget();
+    if(!el) return speak('Cậu chọn một ô chữ trước nhé, ví dụ nói: tên trường, rồi nói: bàn phím trợ năng.');
+    FingerNav.openVK(el);
+  }
+  function openBraille(el){
+    if(isMobileDev()) return openVirtualKeyboard(el);       // điện thoại không có bàn phím 6 phím F D S J K L
+    if(!window.BrailleInput) return speak('Chức năng chữ nổi chưa được nạp.');
+    el = el || spellTarget();
+    if(!el) return speak('Cậu chọn một ô chữ trước nhé, ví dụ nói: tên trường, rồi nói: chữ nổi.');
+    BrailleInput.open(el);
+  }
+  function openFingerSign(el){
+    if(!window.FingerNav || !FingerNav.openSign) return speak('Chức năng ký hiệu tay chưa được nạp.');
+    el = el || spellTarget();
+    if(!el) return speak('Cậu chọn một ô chữ trước nhé, ví dụ nói: tên trường, rồi nói: ký hiệu tay.');
+    if(isMobileDev()) return FingerNav.openVK(el);            // điện thoại: bàn phím trợ năng thay camera
+    FingerNav.openSign(el);                                    // tự bật camera (một luồng); lỗi → báo và gợi ý bàn phím
+  }
+  // ở trang Chatbot: câu hỏi thống kê gửi cho Chatbot trả lời (có chữ + giọng + nút tải file)
+  function notChat(){ return activeView() !== 'view-chat'; }
+  function runCommand(cmd){
+    try{ cmd.run(); }catch(e){ console.warn('[VoiceRobot]', e); speak('Mình chưa làm được lệnh này.'); }
+  }
+
+
+/* ============================================================================
+ * JS-11.23 · DI CHUYỂN VÀ THU GỌN KHUNG
+ * Xử lý lệnh chỉ vị trí và thu gọn/mở rộng khung trợ lý, khung webcam hoặc nút trợ giúp.
+ * ========================================================================== */
+  /* ======================= LỆNH THU GỌN / DI CHUYỂN KHUNG =======================
+     "thu gọn khung trợ lý" · "mở rộng khung webcam" · "di chuyển nút trợ giúp sang trái"
+     "đưa khung trợ lý lên góc trái trên" · "đặt lại vị trí khung camera" */
+  const PANEL_NAMES = [
+    ['dock', ['khung tro ly ai','khung tro ly','khung ai doc','khung ai','khung dieu khien','khung doc']],
+    ['cam',  ['khung webcam','khung camera','khung cam','webcam','camera ngon tay','camera']],
+    ['help', ['nut tro giup','khung tro giup','nut hoi','tro giup']]
+  ];
+  function panelCommand(n){
+    const P = window.A11y && A11y.panels; if(!P) return false;
+    const m = n.match(/^(thu gon|thu nho|an bot|mo rong|phong to|hien lai|di chuyen|dua|keo|chuyen|dat lai vi tri|dat lai|tra ve vi tri cu|vi tri)\s+(.+)$/);
+    if(!m) return false;
+    let key = null, rest = '';
+    for(const [k, names] of PANEL_NAMES){ const nm = names.find(x => m[2] === x || m[2].indexOf(x + ' ') === 0); if(nm){ key = k; rest = m[2].slice(nm.length).trim(); break; } }
+    if(!key) return false;
+    const p = P[key];
+    const label = {dock:'khung trợ lý AI', cam:'khung webcam', help:'nút trợ giúp'}[key];
+    if(!p || !visible(p.el)){ speak(key === 'cam' ? 'Khung webcam chưa mở. Nói: bật camera ngón tay.' : label + ' đang ẩn.', {force:true}); return true; }
+    const v = m[1];
+    if(/^(thu gon|thu nho|an bot)$/.test(v)){ p.collapse(true); return true; }
+    if(/^(mo rong|phong to|hien lai)$/.test(v)){ p.collapse(false); return true; }
+    if(/^(dat lai|tra ve)/.test(v) || /^(ve cho cu|ve vi tri cu|mac dinh)$/.test(rest)){ p.reset(); return true; }
+    if(v === 'vi tri'){ speak(label + ' đang ở ' + p.where() + '.', {force:true}); return true; }
+    const has2 = w => (' ' + rest + ' ').indexOf(' ' + w + ' ') !== -1;
+    let where = null;
+    if(has2('goc') || (has2('tren') || has2('duoi')) && (has2('trai') || has2('phai'))){
+      where = (has2('duoi') ? 'b' : 't') + (has2('phai') ? 'r' : 'l');
+    } else if(has2('giua')) where = 'center';
+    else if(has2('len') || has2('tren')) where = 'up';
+    else if(has2('xuong') || has2('duoi')) where = 'down';
+    else if(has2('trai')) where = 'leftward';
+    else if(has2('phai')) where = 'rightward';
+    if(!where){ speak('Cậu muốn đưa ' + label + ' đi đâu? Ví dụ nói: di chuyển ' + label + ' sang trái; lên trên; góc phải dưới; hoặc giữa màn hình.', {force:true}); return true; }
+    p.moveTo(where);
+    return true;
+  }
+
+
+/* ============================================================================
+ * JS-11.24 · ĐỊNH TUYẾN LỜI NHẬN DẠNG
+ * onHeard()/route() quyết định lời nói là lệnh, câu trả lời chọn chế độ, dữ liệu ô nhập hay tin nhắn chat.
+ * ========================================================================== */
+  /* ======================= XỬ LÝ LỜI NÓI ======================= */
+  function onHeard(raw){
+    const text = String(raw || '').trim(); if(!text || R.speaking || R.recStopping) return;
+    if(!commandListening()){ wakeCommands(text); return; }
+    if(wakeCommands(text)) return;
+    if(isEcho(norm(text))) return;
+    R.lastHeardAt = Date.now(); R.restartDelay = 300; R.lastHeardText = text;
+    clearChatInterim(); showHeard(text, false);
+    if(R.gateOpen) return gateAnswer(norm(text));
+    if(!isActive() && !R.voiceArmed) return;
+    route(text);
+  }
+
+  function route(text){
+    let n = norm(text);
+    let forced = false;
+    const wake = n.match(/^(dieu khien giong noi|robot oi|ro bot oi|robot|ro bot|tro ly oi)(\s+|$)/);
+    if(wake){
+      forced = true;
+      const cut = wc(wake[1]);
+      text = tokensOf(text).slice(cut).map(t => t.o).filter(Boolean).join(' ');
+      n = norm(text);
+    }
+    if(!n) return speak('Mình đây, cậu cần mở mục nào?');
+    if(handleInputCommand(text, n)) return;
+    if(panelCommand(n)) return;
+    const view = activeView();
+
+    // 00. Đang đánh vần / gõ bàn phím ngón tay
+    if(R.spell && !forced){ handleSpell(text, n); return; }
+    // 0a. Đang điền biểu mẫu từng ô
+    if(R.form && !forced){ if(formAnswer(text, n)) return; }
+    // 0b. Lệnh theo vùng
+    if(regionCommand(n, view === 'view-chat' && !forced)) return;
+    // 0. Trợ lý đang chờ nội dung cho một ô
+    if(R.awaitField && view === 'view-bmi' && window.BMI && Object.keys(BMI._parse(text)).length) R.awaitField = null;   // câu kiểu "15 tuổi, cao 1m60"
+    if(R.awaitField && !R.appendField && view !== 'view-chat' && fieldCommand(text)){ R.awaitField = null; return; }                       // nói rõ tên ô thì ưu tiên ô đó
+    if(R.awaitField){
+      const el = R.awaitField; R.awaitField = null;
+      if(R.appendField === el && !matchCommand(n, true)){ R.appendField = null; appendInput(el, text); return; }
+      R.appendField = null;
+      if(!matchCommand(n, true) && visible(el)){ fillField(el, text); return; }
+    }
+    // 1. Chatbot: lời nói thường = câu trả lời
+    if(view === 'view-chat' && !forced){
+      const cmd = matchCommand(n, true);
+      if(cmd) return runCommand(cmd);
+      const btn = matchButton(n);
+      if(btn) return clickEl(btn);
+      return dictateChat(text);
+    }
+    // 2a. Trang BMI: hiểu câu "nam, 15 tuổi, cao 1m60, nặng 50 ký"
+    if(view === 'view-bmi' && !scannerOpen() && window.BMI && !matchCommand(n, true)){
+      const r = BMI.voice(text);
+      if(r === null) return;          // đã đủ dữ liệu, BMI tự đọc kết quả
+      if(r){ speak(r); return; }
+    }
+    // 2. Mở / đọc tài liệu số n
+    if(openDocCommand(n)) return;
+    // 3. Chọn khối
+    if(gradeCommand(n)) return;
+    // 4. Điền ô nhập
+    if(view !== 'view-chat' && fieldCommand(text)) return;
+    // 5. Lệnh điều hướng
+    const cmd = matchCommand(n, false);
+    if(cmd) return runCommand(cmd);
+    // 6. Bấm nút theo tên
+    const btn = matchButton(n);
+    if(btn) return clickEl(btn);
+    // 7. Không hiểu
+    quietMiss(text);
+  }
+
+
+/* ============================================================================
+ * JS-11.25 · CHẾ ĐỘ GIỌNG NÓI TRONG CHATBOT
+ * Dựng nút giọng nói của chatbot, cập nhật trạng thái và hiển thị lời nhận dạng tạm trong ô chat.
+ * ========================================================================== */
+  /* ============ CHATBOT: TỰ NÓI + TỰ MỞ MICRO + TRẢ LỜI BẰNG CHỮ VÀ GIỌNG ============ */
+  // Vào Chatbot: trợ lý giới thiệu 1 lần, đọc câu hỏi; đọc xong thì bíp + mở micro nghe câu trả lời,
+  // lời nói hiện ngay trong ô chat và tự gửi. Mọi tin nhắn của Chatbot vừa hiện chữ vừa được đọc.
+  function injectChatVoiceUi(){
+    const main = document.querySelector('#view-chat .chat-main');
+    const row = main && main.querySelector('.chat-input-row');
+    if(!row || byId('vrChatVoice')) return;
+    const bar = document.createElement('div');
+    bar.className = 'vr-cv'; bar.id = 'vrChatVoice';
+    bar.innerHTML =
+      '<button type="button" class="vr-cv-icon" id="vrCvMic" aria-label="Mở micro"><i data-lucide="mic"></i></button>' +
+      '<span class="vr-cv-text" role="status" aria-live="polite"><strong id="vrCvState">Đang chuẩn bị…</strong><small id="vrCvHint"></small></span>' +
+      '<button type="button" class="vr-cv-toggle" id="vrCvToggle" aria-pressed="true"><i data-lucide="volume-2"></i><span>Giọng nói: Bật</span></button>';
+    row.insertBefore(bar, row.firstChild);
+    byId('vrCvToggle').addEventListener('click', () => setChatVoice(!R.chatVoice));
+    byId('vrCvMic').addEventListener('click', requestCommands);
+
+    const log = byId('chatLog');
+    if(log && 'MutationObserver' in window) new MutationObserver(() => updateChatVoice()).observe(log, {childList:true});
+    const input = byId('chatInput');
+    if(input) input.addEventListener('input', () => { R.cvInterim = false; input.classList.remove('vr-cv-typing'); });
+    icons();
+  }
+  function chatState(){
+    const input = byId('chatInput');
+    if(!R.mode || R.gateOpen) return ['hide', '', ''];
+    if(!SR) return ['nosr', 'Trình duyệt chưa hỗ trợ nhận giọng nói', 'Cậu vẫn có thể gõ hoặc dùng các nút trên màn hình.'];
+    if(R.micDenied) return ['mic', 'Micro chưa được phép', 'Bấm biểu tượng micro, rồi chọn Cho phép.'];
+    if(!commandListening()) return ['sleep', 'Trợ lý đang tắt · chờ từ khóa đánh thức', 'Nói “điều khiển giọng nói” hoặc bấm micro để nhận lệnh.'];
+    if(R.speaking) return ['speak', 'AI đang đọc · micro tạm ngắt', 'Đọc xong, chờ 8 giây không thao tác để mở lại micro.'];
+    if(R.listenAfter > Date.now()) return ['cooldown', 'Mở micro sau ' + Math.ceil((R.listenAfter - Date.now()) / 1000) + ' giây', 'Thao tác tay sẽ bắt đầu lại thời gian chờ 8 giây.'];
+    if(!R.chatVoice && R.listening) return ['commands', 'Đang nghe lệnh · giọng đọc tự động tắt', 'Nói nội dung để điền vào ô chat; nói “gửi” để gửi.'];
+    if(!R.chatVoice) return ['off', 'Giọng nói Chatbot đang tắt', 'Bấm “Giọng nói” để Chatbot tự đọc câu hỏi và tự mở micro.'];
+    if(!SR) return ['nosr', 'Trình duyệt chưa nghe được giọng nói', 'Chatbot vẫn đọc to; cậu gõ câu trả lời, hoặc mở bằng Edge / Chrome.'];
+    if(R.micDenied) return ['mic', 'Micro chưa được phép', 'Bấm biểu tượng micro, rồi chọn “Cho phép”.'];
+    if(byId('thinkingBubble') || (input && input.disabled)) return ['think', 'Chatbot đang suy nghĩ…', 'Đợi một chút, Chatbot sẽ trả lời bằng chữ và giọng nói.'];
+    if(R.listening) return ['listen', 'Micro đang mở — cậu nói câu trả lời nhé', 'Nói xong mình tự gửi. Nói “đọc lại” để nghe lại câu hỏi.'];
+    return ['wait', 'Đang mở micro…', 'Chờ một chút nhé.'];
+  }
+  function updateChatVoice(){
+    const bar = byId('vrChatVoice'); if(!bar) return;
+    const [st, title, hint] = chatState();
+    const prev = R.chatState;
+    const changed = st !== prev;
+    R.chatState = st;
+    bar.dataset.state = st;
+    bar.classList.toggle('hidden', st === 'hide');
+    byId('vrCvState').textContent = title;
+    byId('vrCvHint').textContent = hint;
+    const tg = byId('vrCvToggle');
+    tg.setAttribute('aria-pressed', String(!!R.chatVoice));
+    tg.querySelector('span').textContent = R.chatVoice ? 'Giọng nói: Bật' : 'Giọng nói: Tắt';
+    document.body.classList.toggle('vr-cv-on', !!R.chatVoice);
+    // Chatbot vừa nói / vừa nghĩ xong → bíp báo micro đã mở, tới lượt học sinh trả lời
+    if(st === 'speak' || st === 'think') R.cvNeedBeep = true;
+    if(changed && st === 'listen') R.cvNeedBeep = false; // No speaker beep while the microphone is capturing.
+  }
+  function chatIntroText(){
+    const first = !R.chatIntroDone; R.chatIntroDone = true;
+    let s = 'Trang Chatbot. ';
+    s += first
+      ? 'Mình sẽ tự đọc từng câu hỏi bằng giọng nói, chữ vẫn hiện trên màn hình. Đọc xong, chờ 8 giây không thao tác thì micro tự mở; cậu nói câu trả lời, mình sẽ tự gửi. ' +
+        'Nói: đọc lại, để nghe lại câu hỏi' + (R.mode === 'blind' ? '. ' : '; nói: tắt giọng nói, nếu chỉ muốn xem chữ. ')
+      : 'Mình tự đọc câu hỏi và tự mở micro. ';
+    if(R.micDenied) s += 'Micro đang bị chặn nên cậu gõ câu trả lời, hoặc nhờ người bên cạnh cho phép micro. ';
+    const q = textOf(byId('qcount')); if(q) s += q + '. ';
+    const v = byId('view-chat');
+    if(v && v.querySelector('.weekly-summary-card')) s += 'Có thẻ tổng kết tuần, nói: đọc kết quả, để nghe. ';
+    const last = lastAiText();
+    if(last) s += 'Chatbot: ' + last;
+    return s;
+  }
+  function setChatVoice(on){
+    R.chatVoice = !!on; ls(CHATVOICE_KEY, on ? '1' : '0'); R.chatState = '';
+    if(on){
+      R.started = true; R.voiceArmed = true; R.voiceReady = true;
+      if(R.mode === 'regular') R.robotOn = true;
+      ensureMic();
+      if(!R.speaking){
+        R.chatIntroDone = false;
+        speak(activeView() === 'view-chat' ? chatIntroText() : 'Đã bật giọng nói cho Chatbot.', {force:true});
+      }
+    } else {
+      clearChatInterim();
+      // Finish the current speech; the toggle only changes future automatic reading.
+      if(!R.speaking) scriptLine('Đã tắt tự đọc Chatbot. Tin nhắn vẫn hiện bằng chữ.', 'idle');
+    }
+    applyUi();
+  }
+
+  /** Lời đang nói hiện ngay trong ô chat (chữ mờ) */
+  function chatInterim(text){
+    if(!chatVoiceActive() || !commandListening() || R.speaking || R.recStopping || R.spell) return;
+    const input = byId('chatInput');
+    if(!input || input.disabled || (input.value && !R.cvInterim)) return;   // không ghi đè chữ học sinh đang gõ
+    input.value = text; R.cvInterim = true; input.classList.add('vr-cv-typing');
+  }
+  function clearChatInterim(){
+    const input = byId('chatInput');
+    if(input && R.cvInterim){ input.value = ''; input.classList.remove('vr-cv-typing'); }
+    R.cvInterim = false;
+  }
+
+
+/* ============================================================================
+ * JS-11.26 · KẾT NỐI VỚI ỨNG DỤNG CHÍNH
+ * Nhận sự kiện chuyển trang, tin nhắn AI, tổng kết và thông báo để cập nhật lời đọc/giao diện trợ lý.
+ * ========================================================================== */
+  /* ======================= MÓC VÀO WEB CHÍNH ======================= */
+  function onView(id){
+    document.body.dataset.vrView = id;
+    if(R.mode && !R.gateOpen) applyUi();
+    updateChatVoice();
+    if(R.gateOpen) return;
+    stopSpeaking({resume:false}); pauseListening(); R.pendingFirst = null;
+    spellCancel(true); closeInputs(); R.appendField = null; clearChatInterim();
+    R.pendingChat = ''; clearInterval(R.pendingChatT);
+    if(!isActive()){
+      // vừa rời Chatbot ở trang thường (Trợ lý tắt) → tắt micro, ngừng đọc
+      R.awaitField = null;
+      resumeSoon(); renderRegionBar(); placeFrame(); setStatus();
+      return;
+    }
+    if(id === 'view-chat' && chatVoiceActive()){ ensureMic(); startListening(); }
+    HV.region = -1;
+    R.awaitField = null; R.form = null; R.readSet = new WeakSet(); R.region = -1; R.regionEl = null; R.regionRest = null;
+    invalidateRegions(); watchView();
+    setTimeout(() => { invalidateRegions(); renderRegionBar(); placeFrame(); }, 300);
+    R.pendingView = id;
+    clearTimeout(R.viewTimer);
+    R.viewTimer = setTimeout(async () => {
+      const cur = R.pendingView; if(!cur) return;
+      const chat = cur === 'view-chat' && chatVoiceActive();
+      const text = chat ? chatIntroText() : R.mode === 'blind' ? await describeView(cur, true) : 'Đã mở ' + (VIEW_NAMES[cur] || 'trang mới') + '.';
+      R.pendingView = null;
+      if(activeView() !== cur || !isActive() || R.gateOpen) return;
+      const regs = getRegions();
+      const hint = (R.mode === 'blind' && !chat)
+        ? (regs.length > 1 ? ' Trang có ' + regs.length + ' vùng: ' + regs.map((r, i) => (i + 1) + ', ' + r.name).join('; ') + '. Nói: vùng tiếp theo, hoặc: đọc lại vùng, kèm tên.' : '') +
+          (formFields().length > 1 ? ' Nói: điền giúp, để mình hỏi lần lượt từng ô.' : '')
+        : '';
+      speak(text + hint, {interrupt:true});
+      focusHeading(cur);
+    }, 250);
+  }
+  function onAiMessage(text){
+    if(R.gateOpen || !isActive() || R.pendingView) return;
+    if(R.mode === 'blind' || R.autoRead || chatVoiceActive()) speak(text, {queue:true});
+  }
+  function onSummary(){
+    if(R.gateOpen || !isActive()) return;
+    if(R.mode === 'blind' || R.autoRead || chatVoiceActive()) setTimeout(() => { const s = summaryText(); if(s) speak(s, {queue:true}); }, 0);
+  }
+  function onToast(msg){
+    if(R.gateOpen || R.mode !== 'blind') return;
+    speak(msg, {queue:true});
+  }
+  function watchErrors(){
+    document.querySelectorAll('.err-text').forEach(el => {
+      new MutationObserver(() => {
+        const t = textOf(el);
+        if(t && visible(el) && isActive() && !R.gateOpen) speak(t);
+      }).observe(el, {childList:true, characterData:true, subtree:true});
+    });
+    const modal = byId('settingsModal');
+    if(modal){
+      new MutationObserver(() => {
+        const open = isModalOpen();
+        if(open && !R.modalWasOpen && R.mode === 'blind' && !R.gateOpen){
+          const note = modal.querySelector('.api-auto-note strong');
+          const p = modal.querySelector('#settingsBody p');
+          const msg = note ? textOf(note) + ' Cậu nhờ thầy cô hoặc bạn bên cạnh giúp dán API Key nhé.' : (p ? String(p.innerText || p.textContent).replace(/\s+/g,' ') : '');
+          setTimeout(() => speak('Cửa sổ cài đặt AI đang mở. ' + msg + ' Nói: đóng, để đóng cửa sổ.', {queue:true}), 450);
+        }
+        R.modalWasOpen = open;
+      }).observe(modal, {attributes:true, attributeFilter:['class']});
+    }
+  }
+  document.addEventListener('keydown', (e) => {
+    if(R.gateOpen && !e.ctrlKey && !e.metaKey && !e.altKey){
+      if(e.key === '1'){ e.preventDefault(); chooseMode('blind'); return; }
+      if(e.key === '2'){ e.preventDefault(); chooseMode('regular'); return; }
+    }
+    if(e.key === 'Escape' && R.speaking) stopSpeaking();
+    if(e.altKey && (e.key === 'v' || e.key === 'V') && R.mode === 'regular' && !R.gateOpen){ e.preventDefault(); setRobot(!(R.robotOn && !R.voiceOff)); }
+    if(e.altKey && (e.key === 'h' || e.key === 'H') && R.mode && !R.gateOpen){ e.preventDefault(); showGuide(); }
+  });
+
+
+/* ============================================================================
+ * JS-11.27 · QUYỀN MICRO
+ * Kiểm tra/xin quyền micro, báo trạng thái cho màn hình tải và cung cấp hướng dẫn khi chưa dùng được micro.
+ * ========================================================================== */
+  /* ======================= LUÔN XIN QUYỀN MICRO ======================= */
+  // Xin quyền micro ngay khi mở trang (trình duyệt sẽ nhớ "Cho phép" cho trang web này),
+  // tự bật nghe lại khi quyền được cấp, và hướng dẫn nếu đang bị chặn.
+  function loaderMic(v, note){ const L = window.HPLoader; if(L && !L.done) L.set('mic', v, note); }
+  async function ensureMic(){
+    let state = 'prompt', perm = null;
+    loaderMic(0.3, 'Đang kiểm tra micro…');
+    try{ perm = await navigator.permissions.query({name:'microphone'}); state = perm.state; }catch(e){}
+    if(perm && !perm._hpWatch){
+      perm._hpWatch = true;
+      perm.onchange = () => {
+        if(perm.state === 'granted'){ R.micDenied = false; setStatus(); initNoiseGate(); startListening(); }
+        if(perm.state === 'denied'){ R.micDenied = true; clearIdleWait(); pauseListening(); setStatus(); }
+      };
+    }
+    if(state === 'denied'){ R.micDenied = true; setStatus(); micHelp(false); loaderMic(1, 'Micro chưa được cho phép — vẫn dùng chuột / phím Tab được'); return; }
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ loaderMic(1, 'Trình duyệt không có micro'); return; }
+    if(state === 'granted'){ initNoiseGate(); loaderMic(1, 'Micro sẵn sàng · đã bật lọc tạp âm'); return; }
+    loaderMic(0.5, 'Bấm "Cho phép" để dùng micro');
+    try{
+      const st = await navigator.mediaDevices.getUserMedia({audio:true});
+      st.getTracks().forEach(t => t.stop());
+      R.micDenied = false; setStatus(); initNoiseGate(); startListening();
+      loaderMic(1, 'Micro sẵn sàng · đã bật lọc tạp âm');
+    }catch(e){
+      if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')){ R.micDenied = true; setStatus(); micHelp(false); }
+      loaderMic(1, 'Chưa có quyền micro — vẫn dùng chuột được');
+    }
+  }
+  // Hướng dẫn chi tiết chỉ HIỆN CHỮ cho người hỗ trợ; trợ lý chỉ nói 1 câu ngắn, 1 lần.
+  const MIC_MSG = 'Micro chưa được cho phép, nên mình chưa nghe được giọng nói của cậu. Trong lúc chờ, cậu vẫn dùng được: rê chuột tới đâu mình đọc chỗ đó, hoặc nhấn phím Tab để chuyển giữa các nút và ô nhập. ' +
+    'Để bật micro: nhờ người bên cạnh bấm biểu tượng ổ khóa bên trái thanh địa chỉ, chọn Micrô, chọn Cho phép, rồi tải lại trang.';
+  function micHelp(spoken){
+    const msg = 'Micro chưa được cho phép — bấm biểu tượng ổ khóa cạnh thanh địa chỉ → Micrô: Cho phép, rồi tải lại trang.';
+    const g = byId('vrGateStatus'); if(g) g.textContent = msg;
+    if(!R.speaking) scriptLine(msg, 'warn');
+    if(spoken !== false && !R.micSpoken && R.started){ R.micSpoken = true; speak(MIC_MSG, {force:true, queue:true}); }
+  }
+  /** Nói thông báo micro (một lần) ngay sau lời chào */
+  function micNotice(){ if(R.micDenied && !R.micSpoken){ R.micSpoken = true; speak(MIC_MSG, {force:true, queue:true}); } }
+  function retryMicOnGesture(){
+    if(R.micRetry) return; R.micRetry = true;
+    const retry = async () => {
+      document.removeEventListener('click', retry, true); document.removeEventListener('keydown', retry, true);
+      R.micRetry = false;
+      try{ const st = await navigator.mediaDevices.getUserMedia({audio:true}); st.getTracks().forEach(t => t.stop()); R.micDenied = false; setStatus(); startListening(); }
+      catch(e){ micHelp(true); }
+    };
+    document.addEventListener('click', retry, true); document.addEventListener('keydown', retry, true);
+  }
+
+
+/* ============================================================================
+ * JS-11.28 · KHỞI ĐỘNG VÀ CÔNG KHAI API
+ * Khôi phục chế độ, tạo UI, chuẩn bị giọng/micro, chờ màn hình tải và công khai window.VoiceRobot.
+ * ========================================================================== */
+  /* ======================= KHỞI ĐỘNG ======================= */
+  function init(){
+    injectUi();
+    watchErrors();
+    document.body.dataset.vrView = activeView();
+    const params = new URLSearchParams(location.search);
+    const p = norm(params.get('voice') || params.get('che-do') || '').replace(/\s+/g,'');
+    let mode = null;
+    if(['khiemthi','blind','kt'].includes(p)) mode = 'blind';
+    else if(['thuong','binhthuong','thongthuong','regular'].includes(p)) mode = 'regular';
+    if(!mode){ const saved = ss(MODE_KEY); if(saved === 'blind' || saved === 'regular') mode = saved; }
+    R.autoRead = ss(AUTOREAD_KEY) === '1';
+    R.chatVoice = mode === 'blind';
+    injectChatVoiceUi();
+    if(mode){
+      R.mode = mode; ss(MODE_KEY, mode);
+      R.robotOn = mode === 'blind'; R.voiceArmed = mode === 'blind';
+      if(mode === 'regular') R.autoRead = false;
+    }
+    applyUi();
+    ensureMic();
+    loaderVoice();
+    if(!mode) openGate(true);
+    // Màn hình tải xong (giọng đọc + dữ liệu + micro) mới bắt đầu nói
+    const begin = () => {
+      R.voiceReady = true;
+      if(!mode) tryAuto(gatePrompt);
+      else if(mode === 'blind') tryAuto(() => blindIntro());
+      else tryAuto(null);
+    };
+    if(window.HPLoader && !HPLoader.done) HPLoader.ready(begin); else begin();
+  }
+
+  window.VoiceRobot = {
+    onView, onAiMessage, onSummary, onToast,
+    chooseMode, openGate, setRobot, help, repeat, guide:showGuide, guideText,
+    stop: stopSpeaking, speak, setMuted, requestCommands, _hear: onHeard, state: R,
+    // dùng chung cho điều hướng bằng ngón tay (finger-nav.js)
+    setChatVoice, get chatVoice(){ return R.chatVoice; },
+    api: {getRegions, setRegion, regionCommand, blockText, BLOCK_SEL, clickEl, controlOf, fieldLabel, optionList, scrollRead, visible,
+          activeViewEl, viewBox, isActive, placeFrame, btnLabel,
+          await(el){ R.awaitField = el; },
+          spellStart, spellKeys, spellFinish, spellCancel, clearInput, inputWays,
+          setTask(t){ const el = byId('vrTask'); if(!el) return; el.textContent = t || ''; el.classList.toggle('hidden', !t); }, spellState(){ return R.spell ? {text:spellDisplay(), el:R.spell.el} : null; }}
+  };
+  init();
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-12 · NHẬP CHỮ NỔI BRAILLE
+ * Nhận tổ hợp phím F/D/S/J/K/L thành các chấm Braille; chuyển thành chữ và dấu tiếng Việt.
+ * Phối hợp với VoiceRobot để đọc phản hồi, hiển thị chữ đang nhập và kết thúc nhập.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — GÕ CHỮ NỔI BRAILLE BẰNG BÀN PHÍM MÁY TÍNH (braille.js)
+   Không có bảng chữ nổi trên màn hình — học sinh khiếm thị gõ trên BÀN PHÍM THẬT,
+   trợ lý đọc to từng chữ; dòng trạng thái hiện trong khung điều khiển trợ lý.
+   • Đặt 2 ngón trỏ lên 2 phím có GỜ NỔI: F (tay trái) và J (tay phải).
+         tay trái : F = chấm 1   D = chấm 2   S = chấm 3
+         tay phải : J = chấm 4   K = chấm 5   L = chấm 6
+     Nhấn CÙNG LÚC các chấm của 1 chữ → thả tay → gõ chữ đó (kiểu máy chữ nổi Perkins).
+     Phím cách = cách chữ · Backspace = xóa 1 chữ · Ctrl+Backspace = xóa hết · Enter = xong · Esc = thoát
+   • Dấu thanh gõ TRƯỚC nguyên âm (đúng cách viết chữ nổi tiếng Việt), máy tự đặt dấu đúng chỗ.
+   • Hỏi bằng giọng nói: "đọc bảng chữ nổi", "chữ ê gõ thế nào", "dấu hỏi gõ thế nào".
+   BẢNG MÃ ở dưới (BRAILLE, TONES) — sách chữ nổi của học sinh dùng mã khác thì sửa tại đây.
+   Mở: nói "chữ nổi". Nạp SAU voice-robot.js và vn-input.js
+   ===================================================================== */
+(function(){
+  'use strict';
+  /* ---------- BẢNG MÃ (số chấm → chữ, viết theo kiểu gõ Telex) ---------- */
+  const BRAILLE = {
+    '1':'a', '345':'aw', '16':'aa', '12':'b', '14':'c', '145':'d', '2346':'dd', '15':'e', '126':'ee',
+    '124':'f', '1245':'g', '125':'h', '24':'i', '245':'j', '13':'k', '123':'l', '134':'m', '1345':'n',
+    '135':'o', '1456':'oo', '246':'ow', '1234':'p', '12345':'q', '1235':'r', '234':'s', '2345':'t',
+    '136':'u', '1256':'uw', '1236':'v', '2456':'w', '1346':'x', '13456':'y', '1356':'z'
+  };
+  const TONES = {'35':'s', '56':'f', '26':'r', '36':'x', '6':'j'};          // sắc huyền hỏi ngã nặng
+  const TONE_NAME = {s:'dấu sắc', f:'dấu huyền', r:'dấu hỏi', x:'dấu ngã', j:'dấu nặng'};
+  const CAPS = '46', NUMBER = '3456';
+  const PUNCT = {'256':'.', '2':','};
+  const DIGIT = {a:'1', b:'2', c:'3', d:'4', e:'5', f:'6', g:'7', h:'8', i:'9', j:'0'};
+  const VOWEL = /^(a|aw|aa|e|ee|i|o|oo|ow|u|uw|y)$/;
+  const KEYS = {f:1, d:2, s:3, j:4, k:5, l:6};
+  const NAME = {a:'a', aw:'ă', aa:'â', dd:'đ', ee:'ê', oo:'ô', ow:'ơ', uw:'ư'};
+
+  const B = {on:false, el:null, held:new Set(), chord:new Set(), tap:new Set(), pendingTone:null, caps:false, num:false, box:null};
+  const VR = () => window.VoiceRobot;
+  const A = () => (window.VoiceRobot && window.VoiceRobot.api) || {};
+  const say = (t, o) => { const v = VR(); if(v) v.speak(t, Object.assign({force:true}, o || {})); };
+  const cellKey = set => [...set].sort().join('');
+  const glyph = set => String.fromCharCode(0x2800 + [...set].reduce((m, d) => m | (1 << (d - 1)), 0));
+
+  /* ---------- Trạng thái (hiện trong khung điều khiển trợ lý) ---------- */
+  function paint(){}
+  let lastMsg = '';
+  function updatePreview(){
+    const api = A(); if(!api.setTask) return;
+    if(!B.on){ api.setTask(null); return; }
+    const st = api.spellState ? api.spellState() : null;
+    api.setTask('⠿ Chữ nổi → ' + fieldName(B.el) + ': ' + ((st && st.text) || '…') + (lastMsg ? '   (' + lastMsg + ')' : ''));
+  }
+  function last(msg){ lastMsg = msg; updatePreview(); }
+  /** Nói mã chữ nổi của một chữ / dấu */
+  function dotsOf(name){
+    const n = String(name).trim().toLowerCase();
+    const tele = {'ă':'aw','â':'aa','đ':'dd','ê':'ee','ô':'oo','ơ':'ow','ư':'uw'}[n] || n;
+    const toneKey = {'sac':'s','sắc':'s','huyen':'f','huyền':'f','hoi':'r','hỏi':'r','nga':'x','ngã':'x','nang':'j','nặng':'j'}[n.replace(/^dấu\s*|^dau\s*/, '')];
+    if(toneKey){ const c = Object.keys(TONES).find(k => TONES[k] === toneKey); return c ? TONE_NAME[toneKey] + ': chấm ' + c.split('').join(', ') : ''; }
+    const c = Object.keys(BRAILLE).find(k => BRAILLE[k] === tele);
+    return c ? 'Chữ ' + (NAME[tele] || tele) + ': chấm ' + c.split('').join(', ') + ', tức là phím ' + c.split('').map(d => 'FDSJKL'[d - 1]).join(' ') : '';
+  }
+  function tableSpeech(){
+    const letters = Object.keys(BRAILLE).filter(k => !/^[fjwz]$/.test(BRAILLE[k])).map(k => (NAME[BRAILLE[k]] || BRAILLE[k]) + ' chấm ' + k.split('').join(' '));
+    const tones = Object.keys(TONES).map(k => TONE_NAME[TONES[k]] + ' chấm ' + k.split('').join(' '));
+    return 'Bảng chữ nổi. ' + letters.join('; ') + '. Dấu thanh: ' + tones.join('; ') + '. Viết hoa: chấm 4 6. Dấu số: chấm 3 4 5 6, sau đó a đến j là số 1 đến 0.';
+  }
+  /** Hiểu câu hỏi bằng giọng nói khi đang gõ chữ nổi (n: chữ đã bỏ dấu, raw: nguyên văn) */
+  function voice(n, raw){
+    if(!B.on) return false;
+    if(/^(doc )?bang chu noi$|^cac chu noi$/.test(n)){ say(tableSpeech()); return true; }
+    const m = String(raw || '').toLowerCase().match(/^(?:chữ|dấu)\s+(.+?)\s+(?:gõ|viết)\s+(?:thế nào|như thế nào|sao)$/);
+    if(m){ const t = dotsOf(m[1]); say(t || 'Mình chưa có mã cho ' + m[1] + '.'); return true; }
+    if(/^(huong dan|cach go|tro giup)( chu noi)?$/.test(n)){ say(guide()); return true; }
+    return false;
+  }
+  function guide(){
+    return 'Cách gõ chữ nổi trên bàn phím: đặt hai ngón trỏ lên hai phím có gờ nổi là F và J. ' +
+      'Tay trái: phím F là chấm 1, phím D là chấm 2, phím S là chấm 3. Tay phải: phím J là chấm 4, phím K là chấm 5, phím L là chấm 6. ' +
+      'Nhấn cùng lúc các chấm của một chữ rồi thả tay ra, mình sẽ đọc chữ vừa gõ. Ví dụ chữ a là chấm 1, chỉ nhấn phím F. ' +
+      'Dấu thanh gõ trước nguyên âm. Phím cách để cách chữ. Phím xóa lùi để xóa một chữ; Control cộng xóa lùi để xóa hết. Enter khi gõ xong, Escape để thoát. ' +
+      'Muốn hỏi mã một chữ, nói ví dụ: chữ ê gõ thế nào. Nói: đọc bảng chữ nổi, để nghe cả bảng.';
+  }
+
+  /* ---------- Gõ ---------- */
+  function key(k){ const api = A(); if(api.spellKeys){ api.spellKeys([k]); updatePreview(); } if(k === '␠'){ B.num = false; B.pendingTone = null; } }
+  function commit(set){
+    const code = cellKey(set);
+    const g = glyph(set);
+    if(!code) return;
+    if(code === CAPS){ B.caps = true; last(g + ' viết hoa chữ tiếp theo'); say('viết hoa'); return; }
+    if(code === NUMBER){ B.num = true; last(g + ' dấu số'); say('số'); return; }
+    if(B.num && BRAILLE[code] && DIGIT[BRAILLE[code]]){ last(g + ' ' + DIGIT[BRAILLE[code]]); return key(DIGIT[BRAILLE[code]]); }
+    B.num = false;
+    if(TONES[code]){ B.pendingTone = TONES[code]; last(g + ' ' + TONE_NAME[B.pendingTone] + ' (cho nguyên âm tiếp theo)'); say(TONE_NAME[B.pendingTone]); return; }
+    if(PUNCT[code]){ last(g + ' ' + PUNCT[code]); return key(PUNCT[code]); }
+    const letter = BRAILLE[code];
+    if(!letter){
+      last(g + ' chưa có trong bảng (chấm ' + code.split('').join(' ') + ')');
+      say('Chấm ' + code.split('').join(', ') + ' chưa có trong bảng.');
+      return;
+    }
+    const keys = [];
+    if(B.caps){ keys.push('⇧'); B.caps = false; }
+    keys.push(letter);
+    let toneSaid = '';
+    if(B.pendingTone && VOWEL.test(letter)){ keys.push(B.pendingTone); toneSaid = ' ' + TONE_NAME[B.pendingTone]; B.pendingTone = null; }
+    last(g + ' ' + (NAME[letter] || letter) + toneSaid);
+    const api = A();
+    if(api.spellKeys){ api.spellKeys(keys, {say:(NAME[letter] || letter) + toneSaid}); updatePreview(); }
+  }
+  function finish(){
+    const api = A();
+    if(api.spellFinish) api.spellFinish();
+    close(true);
+  }
+
+  /* Bàn phím 6 phím (bắt ở giai đoạn capture → không gõ nhầm chữ f, d, s… vào ô) */
+  document.addEventListener('keydown', e => {
+    if(!B.on) return;
+    const k = (e.key || '').toLowerCase();
+    if((e.ctrlKey || e.metaKey || e.altKey) && k !== 'backspace') return;
+    if(KEYS[k]){
+      e.preventDefault(); e.stopPropagation();
+      if(e.repeat) return;
+      B.held.add(KEYS[k]); B.chord.add(KEYS[k]);
+      return;
+    }
+    if(k === ' '){ e.preventDefault(); e.stopPropagation(); if(!e.repeat) key('␠'); return; }
+    if(k === 'backspace'){ e.preventDefault(); e.stopPropagation(); if(e.ctrlKey){ key('⌧'); say('Đã xóa hết.'); } else key('⌫'); return; }
+    if(k === 'enter'){ e.preventDefault(); e.stopPropagation(); finish(); return; }
+    if(k === 'escape'){ e.preventDefault(); e.stopPropagation(); close(); say('Đã thoát gõ chữ nổi.'); return; }
+    if(k.length === 1){ e.preventDefault(); e.stopPropagation(); }        // phím khác: bỏ qua, không gõ vào ô
+  }, true);
+  document.addEventListener('keyup', e => {
+    if(!B.on) return;
+    const k = (e.key || '').toLowerCase();
+    if(!KEYS[k]) return;
+    e.preventDefault(); e.stopPropagation();
+    B.held.delete(KEYS[k]);
+    if(!B.held.size && B.chord.size){ const c = new Set(B.chord); B.chord.clear(); commit(c); }
+  }, true);
+  window.addEventListener('blur', () => { B.held.clear(); B.chord.clear(); });
+
+  /* ---------- Mở / đóng ---------- */
+  function fieldName(el){ const api = A(); return el && el.id === 'chatInput' ? 'tin nhắn Chatbot' : ((api.fieldLabel && api.fieldLabel(el)) || 'ô chữ'); }
+  function open(el, opts){
+    opts = opts || {};
+    const api = A();
+    if(!el){ say('Cậu chọn một ô chữ trước nhé. Ví dụ nói: tên trường, rồi nói: chữ nổi.'); return; }
+    if(window.FingerNav && FingerNav.signOpen) FingerNav.closeSign(true, true);
+    Object.assign(B, {on:true, el, pendingTone:null, caps:false, num:false});
+    B.held.clear(); B.chord.clear(); lastMsg = '';
+    document.body.classList.add('br-open');
+    if(!(opts.keep && api.spellState && api.spellState())) api.spellStart(el, {silent:true});
+    try{ el.focus({preventScroll:false}); }catch(e){}
+    updatePreview();
+    say('Bắt đầu gõ chữ nổi cho ô ' + fieldName(el) + '. ' + guide());
+  }
+  function close(silent, keepSpell){
+    if(!B.on) return;
+    B.on = false; B.held.clear(); B.chord.clear();
+    document.body.classList.remove('br-open');
+    updatePreview();
+    if(!silent && !keepSpell){ const api = A(); if(api.spellCancel) api.spellCancel(true); }
+  }
+  function resetInputState(el){
+    if(el && B.el !== el) return;
+    B.held.clear(); B.chord.clear(); B.tap.clear(); B.pendingTone = null; B.caps = false; B.num = false; lastMsg = '';
+  }
+  window.BrailleInput = {open, close, resetInputState, updatePreview, voice, guide, dotsOf, get active(){ return B.on; }, TABLE:BRAILLE, TONES, _commit:(dots) => commit(new Set(dots))};
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-13 · ĐIỀU KHIỂN BẰNG TAY VÀ BÀN PHÍM TRỢ NĂNG
+ * FingerNav quản lý camera bàn tay, con trỏ, giữ yên để chọn, vuốt để cuộn và nhập bằng ký hiệu tay.
+ * Cũng chứa bàn phím trợ năng trên điện thoại và các lệnh chuyển chế độ nhập.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — ĐIỀU HƯỚNG & GÕ CHỮ BẰNG NGÓN TAY QUA CAMERA (finger-nav.js)
+   Dành cho học sinh khiếm thị (thị lực kém):
+   • CHỈ 1 NGÓN TRỎ → con trỏ lớn đi theo. Ngón tay vào VÙNG nào, trợ lý ĐỌC HẾT
+     nội dung vùng đó; chỉ sang vùng khác là chuyển đọc vùng mới ngay.
+   • GIỮ YÊN ngón tay trên một nút / ô / chức năng 5 giây → CHỌN (có vòng đếm
+     ngược + tiếng bíp mỗi giây). Muốn nhanh: chụm ngón cái + ngón trỏ.
+   • HAI NGÓN VẨY XUỐNG → trang cuộn xuống có quán tính (vẩy mạnh cuộn xa hơn);
+     vẩy lên → cuộn lên. (1 ngón tay di chuyển thì KHÔNG trượt trang.)
+   • Bảng CHỨC NĂNG NGÓN TAY (gọn, mép phải): Ký hiệu tay, Đọc lại, Vùng trước,
+     Vùng tiếp, Trợ giúp, Tắt camera — chỉ vào và giữ yên để chọn.
+   • KÝ HIỆU TAY: làm ký hiệu chữ cái ngón tay trước camera, giữ yên ~1 giây → gõ chữ
+     đó vào ô (dấu tiếng Việt gõ kiểu Telex). Xòe tay = cách, xòe tay vẩy ngang = xóa 1 ký tự,
+     ngón cái chỉ xuống = xóa hết, giơ ngón cái = xong. Nói "xóa" / "xóa hết" cũng được.
+   • Chọn ô chữ → mở GÕ BẰNG KÝ HIỆU TAY cho ô đó (đã bỏ bàn phím ngón tay).
+   • Ký hiệu tay có 2 CHẾ ĐỘ tách biệt (một động tác chỉ thuộc MỘT chế độ):
+       – ĐANG GÕ CHỮ  : chỉ nhận chữ A–Z, xòe tay = cách; giơ ngón cái = chuyển sang chế độ điều khiển.
+       – ĐANG ĐIỀU KHIỂN: giơ ngón cái = Xong · ngón cái chỉ xuống = Xóa hết · 1 ngón trỏ hoặc xòe tay vẩy ngang = Xóa 1 ký tự
+                          · chữ V = chữ hoa/chữ thường · chữ Y = Thoát · xòe tay giữ yên = quay lại gõ chữ.
+     Chữ hoa / chữ thường (abc ↔ ABC): nút trên bảng, lệnh "chữ hoa" / "chữ thường", hoặc chữ V ở chế độ điều khiển.
+   • ĐIỆN THOẠI: không bật camera — mở BÀN PHÍM TRỢ NĂNG (A–Z, chữ hoa/thường, Cách, Xóa 1 ký tự, Xóa hết, Xong, Thoát).
+   AI nhận dạng bàn tay: MediaPipe Hand Landmarker (mã nguồn mở), xử lý trên máy.
+   Lệnh: "bật camera ngón tay" · "tắt camera ngón tay" · "ký hiệu tay"
+   Nạp SAU voice-robot.js và vn-input.js
+   ===================================================================== */
+(function(){
+  'use strict';
+  const MP_BASE = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+  const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
+  const ACTIVE = {x0:0.18, x1:0.82, y0:0.12, y1:0.78};   // vùng tay hoạt động trong khung camera
+  const DETECT_MS = 90;          // ~11 lần nhận dạng/giây: đủ mượt, không làm giật web
+  const HOVER_MS = 150;          // kiểm tra vùng/phím dưới ngón tay
+  const REGION_STABLE_MS = 350;  // giữ ở vùng mới 0,35 giây thì chuyển đọc vùng đó
+
+/* ============================================================================
+ * JS-13.01 · CẤU HÌNH ĐIỀU KHIỂN TAY
+ * Các ngưỡng giữ yên/chuyển động điều chỉnh độ nhạy thao tác. Thời gian SELECT_MS tính bằng mili giây.
+ * ========================================================================== */
+  /* ---- CHỌN BẰNG CÁCH GIỮ YÊN NGÓN TAY (đổi số ở đây: 5000 = 5 giây) ---- */
+  const SELECT_MS = 5000;
+  const SELECT_SHOW_MS = 1000;   // đứng yên 1 giây thì hiện vòng đếm + đọc tên nút
+  const STILL_PX = 70;           // tay rung trong bán kính 70 px vẫn tính là đứng yên
+  /* ---- VUỐT NHIỀU NGÓN ĐỂ TRƯỢT TRANG ---- */
+  const MULTI_MIN = 2;           // từ 2 ngón duỗi trở lên = chế độ vuốt
+  const MULTI_FRAMES = 2;        // phải thấy nhiều ngón liên tiếp 2 lần nhận dạng (tránh nhầm)
+  const SWIPE_DY = 0.10;         // vuốt chậm: quãng tối thiểu (tỉ lệ chiều cao khung camera)
+  const FLICK_DY = 0.05;         // VẨY nhanh: quãng ngắn cũng được…
+  const FLICK_SPEED = 0.45;      // …nếu đủ nhanh (chiều cao khung camera / giây)
+  const SWIPE_WIN_MS = 500;      // xét động tác trong 0,5 giây gần nhất
+  const SWIPE_COOLDOWN_MS = 450; // vẩy liên tiếp cùng chiều → cuộn tiếp
+  const RETURN_BLOCK_MS = 900;   // bỏ qua động tác kéo tay về (ngược chiều) ngay sau khi vẩy
+  const DETECT_FAST_MS = 50;     // lúc đang vẩy / gõ ký hiệu: nhận dạng dày hơn để bắt kịp tay
+  const SWIPE_UP_SCROLLS_UP = true;   // vẩy lên = trượt lên (đổi false nếu muốn kiểu điện thoại)
+  const PINCH_MS = 250, NO_HAND_MS = 3500;
+
+  const F = {
+    on:false, stream:null, video:null, landmarker:null, loading:null, timer:0, raf:0, lastTs:-1,
+    tx:0, ty:0, x:0, y:0, has:false, lastHover:0,
+    region:-1, pendRegion:-1, pendSince:0, block:null,
+    pinchSince:0, pinched:false, lastSeen:0, warned:false,
+    multiFrames:0, swiping:false, swipeHist:[], lastSwipe:0,
+    hold:null, holdTarget:null, menuItem:null, lastField:null,
+    kbEl:null, starting:null, stopReq:false, paused:false, camErr:''
+  };
+  const isMobile = () => !!(window.Device && window.Device.isMobile());
+  const live = (t, assertive) => { if(window.A11y) window.A11y.announce(t, {assertive:!!assertive}); };
+  const VR = () => window.VoiceRobot;
+  const A = () => (window.VoiceRobot && window.VoiceRobot.api) || {};
+  const say = (t, o) => { const v = VR(); if(v) v.speak(t, Object.assign({force:true}, o || {})); };
+  const isBlind = () => { const v = VR(); return !!(v && v.state && v.state.mode === 'blind'); };
+
+  /* Tiếng bíp nhẹ báo đang đếm / đã chọn (không cần tải file âm thanh) */
+  let actx = null;
+  function beep(freq, ms, vol){
+    try{
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if(actx.state === 'suspended') actx.resume().catch(() => {});
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine'; o.frequency.value = freq || 660;
+      g.gain.value = vol || 0.06;
+      o.connect(g); g.connect(actx.destination);
+      const t = actx.currentTime; g.gain.setValueAtTime(vol || 0.06, t); g.gain.exponentialRampToValueAtTime(0.0001, t + (ms || 120) / 1000);
+      o.start(t); o.stop(t + (ms || 120) / 1000 + 0.02);
+    }catch(e){}
+  }
+
+  /* ------------------------- Giao diện ------------------------- */
+  const MENU = [
+    ['sign', 'Ký hiệu tay', '✋'], ['repeat', 'Đọc lại', '↻'], ['prev', 'Vùng trước', '▲'],
+    ['next', 'Vùng tiếp', '▼'], ['help', 'Trợ giúp', '?'], ['close', 'Tắt camera', '✕']
+  ];
+  function build(){
+    if(F.el) return;
+    const d = document.createElement('div');
+    d.innerHTML =
+      '<div class="fn-cursor hidden" id="fnCursor" aria-hidden="true"><span></span><em class="fn-ring"></em><b class="fn-count" id="fnCount"></b></div>' +
+      '<div class="fn-cam hidden" id="fnCam" role="region" aria-label="Camera điều hướng bằng ngón tay">' +
+        '<video playsinline muted autoplay></video>' +
+        '<div class="fn-cam-bar"><span class="fn-dot"></span><span id="fnStatus">Đang bật camera…</span>' +
+        '<button type="button" class="fn-mini vr-grip" id="fnGrip" aria-label="Di chuyển khung webcam: kéo, hoặc dùng phím mũi tên" title="Kéo để di chuyển">⠿</button>' +
+        '<button type="button" class="fn-mini" id="fnCollapse" aria-expanded="true" aria-label="Thu gọn khung webcam">–</button>' +
+        '<button type="button" id="fnStop" aria-label="Tắt camera ngón tay">Tắt</button></div>' +
+        '<canvas class="fn-skel" id="fnSkel" width="320" height="240" aria-hidden="true"></canvas>' +
+        '<div class="fn-cam-tip" id="fnTip">1 ngón: chỉ · giữ yên 5 giây: chọn · 2 ngón vẩy: cuộn trang</div>' +
+      '</div>' +
+      '<nav class="fn-menu hidden" id="fnMenu" aria-label="Chức năng ngón tay">' +
+        '<div class="fn-menu-title">Chức năng</div>' +
+        MENU.map(m => '<button type="button" class="fn-item" data-fn="' + m[0] + '" aria-label="' + m[1] + '"><i aria-hidden="true">' + m[2] + '</i><span>' + m[1] + '</span></button>').join('') +
+      '</nav>' +
+      signBoardHtml() +
+      '';
+    while(d.firstChild) document.body.appendChild(d.firstChild);
+    F.el = document.getElementById('fnCam');
+    F.video = F.el.querySelector('video');
+    F.cursor = document.getElementById('fnCursor');
+    F.count = document.getElementById('fnCount');
+    F.menu = document.getElementById('fnMenu');
+    F.sign = document.getElementById('fsBoard');
+    F.skel = document.getElementById('fnSkel');
+    F.sign.addEventListener('click', e => { const b = e.target.closest('[data-sg]'); if(b) signAction(b.dataset.sg); });
+    document.getElementById('fnStop').addEventListener('click', () => stop());
+    if(window.A11y && A11y.makeMovable) A11y.makeMovable(F.el, {key:'cam', name:'khung webcam', grip:document.getElementById('fnGrip'), collapseBtn:document.getElementById('fnCollapse'), noteCollapsed:'Camera vẫn đang nhận diện tay.'});
+    F.menu.addEventListener('click', e => { const b = e.target.closest('[data-fn]'); if(b) runFn(b.dataset.fn); });
+  }
+  function status(t){ const e = document.getElementById('fnStatus'); if(e) e.textContent = t; }
+  function showMenu(){ if(F.menu) F.menu.classList.toggle('hidden', !F.on || SG.on); }
+
+
+/* ============================================================================
+ * JS-13.02 · VÒNG ĐỜI CAMERA
+ * Bật/tắt camera, tải mô hình và quản lý các vòng nhận dạng/con trỏ để tránh chạy trùng.
+ * ========================================================================== */
+  /* ------------------------- Bật / tắt ------------------------- */
+  const CAM_FALLBACK = 'Không thể mở camera. Bạn có thể sử dụng bàn phím để nhập.';
+  function camErrorText(e){
+    const n = e && e.name;
+    if(n === 'NotAllowedError' || n === 'SecurityError' || n === 'PermissionDeniedError') return 'Camera chưa được cho phép. ' + CAM_FALLBACK;
+    if(n === 'NotFoundError' || n === 'DevicesNotFoundError' || n === 'OverconstrainedError') return 'Không tìm thấy camera. ' + CAM_FALLBACK;
+    if(n === 'NotReadableError' || n === 'TrackStartError' || n === 'AbortError') return 'Camera đang được ứng dụng khác sử dụng. ' + CAM_FALLBACK;
+    return CAM_FALLBACK;
+  }
+  /** Bật camera + nhận dạng bàn tay. Trả về true nếu chạy được. Chỉ MỘT luồng camera / MỘT vòng nhận dạng. */
+  function start(opts){
+    opts = opts || {};
+    build();
+    if(isMobile()){
+      if(!opts.quiet) say('Trên điện thoại, mình không dùng camera nhận diện bàn tay. Khi cần nhập chữ, cậu nói: bàn phím trợ năng, hoặc mở menu trợ lý, chọn Bàn phím trợ năng.');
+      return Promise.resolve(false);
+    }
+    if(F.on){ if(!opts.quiet) say('Camera ngón tay đang bật rồi.'); return Promise.resolve(true); }
+    if(F.starting) return F.starting;                       // đang bật dở → không mở thêm luồng camera thứ hai
+    F.stopReq = false; F.camErr = '';
+    F.starting = (async () => {
+      if(window.HeightScan) try{ window.HeightScan.close(); }catch(e){}
+      if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
+        F.camErr = 'Trình duyệt không cho dùng camera ở trang này. ' + CAM_FALLBACK;
+        status('Không mở được camera'); say(F.camErr); live(F.camErr, true); return false;
+      }
+      F.el.classList.remove('hidden'); status('Đang bật camera…');
+      if(window.A11y && A11y.panels && A11y.panels.cam) requestAnimationFrame(A11y.panels.cam.refit);
+      if(!opts.quiet) say('Đang bật camera ngón tay. Duỗi một ngón trỏ để chỉ vào màn hình: chỉ vào vùng nào, mình đọc hết vùng đó. ' +
+          'Muốn chọn nút hay chức năng, giữ yên ngón tay ở đó ' + Math.round(SELECT_MS / 1000) + ' giây, hoặc chụm ngón cái và ngón trỏ. ' +
+          'Muốn trượt trang, duỗi hai ngón rồi vẩy xuống hoặc vẩy lên. Bảng chức năng nằm ở mép phải màn hình.');
+      let stream = null;
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:'user', width:{ideal:320}, height:{ideal:240}, frameRate:{ideal:15, max:20}}});
+        if(F.stopReq){ stream.getTracks().forEach(t => t.stop()); F.el.classList.add('hidden'); return false; }   // đã bấm tắt trong lúc chờ quyền
+        F.stream = stream;
+        F.video.srcObject = stream;
+        await F.video.play();
+      }catch(e){
+        if(stream) stream.getTracks().forEach(t => t.stop());
+        F.stream = null; if(F.video) F.video.srcObject = null;
+        F.camErr = camErrorText(e);
+        status('Không mở được camera'); F.el.classList.add('hidden');
+        say(F.camErr, {interrupt:true}); live(F.camErr, true);
+        return false;
+      }
+      // camera bị rút / bị ứng dụng khác chiếm giữa chừng
+      stream.getVideoTracks().forEach(t => { t.onended = () => { if(F.stream === stream){ stop(true); say('Camera đã ngắt. ' + CAM_FALLBACK); live('Camera đã ngắt.', true); } }; });
+      F.on = true; F.paused = false; F.lastSeen = performance.now(); F.warned = false; F.region = -1;
+      document.body.classList.add('fn-on');
+      showMenu();
+      try{ await loadModel(); }catch(e){
+        status('Không tải được mô hình AI');
+        const t = 'Không tải được mô hình nhận dạng bàn tay, lần đầu cần có mạng. ' + CAM_FALLBACK;
+        say(t, {interrupt:true}); live(t, true);
+        stop(true); return false;
+      }
+      if(!F.on) return false;                                 // đã tắt trong lúc tải mô hình
+      status('Đang theo dõi ngón tay');
+      runDetect();
+      return true;
+    })().catch(() => false).finally(() => { F.starting = null; });
+    return F.starting;
+  }
+  function stop(silent){
+    const was = F.on || !!F.starting;
+    F.stopReq = true;
+    F.on = false; F.paused = false; clearTimeout(F.timer); F.timer = 0;
+    cancelAnimationFrame(F.raf); F.raf = 0;
+    if(F.stream){ F.stream.getTracks().forEach(t => { t.onended = null; t.stop(); }); F.stream = null; }
+    if(F.video){ try{ F.video.pause(); }catch(e){} F.video.srcObject = null; }
+    F.lastTs = -1; F.has = false;
+    if(F.el) F.el.classList.add('hidden');
+    if(F.cursor) F.cursor.classList.add('hidden');
+    closeSign(true);
+    document.body.classList.remove('fn-on');
+    showMenu();
+    resetHold(); setSwipe(false); setMenuItem(null);
+    setBlock(null);
+    if(silent !== true && was) say('Đã tắt camera ngón tay.');
+  }
+  // Tab bị ẩn → dừng nhận dạng (không tốn CPU/GPU); quay lại → chạy tiếp
+  document.addEventListener('visibilitychange', () => {
+    if(!F.on) return;
+    if(document.hidden){ F.paused = true; clearTimeout(F.timer); cancelAnimationFrame(F.raf); F.raf = 0; }
+    else if(F.paused){ F.paused = false; F.lastSeen = performance.now(); runDetect(); }
+  });
+  window.addEventListener('pagehide', () => {
+    stop(true);
+    if(F.landmarker){ try{ F.landmarker.close(); }catch(e){} F.landmarker = null; F.loading = null; }
+  });
+  async function loadModel(){
+    if(F.landmarker) return F.landmarker;
+    if(F.loading) return F.loading;
+    F.loading = (async () => {
+      status('Đang tải mô hình AI nhận dạng bàn tay…');
+      const vision = await import(MP_BASE + '/vision_bundle.mjs');
+      const fileset = await vision.FilesetResolver.forVisionTasks(MP_BASE + '/wasm');
+      const opts = d => ({baseOptions:{modelAssetPath:MODEL_URL, delegate:d}, runningMode:'VIDEO', numHands:1,
+        minHandDetectionConfidence:0.6, minHandPresenceConfidence:0.6, minTrackingConfidence:0.5});
+      try{ F.landmarker = await vision.HandLandmarker.createFromOptions(fileset, opts('GPU')); }
+      catch(e){ F.landmarker = await vision.HandLandmarker.createFromOptions(fileset, opts('CPU')); }
+      return F.landmarker;
+    })().catch(e => { F.loading = null; throw e; });
+    return F.loading;
+  }
+  // Nhận dạng tay theo nhịp cố định (không chạy mỗi khung hình → web không bị giật)
+  function runDetect(){
+    clearTimeout(F.timer);
+    const step = () => {
+      if(!F.on || !F.landmarker) return;
+      if(document.hidden){ F.paused = true; return; }        // visibilitychange sẽ gọi lại
+      const t0 = performance.now();
+      if(F.video.readyState >= 2){
+        const ts = Math.max(t0, F.lastTs + 1); F.lastTs = ts;
+        let res = null;
+        try{ res = F.landmarker.detectForVideo(F.video, ts); }catch(e){}
+        const lm = res && res.landmarks && res.landmarks[0];
+        feed(lm, ts);
+        if(SG.on) drawSkeleton(lm);
+      }
+      const iv = (SG.on || F.fastUntil > performance.now()) ? DETECT_FAST_MS : DETECT_MS;
+      F.timer = setTimeout(step, Math.max(20, iv - (performance.now() - t0)));
+    };
+    step();
+  }
+  // Con trỏ trượt mượt tới vị trí ngón tay (chỉ đổi transform → rất nhẹ).
+  // requestAnimationFrame CHỈ chạy khi con trỏ còn đang di chuyển — tới nơi là dừng, không lặp vô hạn.
+  function runCursor(){
+    if(F.raf || !F.on || !F.has || document.hidden) return;
+    const tick = () => {
+      F.raf = 0;
+      if(!F.on || !F.has || !F.cursor) return;
+      F.x += (F.tx - F.x) * 0.35; F.y += (F.ty - F.y) * 0.35;
+      F.cursor.style.transform = 'translate3d(' + (F.x - 26) + 'px,' + (F.y - 26) + 'px,0)';
+      if(Math.abs(F.tx - F.x) + Math.abs(F.ty - F.y) > 0.6) F.raf = requestAnimationFrame(tick);
+    };
+    F.raf = requestAnimationFrame(tick);
+  }
+
+
+/* ============================================================================
+ * JS-13.03 · TỌA ĐỘ VÀ CỬ CHỈ TAY
+ * Đọc điểm bàn tay, xác định ngón duỗi, ánh xạ sang màn hình và nhận dạng cử chỉ cuộn.
+ * ========================================================================== */
+  /* ------------------------- Xử lý bàn tay ------------------------- */
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  // [đầu ngón, khớp giữa] của ngón trỏ, giữa, áp út, út
+  const FINGERS = [[8, 6], [12, 10], [16, 14], [20, 18]];
+  /** Các ngón đang DUỖI: đầu ngón xa cổ tay hơn hẳn khớp giữa */
+  function extendedTips(lm){
+    const w = lm[0];
+    return FINGERS.filter(([tip, pip]) => dist(lm[tip], w) > dist(lm[pip], w) * 1.12).map(f => lm[f[0]]);
+  }
+  function mapX(x){ return Math.max(0, Math.min(1, (1 - x - ACTIVE.x0) / (ACTIVE.x1 - ACTIVE.x0))) * window.innerWidth; }
+  function mapY(y){ return Math.max(0, Math.min(1, (y - ACTIVE.y0) / (ACTIVE.y1 - ACTIVE.y0))) * window.innerHeight; }
+  /** lm: 21 điểm bàn tay (toạ độ chuẩn hoá của khung camera). Tách riêng để kiểm thử. */
+  function feed(lm, now){
+    now = now || performance.now();
+    if(SG.on){ if(lm){ F.lastSeen = now; F.warned = false; } signFeed(lm, now); return; }
+    if(!lm){
+      if(F.has){ F.has = false; if(F.cursor) F.cursor.classList.add('hidden'); }
+      if(F.swiping) checkFlick(now);                 // vẩy nhanh quá, camera mất dấu tay → vẫn tính cú vẩy
+      resetHold(); F.multiFrames = 0; setSwipe(false);
+      if(F.on && !F.warned && now - F.lastSeen > NO_HAND_MS){ F.warned = true; say('Mình chưa thấy tay cậu. Cậu đưa bàn tay lên trước camera nhé.', {queue:true}); }
+      return;
+    }
+    F.lastSeen = now; F.warned = false;
+    const tips = extendedTips(lm);
+    const multi = tips.length >= MULTI_MIN;
+    F.multiFrames = multi ? F.multiFrames + 1 : 0;
+    // ===== 2 NGÓN TRỞ LÊN: chỉ theo dõi động tác VẨY, không chọn / không đổi vùng =====
+    if(multi){
+      const cy = tips.reduce((s, t) => s + t.y, 0) / tips.length;
+      const cx = tips.reduce((s, t) => s + t.x, 0) / tips.length;
+      if(F.multiFrames === 1) F.swipeHist = [];
+      F.swipeHist.push({t:now, y:cy, x:cx});
+      while(F.swipeHist.length && now - F.swipeHist[0].t > SWIPE_WIN_MS) F.swipeHist.shift();
+      F.fastUntil = now + 900;
+      if(F.multiFrames < MULTI_FRAMES) return;      // mới thấy nhiều ngón 1 lần: chờ xác nhận
+      F.tx = mapX(cx); F.ty = mapY(cy);
+      showCursor();
+      if(!F.swiping){ setSwipe(true); resetHold(); F.pinchSince = 0; F.pinched = false; }
+      checkFlick(now);
+      return;
+    }
+    if(F.swiping){ checkFlick(now); setSwipe(false); }   // cuối cú vẩy các ngón hay co lại → vẫn tính
+    // ===== 1 NGÓN TRỎ: con trỏ =====
+    F.tx = mapX(lm[8].x); F.ty = mapY(lm[8].y);
+    showCursor();
+    if(!F.on){ F.x = F.tx; F.y = F.ty; }          // chế độ kiểm thử
+    // chụm ngón cái + ngón trỏ = bấm nhanh
+    const pinch = dist(lm[4], lm[8]) / Math.max(0.05, dist(lm[0], lm[9])) < 0.33;
+    if(pinch){
+      if(!F.pinchSince) F.pinchSince = now;
+      if(!F.pinched && now - F.pinchSince > PINCH_MS){ F.pinched = true; F.cursor && F.cursor.classList.add('fn-press'); resetHold(); activate(now); }
+    } else if(F.pinchSince){ F.pinchSince = 0; F.pinched = false; F.cursor && F.cursor.classList.remove('fn-press'); }
+    if(now - F.lastHover < HOVER_MS) return;
+    F.lastHover = now;
+    const el = document.elementFromPoint(F.x, F.y);
+    const item = el && el.closest('#fnMenu [data-fn]');
+    setMenuItem(item);
+    if(!item) hoverRegion(now, el);
+    if(!pinch) holdTrack(now, el);
+  }
+  function showCursor(){
+    if(!F.has){ F.x = F.tx; F.y = F.ty; F.has = true; if(F.cursor) F.cursor.classList.remove('hidden'); }
+    runCursor();
+  }
+  function setSwipe(on){
+    F.swiping = !!on;
+    if(F.cursor) F.cursor.classList.toggle('fn-swipe', F.swiping);
+    if(F.count && on){ F.count.textContent = 'Vẩy ↕'; }
+    else if(F.count && !F.hold) F.count.textContent = '';
+  }
+  /** Xét động tác trong 0,5 giây gần nhất: vuốt đủ dài HOẶC vẩy nhanh → cuộn trang */
+  function checkFlick(now){
+    const h = F.swipeHist;
+    if(h.length < 2 || now - F.lastSwipe < SWIPE_COOLDOWN_MS) return false;
+    const a = h[0], b = h[h.length - 1];
+    const dy = b.y - a.y, dx = b.x - a.x;
+    const dt = Math.max(40, b.t - a.t) / 1000;
+    let peak = 0;                                        // tốc độ lớn nhất giữa 2 lần nhận dạng liên tiếp
+    for(let i = 1; i < h.length; i++){
+      const v = (h[i].y - h[i - 1].y) / Math.max(0.02, (h[i].t - h[i - 1].t) / 1000);
+      if(Math.sign(v) === Math.sign(dy) && Math.abs(v) > peak) peak = Math.abs(v);
+    }
+    const speed = Math.max(Math.abs(dy) / dt, peak * 0.8);
+    if(Math.abs(dy) < Math.abs(dx) * 1.2) return false;               // tay đi ngang, không phải vẩy lên/xuống
+    const ok = Math.abs(dy) >= SWIPE_DY || (Math.abs(dy) >= FLICK_DY && speed >= FLICK_SPEED);
+    if(!ok) return false;
+    const dir = dy < 0 ? 'up' : 'down';
+    F.swipeHist = [];
+    if(F.lastSwipeDir && dir !== F.lastSwipeDir && now - F.lastSwipe < RETURN_BLOCK_MS) return false;   // tay kéo về
+    F.lastSwipe = now; F.lastSwipeDir = dir;
+    swipe(dir, speed);
+    return true;
+  }
+  function swipe(dir, speed){
+    const api = A();
+    const scrollDir = SWIPE_UP_SCROLLS_UP ? dir : (dir === 'up' ? 'down' : 'up');
+    F.region = -1; F.pendRegion = -1;
+    beep(scrollDir === 'down' ? 520 : 780, 90);
+    if(F.cursor){ F.cursor.classList.remove('fn-swipe-up', 'fn-swipe-down'); void F.cursor.offsetWidth; F.cursor.classList.add('fn-swipe-' + scrollDir); }
+    // vẩy càng mạnh cuộn càng xa (0,5 → 1,5 màn hình), chạy chậm dần như vuốt điện thoại
+    const k = Math.max(0.5, Math.min(1.5, 0.35 + (speed || 1) * 0.45));
+    const px = Math.round(window.innerHeight * k), ms = Math.round(380 + k * 260);
+    F.lastFling = {dir:scrollDir, px, ms};
+    if(api.scrollRead && api.isActive && api.isActive()) api.scrollRead(scrollDir, {px, smooth:ms});
+    else { window.scrollBy({top:(scrollDir === 'down' ? 1 : -1) * px, behavior:(window.A11y ? A11y.scrollBehavior() : 'smooth')}); say(scrollDir === 'down' ? 'Trượt xuống.' : 'Trượt lên.'); }
+  }
+
+
+/* ============================================================================
+ * JS-13.04 · GIỮ YÊN ĐỂ CHỌN
+ * Tìm phần tử dưới con trỏ, đếm thời gian giữ, cập nhật vòng tiến độ và kích hoạt thao tác.
+ * ========================================================================== */
+  /* ---------- Giữ yên ngón tay để chọn ---------- */
+  /** Thứ có thể chọn dưới ngón tay: chức năng ngón tay, nút, đường link, ô nhập */
+  function actionableAt(el){
+    if(!el) return null;
+    const item = el.closest('#fnMenu [data-fn]'); if(item) return item;
+    const btn = el.closest('button, a[href], [role="button"], .vr-reg, select, input, textarea');
+    if(btn && !btn.disabled) return btn;
+    const api = A();
+    const field = el.closest('.field');
+    const ctrl = field && api.controlOf && api.controlOf(field);
+    if(ctrl && !ctrl.disabled) return ctrl;
+    return null;
+  }
+  function targetLabel(t){
+    const api = A();
+    if(!t) return '';
+    if(t.dataset && t.dataset.fn) return 'chức năng ' + t.getAttribute('aria-label');
+    if(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return 'ô ' + ((api.fieldLabel && api.fieldLabel(t)) || 'nhập liệu');
+    return 'nút ' + ((api.btnLabel && api.btnLabel(t)) || String(t.textContent || '').trim().slice(0, 40));
+  }
+  function holdTrack(now, el){
+    const target = actionableAt(el);
+    const h = F.hold;
+    if(!target){ resetHold(); return; }
+    if(!h || h.target !== target || Math.hypot(F.tx - h.x, F.ty - h.y) > STILL_PX){
+      resetHold();
+      F.hold = {x:F.tx, y:F.ty, since:now, target, announced:false, beeps:0, fired:false};
+      return;
+    }
+    if(h.fired) return;
+    const held = now - h.since;
+    if(held < SELECT_SHOW_MS) return;
+    if(!h.announced){
+      h.announced = true;
+      target.classList.add('fn-holding');
+      if(/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) F.lastField = target;
+      say('Đang chỉ vào ' + targetLabel(target) + '. Giữ yên ngón tay để chọn.');
+    }
+    const left = Math.max(0, SELECT_MS - held);
+    const p = Math.min(1, held / SELECT_MS);
+    if(F.cursor){ F.cursor.style.setProperty('--p', p.toFixed(3)); F.cursor.classList.add('fn-hold'); }
+    const secs = Math.ceil(left / 1000);
+    if(F.count && F.count.textContent !== secs + ' giây') F.count.textContent = secs + ' giây';
+    const mark = Math.floor(held / 1000);                  // bíp mỗi giây, cao dần
+    if(mark > h.beeps && held < SELECT_MS){ h.beeps = mark; beep(560 + mark * 60, 70); }
+    if(held >= SELECT_MS){
+      h.fired = true;
+      beep(990, 180, 0.08);
+      clearHoldUi();
+      if(F.cursor){ F.cursor.classList.add('fn-press'); setTimeout(() => F.cursor && F.cursor.classList.remove('fn-press'), 350); }
+      activate(now, target);
+    }
+  }
+  function clearHoldUi(){
+    if(F.cursor){ F.cursor.classList.remove('fn-hold'); F.cursor.style.removeProperty('--p'); }
+    if(F.count && !F.swiping) F.count.textContent = '';
+    if(F.hold && F.hold.target) F.hold.target.classList.remove('fn-holding');
+  }
+  function resetHold(){ clearHoldUi(); F.hold = null; }
+
+  function setMenuItem(item){
+    if(item === F.menuItem) return;
+    if(F.menuItem) F.menuItem.classList.remove('fn-hover');
+    F.menuItem = item;
+    if(item){ item.classList.add('fn-hover'); setBlock(null); say('Chức năng ' + item.getAttribute('aria-label') + '.'); }
+  }
+  function hoverRegion(now, el){
+    const api = A(); if(!api.getRegions) return;
+    const view = api.activeViewEl && api.activeViewEl();
+    if(!el || !view || !view.contains(el)){ setBlock(null); return; }
+    const regs = api.getRegions();
+    const ri = regs.findIndex(r => r.contains(el));
+    // chuyển vùng ngay khi ngón tay dừng ở vùng mới 0,35 giây → đọc HẾT nội dung vùng đó
+    if(ri !== F.pendRegion){ F.pendRegion = ri; F.pendSince = now; }
+    else if(ri >= 0 && ri !== F.region && now - F.pendSince >= REGION_STABLE_MS){
+      F.region = ri;
+      api.setRegion(ri, {scroll:false, read:true, full:true, focus:false});
+    }
+    setBlock(el.closest(api.BLOCK_SEL));
+  }
+  function setBlock(b){
+    if(b === F.block) return;
+    if(F.block) F.block.classList.remove('fn-target');
+    F.block = b;
+    if(b) b.classList.add('fn-target');
+  }
+  /** Chọn: chức năng ngón tay / nút / ô dưới ngón tay (giữ yên đủ lâu hoặc chụm tay) */
+  function activate(now, target){
+    const api = A(); if(!F.has) return;
+    let el = target || document.elementFromPoint(F.x, F.y);
+    if(!el) return;
+    const item = el.closest('#fnMenu [data-fn]');
+    if(item){ runFn(item.dataset.fn); return; }
+    if(!target && F.block && !el.closest('button, a[href], input, select, textarea, .field')) el = F.block;
+    const btn = el.closest('button, a[href], [role="button"], .vr-reg');
+    const field = !btn && (el.closest('.field') || el.closest('label'));
+    const ctrl = !btn && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) ? el : ((field && api.controlOf(field)) || el.closest('input, select, textarea')));
+    if(btn){
+      if(!isBlind()) say('Đã chọn: ' + ((api.btnLabel && api.btnLabel(btn)) || 'nút') + '.');
+      api.clickEl ? api.clickEl(btn) : btn.click();
+      return;
+    }
+    if(ctrl){
+      F.lastField = ctrl;
+      if(ctrl.tagName === 'SELECT'){
+        api.await(ctrl); try{ ctrl.focus(); }catch(e){}
+        say('Ô ' + (api.fieldLabel(ctrl) || '') + '. Các lựa chọn: ' + api.optionList(ctrl) + '. Cậu nói lựa chọn nhé.');
+      } else if(ctrl.type === 'checkbox' || ctrl.type === 'radio'){ ctrl.click(); say('Đã chọn ' + (api.fieldLabel(ctrl) || '') + '.'); }
+      else openSign(ctrl);
+      return;
+    }
+    say('Chỗ này không có nút để chọn. Cậu chỉ vào một nút hoặc một ô nhé.');
+  }
+  /** Các chức năng trong bảng "Chức năng" ngón tay */
+  function runFn(name){
+    const api = A(), v = VR();
+    if(name === 'close') return stop();
+    if(name === 'repeat') return v && v.repeat();
+    if(name === 'help') return say(helpText(), {});
+    if(name === 'prev' || name === 'next'){
+      if(api.regionCommand && api.regionCommand(name === 'next' ? 'vung tiep theo' : 'vung truoc')) return;
+      return say('Trang này chỉ có một vùng.');
+    }
+    if(name === 'sign' || name === 'braille'){
+      const el = pickField();
+      if(!el) return say('Trang này không có ô chữ nào để gõ.');
+      if(name === 'braille') return window.BrailleInput ? BrailleInput.open(el) : say('Chức năng chữ nổi chưa được nạp.');
+      return openSign(el);
+    }
+  }
+  /** Ô chữ để gõ: ô vừa chỉ vào → ô đang chọn → ô chat (ở Chatbot) → ô trống đầu tiên */
+  function fieldName(el){ const api = A(); return el && el.id === 'chatInput' ? 'tin nhắn Chatbot' : ((api.fieldLabel && api.fieldLabel(el)) || 'ô chữ'); }
+  function pickField(){
+    const api = A();
+    const view = api.activeViewEl && api.activeViewEl();
+    const ok = x => x && api.visible(x) && !x.disabled;
+    if(ok(F.lastField)) return F.lastField;
+    const ae = document.activeElement;
+    if(ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName) && ok(ae)) return ae;
+    const chat = document.getElementById('chatInput');
+    if(view && view.id === 'view-chat' && ok(chat)) return chat;
+    if(!view) return null;
+    const all = [...view.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]), textarea')].filter(ok);
+    return all.find(x => !x.value) || all[0] || null;
+  }
+  function helpText(){
+    const s = Math.round(SELECT_MS / 1000);
+    return 'Cách dùng ngón tay. Một: duỗi một ngón trỏ để chỉ, chỉ vào vùng nào mình đọc vùng đó. ' +
+      'Hai: giữ yên ngón tay trên nút, ô, hoặc chức năng ' + s + ' giây để chọn; mình bíp mỗi giây. Muốn nhanh thì chụm ngón cái và ngón trỏ. ' +
+      'Ba: duỗi hai ngón rồi vẩy xuống để cuộn xuống, vẩy lên để cuộn lên; vẩy mạnh thì cuộn xa hơn. ' +
+      'Bốn: chọn Ký hiệu tay để gõ chữ bằng bảng chữ cái ngón tay. ' +
+      'Bảng chức năng ở mép phải: ký hiệu tay, đọc lại, vùng trước, vùng tiếp, trợ giúp, tắt camera.';
+  }
+
+
+/* ============================================================================
+ * JS-13.05 · NHẬP BẰNG KÝ HIỆU TAY
+ * Phân loại hình bàn tay thành ký tự/lệnh, ổn định kết quả qua nhiều khung hình và nhập vào ô đang chọn.
+ * ========================================================================== */
+  /* ======================= GÕ CHỮ BẰNG KÝ HIỆU TAY (bảng chữ cái ngón tay) =======================
+     Nhận dạng hình dạng bàn tay từ 21 điểm MediaPipe bằng QUY TẮC (không cần tải thêm mô hình):
+     • Toạ độ được quy về "khung bàn tay" (gốc ở khớp gốc ngón trỏ, trục ngang → ngón út, trục dọc → các ngón)
+       nên tay trái / tay phải, nghiêng tay đều dùng được.
+     • Giữ yên một ký hiệu ~0,8 giây → gõ chữ đó (trợ lý đọc to). Giữ tiếp 1,6 giây → gõ lặp (aa, oo, dd…).
+     • Dấu tiếng Việt gõ kiểu TELEX bằng chính các chữ cái: s sắc, f huyền, r hỏi, x ngã, j nặng;
+       aa=â, aw=ă, ee=ê, oo=ô, ow=ơ, uw=ư, dd=đ.
+     • J (ngón út vẽ móc) và Z (ngón trỏ vẽ chữ Z) nhận theo chuyển động.
+     • Xòe cả bàn tay giữ yên = cách · xòe tay vẩy ngang = xóa · giơ ngón cái (like) = xong. */
+  const SIGN_HOLD_MS = 800, SIGN_REPEAT_MS = 1600, SIGN_DONE_MS = 1200, SIGN_CLEAR_MS = 300, SIGN_LOST_MS = 500;
+  /* SG.mode: 'typing' (gõ chữ) | 'command' (điều khiển) · SG.caseMode: 'lower' | 'upper' */
+  const SG = {on:false, el:null, cand:null, since:0, last:null, lastAt:0, block:null, lostAt:0, hist:[], ui:{},
+    mode:'typing', caseMode:'lower', starting:false};
+  const SIGN_GUIDE = [
+    ['A','Nắm tay, ngón cái áp cạnh ngón trỏ'], ['B','4 ngón duỗi khép, ngón cái gập vào lòng'], ['C','Các ngón cong thành chữ C'],
+    ['D','Ngón trỏ thẳng, các ngón kia chạm ngón cái'], ['E','Các ngón gập, đầu ngón tựa lên ngón cái'], ['F','Ngón cái chạm ngón trỏ, 3 ngón kia duỗi'],
+    ['G','Ngón trỏ chỉ ngang'], ['H','Ngón trỏ + giữa chỉ ngang'], ['I','Chỉ duỗi ngón út'], ['J','Ngón út duỗi, vẽ hình móc'],
+    ['K','Trỏ + giữa duỗi, ngón cái đặt giữa hai ngón'], ['L','Ngón cái + trỏ thành chữ L'], ['M','Ngón cái kẹp dưới 3 ngón'],
+    ['N','Ngón cái kẹp dưới 2 ngón'], ['O','Các ngón chụm tròn với ngón cái'], ['P','Như K nhưng chúc xuống'], ['Q','Như G nhưng chúc xuống'],
+    ['R','Ngón trỏ và giữa bắt chéo'], ['S','Nắm tay, ngón cái vắt ngang trước'], ['T','Ngón cái kẹp giữa ngón trỏ và giữa'],
+    ['U','Trỏ + giữa duỗi, khép'], ['V','Trỏ + giữa duỗi, tách chữ V'], ['W','Trỏ + giữa + áp út duỗi'], ['X','Ngón trỏ cong móc'],
+    ['Y','Ngón cái + ngón út duỗi'], ['Z','Ngón trỏ vẽ chữ Z'],
+    ['␣','GÕ CHỮ: xòe cả bàn tay, giữ yên = cách'], ['👍','GÕ CHỮ: giơ ngón cái = chuyển sang chế độ điều khiển']
+  ];
+  const CMD_GUIDE = [
+    ['👍','Giơ ngón cái = Xong (điền vào ô)'], ['👎','Ngón cái chỉ xuống = Xóa hết'], ['☝','Một ngón trỏ = Xóa 1 ký tự'],
+    ['↔','Xòe tay vẩy ngang = Xóa 1 ký tự'], ['V','Chữ V = chữ hoa / chữ thường'], ['Y','Chữ Y = Thoát'], ['✋','Xòe tay giữ yên = quay lại gõ chữ']
+  ];
+  function signBoardHtml(){
+    return '<div class="fs-board hidden" id="fsBoard" role="dialog" aria-modal="false" aria-labelledby="fsLabel">' +
+      '<div class="fs-top">' +
+        '<div class="fs-live"><div class="fs-letter" id="fsLetter">–</div><div class="fs-prog"><i id="fsProg"></i></div><div class="fs-hint" id="fsHint">Đưa bàn tay lên trước camera</div></div>' +
+        '<div class="fs-text"><div class="fs-label" id="fsLabel">Ký hiệu tay</div>' +
+          '<div class="fs-state"><span class="fs-mode" id="fsMode" data-mode="typing" role="status" aria-live="polite">Đang gõ chữ</span>' +
+          '<span class="fs-case" id="fsCase" aria-hidden="true">abc</span></div>' +
+          '<div class="fs-preview" id="fsPreview" aria-live="polite">&nbsp;</div>' +
+          '<div class="fs-tip" id="fsTip"></div>' +
+          '<div class="fs-debug" id="fsDebug"></div></div>' +
+        '<div class="fs-actions">' +
+          '<button type="button" data-sg="mode" id="fsModeBtn" aria-pressed="false">Chế độ điều khiển</button><button type="button" data-sg="case" id="fsCaseBtn" aria-pressed="false" aria-label="Chữ hoa hoặc chữ thường, đang là chữ thường">abc ↔ ABC</button>' +
+          '<button type="button" data-sg="space">Cách</button><button type="button" data-sg="del">Xóa 1 ký tự</button>' +
+          '<button type="button" data-sg="clear">Xóa hết</button><button type="button" data-sg="done" class="ok">Xong</button>' +
+          '<button type="button" data-sg="close">Thoát</button></div>' +
+      '</div>' +
+      '<details class="fs-guide"><summary>Bảng chữ cái ngón tay và động tác điều khiển (bấm để xem)</summary><div class="fs-grid">' +
+        SIGN_GUIDE.map(g => '<div><b>' + g[0] + '</b><span>' + g[1] + '</span></div>').join('') +
+        CMD_GUIDE.map(g => '<div class="fs-cmd"><b>' + g[0] + '</b><span>ĐIỀU KHIỂN: ' + g[1] + '</span></div>').join('') +
+      '</div></details>' +
+    '</div>';
+  }
+  const d3 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, (a.z || 0) - (b.z || 0));
+  /** Đặc trưng bàn tay theo khung bàn tay (không phụ thuộc tay trái/phải, xoay tay) */
+  function handModel(lm){
+    const W = Math.max(1e-3, dist(lm[5], lm[17]));                  // bề ngang lòng bàn tay
+    const ux = (lm[17].x - lm[5].x) / W, uy = (lm[17].y - lm[5].y) / W;
+    let vx = -uy, vy = ux;
+    if(vx * (lm[9].x - lm[0].x) + vy * (lm[9].y - lm[0].y) < 0){ vx = -vx; vy = -vy; }
+    const loc = i => ({u:((lm[i].x - lm[5].x) * ux + (lm[i].y - lm[5].y) * uy) / W, v:((lm[i].x - lm[5].x) * vx + (lm[i].y - lm[5].y) * vy) / W});
+    const st = {}, ratio = {};
+    [['I', 8, 6], ['M', 12, 10], ['R', 16, 14], ['P', 20, 18]].forEach(([k, t, pp]) => {
+      const r = d3(lm[t], lm[0]) / Math.max(1e-3, d3(lm[pp], lm[0]));
+      ratio[k] = r;
+      st[k] = r > 1.2 ? 'ext' : r < 1.0 ? 'curl' : 'half';
+    });
+    const dirOf = (a, b) => { const dx = lm[b].x - lm[a].x, dy = lm[b].y - lm[a].y, L = Math.hypot(dx, dy) || 1;
+      return dy / L < -0.55 ? 'up' : dy / L > 0.55 ? 'down' : 'side'; };
+    const t = loc(4);
+    const tch = (a, b) => dist(lm[a], lm[b]) / W;
+    const minY = Math.min(...lm.filter((_, i) => i !== 4 && i !== 3).map(p => p.y));
+    return {lm, W, st, ratio, loc, t, tch,
+      hdir: dirOf(0, 9), fdir: dirOf(5, 8),
+      thumbOut: t.u < -0.55 || tch(4, 5) > 1.05,
+      thumbUp: lm[4].y < minY - 0.3 * W && tch(4, 5) > 0.8,
+      thumbDown: lm[4].y > Math.max(...lm.filter((_, i) => i !== 4 && i !== 3).map(p => p.y)) + 0.3 * W && tch(4, 5) > 0.8};
+  }
+  /** Hình dạng tay → chữ cái ('a'…'z') hoặc lệnh ('space' | 'done'); null nếu chưa rõ */
+  function classifySign(f){
+    const {st, t} = f;
+    const ext = k => st[k] === 'ext';
+    const n = ['I', 'M', 'R', 'P'].filter(ext).length;
+    if(n === 4) return f.thumbOut ? 'space' : 'b';
+    if(ext('I') && ext('M') && ext('R') && !ext('P')) return 'w';
+    if(!ext('I') && ext('M') && ext('R') && ext('P')) return f.tch(4, 8) < 0.55 ? 'f' : null;
+    if(ext('I') && ext('M') && !ext('R') && !ext('P')){
+      if(f.fdir === 'down') return 'p';
+      if(f.fdir === 'side') return 'h';
+      if(f.loc(8).u > f.loc(12).u + 0.05) return 'r';                    // ngón trỏ bắt chéo sang phía ngón giữa
+      if(f.tch(4, 10) < 0.45 || f.tch(4, 6) < 0.35) return 'k';          // ngón cái chen giữa hai ngón
+      return f.tch(8, 12) > 0.55 ? 'v' : 'u';
+    }
+    if(ext('I') && !ext('M') && !ext('R') && !ext('P')){
+      if(f.fdir === 'down') return 'q';
+      if(f.fdir === 'side') return 'g';
+      if(f.thumbOut) return 'l';
+      return 'd';
+    }
+    if(!ext('I') && !ext('M') && !ext('R') && ext('P')) return f.thumbOut ? 'y' : 'i';
+    if(n === 0){
+      if(f.thumbUp) return 'done';
+      if(f.thumbDown) return 'clear';                                    // ngón cái chỉ xuống = xóa hết
+      // X: ngón trỏ cong móc — khớp giữa ngón trỏ nhô cao hơn hẳn các ngón đang nắm
+      if(st.M === 'curl' && st.R === 'curl' && f.loc(6).v > f.loc(10).v + 0.25 && f.tch(4, 8) > 0.45) return 'x';
+      const halves = ['I', 'M', 'R', 'P'].filter(k => st[k] === 'half').length;
+      const tipsOut = (f.tch(8, 5) + f.tch(12, 9)) / 2 > 0.65;           // đầu ngón còn cách xa lòng bàn tay
+      if(halves >= 3 || (halves >= 2 && tipsOut)){
+        if(f.tch(4, 8) < 0.4 || f.tch(4, 12) < 0.4) return 'o';
+        return t.u < 0.35 ? 'c' : null;
+      }
+      const tipsV = [8, 12, 16, 20].reduce((s, i) => s + f.loc(i).v, 0) / 4;
+      const nearThumb = Math.min(f.tch(8, 4), f.tch(8, 3), f.tch(12, 4), f.tch(12, 3));
+      if(tipsV > t.v + 0.12 && t.u > 0 && nearThumb < 0.7) return 'e';   // đầu ngón tựa trên ngón cái
+      if(f.tch(4, 6) < 0.35 && t.u > -0.1 && t.u < 0.4 && t.v > -0.05) return 't';
+      if(t.u > 0.3){                                                      // ngón cái vắt ngang lòng
+        const behind = (f.lm[4].z || 0) > (f.lm[10].z || 0) + 0.015;     // nằm SAU các ngón (bị kẹp)
+        if(behind) return t.u > 0.7 ? 'm' : 'n';
+        return 's';
+      }
+      return 'a';
+    }
+    return null;
+  }
+  const SIGN_NAME = {space:'Cách', del:'Xóa 1', clear:'Xóa hết', done:'Xong'};
+  const CMD_NAME = {done:'Xong', clear:'Xóa hết', del:'Xóa 1', d:'Xóa 1', v:'Hoa/thường', y:'Thoát', space:'Gõ chữ'};
+  function caseKey(c){ return SG.caseMode === 'upper' ? c.toUpperCase() : c; }
+  function signLabel(c){
+    if(!c) return '–';
+    if(SG.mode === 'command') return CMD_NAME[c] || c.toUpperCase();
+    if(c === 'done') return 'Điều khiển';
+    return SIGN_NAME[c] || caseKey(c);
+  }
+  /* Mỗi động tác được xử lý ở ĐÚNG MỘT chế độ:
+     typing  → chữ a–z, cách; ngón cái giơ lên = chuyển sang điều khiển (không bao giờ xóa / xong / thoát)
+     command → xong, xóa 1, xóa hết, đổi hoa/thường, thoát, quay lại gõ (không bao giờ gõ chữ) */
+  function signIntent(c){
+    if(!c) return null;
+    if(SG.mode === 'typing'){
+      if(/^[a-z]$/.test(c)) return {kind:'letter', key:c, need:SIGN_HOLD_MS, repeatable:true};
+      if(c === 'space') return {kind:'space', need:SIGN_HOLD_MS, repeatable:true};
+      if(c === 'done') return {kind:'mode', to:'command', need:SIGN_DONE_MS};
+      return null;                                     // xóa / xóa hết khi đang gõ chữ → bỏ qua
+    }
+    if(c === 'done') return {kind:'done', need:SIGN_DONE_MS};
+    if(c === 'clear') return {kind:'clear', need:SIGN_DONE_MS};
+    if(c === 'del' || c === 'd') return {kind:'del', need:SIGN_HOLD_MS, repeatable:true};
+    if(c === 'v') return {kind:'case', need:SIGN_HOLD_MS};
+    if(c === 'y') return {kind:'close', need:SIGN_DONE_MS};
+    if(c === 'space') return {kind:'mode', to:'typing', need:SIGN_HOLD_MS};
+    return null;
+  }
+  function signFeed(lm, now){
+    if(!lm){
+      if(!SG.lostAt) SG.lostAt = now;
+      if(now - SG.lostAt > SIGN_LOST_MS){ SG.cand = null; SG.last = null; SG.block = null; SG.hist = []; }
+      signUi(null, 0, null, 'Đưa bàn tay lên trước camera');
+      return;
+    }
+    SG.lostAt = 0;
+    const f = handModel(lm);
+    let c = classifySign(f);
+    SG.hist.push({t:now, c, wx:lm[0].x, ix:lm[8].x / f.W, iy:lm[8].y / f.W, px:lm[20].x / f.W, py:lm[20].y / f.W});
+    while(SG.hist.length && now - SG.hist[0].t > 700) SG.hist.shift();
+    // Xòe tay VẨY NGANG → xóa 1 ký tự (CHỈ ở chế độ điều khiển)
+    if(c === 'space' && SG.mode === 'command'){
+      const h = SG.hist.filter(x => x.c === 'space' && now - x.t < 450);
+      if(h.length >= 2){
+        const xs = h.map(x => x.wx);
+        if(Math.max(...xs) - Math.min(...xs) > 0.14 && now - SG.lastAt > 400){ commitSign('del', now); SG.cand = 'del'; SG.since = now; SG.block = 'space'; return; }
+      }
+    }
+    // Ngón út vẽ móc = J · ngón trỏ vẽ chữ Z = Z (chỉ khi đang gõ chữ)
+    if(SG.mode === 'typing' && (c === 'i' || c === 'd')){
+      const kx = c === 'i' ? 'px' : 'ix', ky = c === 'i' ? 'py' : 'iy';
+      const h = SG.hist.filter(x => x.c === c);
+      if(h.length >= 3){
+        const xs = h.map(x => x[kx]), ys = h.map(x => x[ky]);
+        const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+        if(span > 0.9){
+          const m = c === 'i' ? 'j' : 'z';
+          if(SG.block !== c){ commitSign(m, now); SG.block = c; SG.hist = []; }
+          return;
+        }
+      }
+    }
+    if(c !== SG.cand){ SG.cand = c; SG.since = now; }
+    const held = now - SG.since;
+    if(c && SG.last && c !== SG.last && held > SIGN_CLEAR_MS) SG.last = null;      // đã đổi sang ký hiệu khác
+    if(c && SG.block && c !== SG.block && held > SIGN_CLEAR_MS) SG.block = null;
+    if(!c){ signUi(null, 0, f, 'Chưa rõ ký hiệu — giữ tay yên, lòng bàn tay hướng về camera'); return; }
+    if(c === SG.block){ signUi(c, 0, f, 'Đổi sang ký hiệu khác'); return; }
+    const it = signIntent(c);
+    if(!it){
+      signUi(c, 0, f, SG.mode === 'typing' ? 'Đang gõ chữ: xóa / xong dùng ở chế độ điều khiển (giơ ngón cái)' : 'Đang điều khiển: chữ cái không được gõ — xòe tay để quay lại gõ chữ');
+      return;
+    }
+    const repeat = it.repeatable && c === SG.last;
+    const need = repeat ? SIGN_REPEAT_MS : it.need;
+    const from = repeat ? Math.max(SG.since, SG.lastAt) : SG.since;
+    const p = Math.min(1, (now - from) / need);
+    signUi(c, p, f, repeat ? 'Giữ tiếp để lặp ' + signLabel(c) : (SG.mode === 'typing' ? 'Giữ yên để gõ' : 'Giữ yên để thực hiện: ' + signLabel(c)));
+    if(p >= 1) commitSign(c, now);
+  }
+  function commitSign(c, now){
+    const api = A();
+    const it = signIntent(c);
+    if(!it) return;
+    SG.last = c; SG.lastAt = now;
+    beep(it.kind === 'done' ? 990 : it.kind === 'del' || it.kind === 'clear' ? 420 : it.kind === 'mode' ? 880 : 760, 90);
+    const box = SG.ui.letter; if(box){ box.classList.remove('fs-hit'); void box.offsetWidth; box.classList.add('fs-hit'); }
+    if(!it.repeatable) SG.block = c;                    // lệnh / đổi chế độ: phải đổi động tác mới nhận lần nữa
+    switch(it.kind){
+      case 'letter': if(api.spellKeys){ api.spellKeys([caseKey(it.key)]); updatePreview(); } return;
+      case 'space': return signAction('space');
+      case 'mode': return setSignMode(it.to);
+      case 'done': return signAction('done');
+      case 'clear': return signAction('clear');
+      case 'del': return signAction('del');
+      case 'case': return setSignCase(SG.caseMode === 'upper' ? 'lower' : 'upper');
+      case 'close': return signAction('close');
+    }
+  }
+  function signUi(c, p, f, hint){
+    const u = SG.ui;
+    const lab = signLabel(c);
+    if(u.letter && u.letter.textContent !== lab){ u.letter.textContent = lab; u.letter.classList.toggle('fs-word', lab.length > 1); }
+    if(u.prog) u.prog.style.transform = 'scaleX(' + (p || 0).toFixed(3) + ')';
+    if(u.hint && hint && u.hint.textContent !== hint) u.hint.textContent = hint;
+    if(u.debug){
+      const VN = {ext:'duỗi', curl:'gập', half:'cong'};
+      const d = f ? 'Máy thấy: trỏ ' + VN[f.st.I] + ' · giữa ' + VN[f.st.M] + ' · áp út ' + VN[f.st.R] + ' · út ' + VN[f.st.P] + ' · ngón cái ' + (f.thumbUp ? 'giơ lên' : f.thumbOut ? 'dang ra' : f.t.u > 0.3 ? 'vắt ngang' : 'áp sát') : '';
+      if(u.debug.textContent !== d) u.debug.textContent = d;
+    }
+  }
+  const TIP_TYPING = 'ĐANG GÕ CHỮ: làm ký hiệu chữ cái, giữ yên khoảng 1 giây. Xòe tay = cách. Giơ ngón cái = chuyển sang chế độ điều khiển. Dấu kiểu Telex: <b>s</b> sắc · <b>f</b> huyền · <b>r</b> hỏi · <b>x</b> ngã · <b>j</b> nặng · <b>aa</b>=â · <b>aw</b>=ă · <b>ee</b>=ê · <b>oo</b>=ô · <b>ow</b>=ơ · <b>uw</b>=ư · <b>dd</b>=đ · chữ <b>w</b> đứng riêng vẫn là w.';
+  const TIP_COMMAND = 'ĐANG ĐIỀU KHIỂN: 👍 giơ ngón cái = <b>Xong</b> · 👎 ngón cái chỉ xuống = <b>Xóa hết</b> · ☝ một ngón trỏ hoặc xòe tay vẩy ngang = <b>Xóa 1 ký tự</b> · chữ <b>V</b> = chữ hoa/thường · chữ <b>Y</b> = <b>Thoát</b> · ✋ xòe tay giữ yên = quay lại gõ chữ.';
+  function renderSignState(){
+    const m = document.getElementById('fsMode'), cs = document.getElementById('fsCase');
+    const mb = document.getElementById('fsModeBtn'), cb = document.getElementById('fsCaseBtn'), tip = document.getElementById('fsTip');
+    const cmd = SG.mode === 'command', up = SG.caseMode === 'upper';
+    if(m){ m.textContent = cmd ? 'Đang điều khiển' : 'Đang gõ chữ'; m.dataset.mode = SG.mode; }
+    if(cs){ cs.textContent = up ? 'ABC' : 'abc'; cs.dataset.case = SG.caseMode; }
+    if(mb){ mb.textContent = cmd ? 'Quay lại gõ chữ' : 'Chế độ điều khiển'; mb.setAttribute('aria-pressed', String(cmd)); }
+    if(cb){ cb.setAttribute('aria-pressed', String(up)); cb.setAttribute('aria-label', 'Chữ hoa hoặc chữ thường, đang là ' + (up ? 'chữ hoa' : 'chữ thường')); cb.textContent = up ? 'ABC → abc' : 'abc → ABC'; }
+    if(tip) tip.innerHTML = cmd ? TIP_COMMAND : TIP_TYPING;
+    if(F.sign) F.sign.dataset.mode = SG.mode;
+  }
+  function setSignMode(mode, quiet){
+    if(mode !== 'typing' && mode !== 'command') return;
+    SG.mode = mode; SG.cand = null; SG.last = null; SG.hist = [];
+    renderSignState();
+    if(quiet) return;
+    const t = mode === 'command'
+      ? 'Đã chuyển sang chế độ điều khiển. Giơ ngón cái để xong; ngón cái chỉ xuống để xóa hết; một ngón trỏ để xóa một ký tự; chữ V để đổi chữ hoa, chữ thường; chữ Y để thoát; xòe tay giữ yên để quay lại gõ chữ.'
+      : 'Đã chuyển sang chế độ gõ chữ. Làm ký hiệu chữ cái để gõ, xòe tay để cách.';
+    say(t, {interrupt:true}); live(mode === 'command' ? 'Đang điều khiển' : 'Đang gõ chữ');
+  }
+  function setSignCase(mode, quiet){
+    SG.caseMode = mode === 'upper' ? 'upper' : 'lower';
+    renderSignState(); renderVkCase();
+    if(quiet) return;
+    const t = SG.caseMode === 'upper' ? 'Đã chuyển sang chữ hoa.' : 'Đã chuyển sang chữ thường.';
+    say(t, {interrupt:true}); live(t);
+  }
+  function signAction(a){
+    const api = A();
+    if(a === 'mode') return setSignMode(SG.mode === 'command' ? 'typing' : 'command');
+    if(a === 'case') return setSignCase(SG.caseMode === 'upper' ? 'lower' : 'upper');
+    if(a === 'space') return api.spellKeys && (api.spellKeys(['␠']), updatePreview());
+    if(a === 'del') return api.spellKeys && (api.spellKeys(['⌫']), updatePreview());
+    if(a === 'done'){ if(api.spellFinish) api.spellFinish(); closeSign(true); return; }
+    if(a === 'clear'){ if(api.spellKeys){ api.spellKeys(['⌧']); updatePreview(); } return; }
+    if(a === 'close'){ closeSign(false); say('Đã thoát gõ ký hiệu tay.'); }
+  }
+  /** Mở bảng gõ ký hiệu tay. Máy tính: bật camera trước; camera lỗi → báo và gợi ý bàn phím.
+      Điện thoại: mở bàn phím trợ năng thay cho camera. */
+  function openSign(el){
+    if(isMobile()) return openVK(el);
+    build();
+    const api = A();
+    el = el || pickField();
+    if(!el){ say('Cậu chọn một ô chữ trước nhé.'); return; }
+    if(window.BrailleInput && BrailleInput.active) BrailleInput.close(true, true);
+    closeVK(true, true);
+    Object.assign(SG, {on:true, el, cand:null, since:0, last:null, lastAt:0, block:null, lostAt:0, hist:[], mode:'typing'});
+    SG.ui = {letter:document.getElementById('fsLetter'), prog:document.getElementById('fsProg'), hint:document.getElementById('fsHint'), debug:document.getElementById('fsDebug')};
+    F.sign.classList.remove('hidden');
+    document.body.classList.add('fs-open');
+    resetHold(); setSwipe(false); setMenuItem(null); setBlock(null);
+    if(F.cursor) F.cursor.classList.add('hidden'); F.has = false;
+    showMenu();
+    document.getElementById('fsLabel').textContent = 'Ký hiệu tay → ' + fieldName(el);
+    renderSignState();
+    api.spellStart(el, {silent:true});
+    updatePreview();
+    const guide = () => say('Gõ bằng ký hiệu tay cho ' + fieldName(el) + '. Đang ở chế độ gõ chữ, ' + (SG.caseMode === 'upper' ? 'chữ hoa' : 'chữ thường') + '. Làm ký hiệu một chữ cái trước camera, giữ yên khoảng một giây, mình đọc chữ đó và gõ vào. ' +
+        'Xòe cả bàn tay giữ yên để cách chữ. Giơ ngón cái để chuyển sang chế độ điều khiển: ở đó mới có xong, xóa một ký tự, xóa hết, đổi chữ hoa thường và thoát. Cũng có thể nói: chữ hoa; chữ thường; xóa; xóa hết; xong.', {interrupt:true});
+    if(F.on){ guide(); return; }
+    // camera chưa bật → bật (một luồng duy nhất); lỗi thì đóng bảng và gợi ý dùng bàn phím
+    SG.starting = true;
+    if(SG.ui.hint) SG.ui.hint.textContent = 'Đang bật camera…';
+    start({quiet:true}).then(ok => {
+      SG.starting = false;
+      if(!SG.on || SG.el !== el) return;
+      if(ok) guide();
+      else { closeSign(true, true); A().spellCancel && A().spellCancel(true); }
+    });
+  }
+  /** keepSpell: chuyển sang chữ nổi, giữ nguyên chữ đang gõ */
+  function closeSign(silent, keepSpell){
+    if(!SG.on) return;
+    SG.on = false; SG.starting = false;
+    if(F.sign) F.sign.classList.add('hidden');
+    document.body.classList.remove('fs-open');
+    showMenu();
+    if(!silent && !keepSpell){ const api = A(); if(api.spellCancel) api.spellCancel(true); }
+  }
+
+
+/* ============================================================================
+ * JS-13.06 · BÀN PHÍM TRỢ NĂNG TRÊN ĐIỆN THOẠI
+ * Tạo bàn phím trên màn hình, chuyển chữ/số/hoa-thường và đồng bộ với trạng thái đánh vần.
+ * ========================================================================== */
+  /* ======================= BÀN PHÍM TRỢ NĂNG (ĐIỆN THOẠI) =======================
+     Không bật camera. Phím lớn ≥ 48px, có xem trước nội dung, hỗ trợ xoay ngang, vùng an toàn iPhone,
+     Tab / phím mũi tên / Escape, aria-label rõ ràng. Trợ lý đọc hướng dẫn khi mở và đọc tên phím khi
+     chọn bằng bàn phím hoặc rê chuột; chạm vào phím thì gõ luôn và đọc chữ vừa gõ (không nói chồng nhau). */
+  const VK = {on:false, el:null, nums:false, hoverT:0, lastSaid:'', lastSaidAt:0};
+  const VK_LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  const VK_NUMS = '0123456789'.split('').concat(['.', ',', '@', '_', '-']);
+  const VK_SAY = {'.':'dấu chấm', ',':'dấu phẩy', '@':'a còng', '_':'gạch dưới', '-':'gạch ngang'};
+  function buildVK(){
+    if(document.getElementById('vkBoard')) return;
+    const d = document.createElement('div');
+    d.innerHTML =
+      '<div class="vk-board hidden" id="vkBoard" role="dialog" aria-modal="true" aria-labelledby="vkTitle" aria-describedby="vkTip">' +
+        '<div class="vk-head"><h2 id="vkTitle">Bàn phím trợ năng</h2><span class="vk-case" id="vkCaseTag" aria-hidden="true">abc</span></div>' +
+        '<div class="vk-preview"><span class="vk-field" id="vkField"></span><span class="vk-preview-label">Nội dung hiện tại:</span>' +
+          '<output id="vkPreview" aria-live="polite">&nbsp;</output></div>' +
+        '<div class="vk-keys" id="vkLetters" role="group" aria-label="Các chữ cái">' +
+          VK_LETTERS.map(c => '<button type="button" class="vk-key" data-vk="' + c + '" aria-label="Chữ ' + c.toUpperCase() + '">' + c + '</button>').join('') + '</div>' +
+        '<div class="vk-keys vk-nums hidden" id="vkNums" role="group" aria-label="Số và ký hiệu">' +
+          VK_NUMS.map(c => '<button type="button" class="vk-key" data-vk="' + c + '" aria-label="' + (VK_SAY[c] || 'Số ' + c) + '">' + c + '</button>').join('') + '</div>' +
+        '<div class="vk-ctrl" role="group" aria-label="Điều khiển bàn phím">' +
+          '<button type="button" data-vk-act="case" id="vkCase" aria-pressed="false" aria-label="Chữ hoa hoặc chữ thường, đang là chữ thường">abc → ABC</button>' +
+          '<button type="button" data-vk-act="nums" id="vkNumBtn" aria-pressed="false" aria-label="Chuyển sang số và ký hiệu">123</button>' +
+          '<button type="button" data-vk-act="space" class="vk-wide" aria-label="Nút Cách">Cách</button>' +
+          '<button type="button" data-vk-act="del" aria-label="Xóa một ký tự">Xóa 1 ký tự</button>' +
+          '<button type="button" data-vk-act="clear" aria-label="Xóa hết">Xóa hết</button>' +
+          '<button type="button" data-vk-act="done" class="ok" aria-label="Xong, điền vào ô">Xong</button>' +
+          '<button type="button" data-vk-act="close" aria-label="Thoát bàn phím">Thoát</button>' +
+        '</div>' +
+        '<p class="vk-tip" id="vkTip">Dấu tiếng Việt gõ kiểu Telex: s sắc · f huyền · r hỏi · x ngã · j nặng · aa=â · aw=ă · ee=ê · oo=ô · ow=ơ · uw=ư · dd=đ.</p>' +
+      '</div>';
+    document.body.appendChild(d.firstChild);
+    const b = document.getElementById('vkBoard');
+    b.addEventListener('click', e => {
+      const k = e.target.closest('[data-vk]'); if(k) return vkKey(k.dataset.vk);
+      const a = e.target.closest('[data-vk-act]'); if(a) return vkAction(a.dataset.vkAct);
+    });
+    // đọc tên phím khi chọn bằng Tab / phím mũi tên (không đọc khi chạm — chạm là gõ luôn)
+    b.addEventListener('focusin', e => { if(VK.kbdNav) vkSayKey(e.target); });
+    b.addEventListener('pointerover', e => { if(e.pointerType === 'mouse'){ clearTimeout(VK.hoverT); const t = e.target.closest('button'); if(t) VK.hoverT = setTimeout(() => vkSayKey(t), 120); } });
+    b.addEventListener('pointerdown', () => { VK.kbdNav = false; clearTimeout(VK.hoverT); });
+    b.addEventListener('keydown', e => {
+      VK.kbdNav = true;
+      if(!/^Arrow(Left|Right|Up|Down)$|^Home$|^End$/.test(e.key)) return;
+      const list = [...b.querySelectorAll('button')].filter(x => x.offsetParent);
+      const i = list.indexOf(document.activeElement); if(i < 0) return;
+      e.preventDefault();
+      let j = i;
+      if(e.key === 'ArrowRight') j = i + 1; else if(e.key === 'ArrowLeft') j = i - 1;
+      else if(e.key === 'Home') j = 0; else if(e.key === 'End') j = list.length - 1;
+      else {                                                   // lên / xuống: phím gần nhất ở hàng trên / dưới
+        const r = list[i].getBoundingClientRect(), down = e.key === 'ArrowDown';
+        let best = -1, bd = Infinity;
+        list.forEach((x, k) => { const q = x.getBoundingClientRect(); const dy = down ? q.top - r.bottom : r.top - q.bottom;
+          if(dy < -2) return; const dd = dy * 4 + Math.abs((q.left + q.right) / 2 - (r.left + r.right) / 2); if(dd < bd){ bd = dd; best = k; } });
+        if(best >= 0) j = best;
+      }
+      list[(j + list.length) % list.length].focus();
+    });
+    if(window.A11y) A11y.manageDialog(b, {close:() => vkAction('close')});
+  }
+  function vkLabel(btn){ return (btn && (btn.getAttribute('aria-label') || btn.textContent) || '').trim(); }
+  function vkSayKey(btn){
+    if(!VK.on || !btn || !btn.closest || !btn.closest('#vkBoard') || btn.tagName !== 'BUTTON') return;
+    const t = vkLabel(btn); const now = Date.now();
+    if(t === VK.lastSaid && now - VK.lastSaidAt < 1200) return;      // không lặp lại liên tục
+    VK.lastSaid = t; VK.lastSaidAt = now;
+    say(t, {interrupt:true});
+  }
+  function renderVkCase(){
+    const up = SG.caseMode === 'upper';
+    const tag = document.getElementById('vkCaseTag'), cb = document.getElementById('vkCase');
+    if(tag) tag.textContent = up ? 'ABC' : 'abc';
+    if(cb){ cb.setAttribute('aria-pressed', String(up)); cb.setAttribute('aria-label', 'Chữ hoa hoặc chữ thường, đang là ' + (up ? 'chữ hoa' : 'chữ thường')); cb.textContent = up ? 'ABC → abc' : 'abc → ABC'; }
+    document.querySelectorAll('#vkLetters [data-vk]').forEach(k => {
+      const c = k.dataset.vk; k.textContent = up ? c.toUpperCase() : c;
+      k.setAttribute('aria-label', (up ? 'Chữ hoa ' : 'Chữ ') + c.toUpperCase());
+    });
+  }
+  function vkKey(k){
+    const api = A(); if(!VK.on || !api.spellKeys) return;
+    const key = /^[a-z]$/.test(k) ? caseKey(k) : k;
+    api.spellKeys([key], {force:true, interrupt:true});
+    updatePreview();
+  }
+  function vkAction(a){
+    const api = A();
+    if(a === 'case') return setSignCase(SG.caseMode === 'upper' ? 'lower' : 'upper');
+    if(a === 'nums'){
+      VK.nums = !VK.nums;
+      document.getElementById('vkLetters').classList.toggle('hidden', VK.nums);
+      document.getElementById('vkNums').classList.toggle('hidden', !VK.nums);
+      const nb = document.getElementById('vkNumBtn');
+      nb.textContent = VK.nums ? 'ABC' : '123'; nb.setAttribute('aria-pressed', String(VK.nums));
+      nb.setAttribute('aria-label', VK.nums ? 'Chuyển về chữ cái' : 'Chuyển sang số và ký hiệu');
+      say(VK.nums ? 'Đã chuyển sang số và ký hiệu.' : 'Đã chuyển về chữ cái.', {interrupt:true});
+      return;
+    }
+    if(a === 'space'){ api.spellKeys && api.spellKeys(['␠'], {force:true, interrupt:true}); return updatePreview(); }
+    if(a === 'del'){ api.spellKeys && api.spellKeys(['⌫'], {force:true, interrupt:true}); return updatePreview(); }
+    if(a === 'clear'){ if(api.clearInput) api.clearInput(VK.el, {force:true}); else if(api.spellKeys) api.spellKeys(['⌧']); return updatePreview(); }
+    if(a === 'done'){ if(api.spellFinish) api.spellFinish({force:true}); closeVK(true, true); return; }
+    if(a === 'close'){ closeVK(false); say('Đã thoát bàn phím trợ năng.', {interrupt:true}); }
+  }
+  function openVK(el){
+    const api = A();
+    el = el || pickField();
+    if(!el){ say('Cậu chọn một ô chữ trước nhé.'); return; }
+    if(window.BrailleInput && BrailleInput.active) BrailleInput.close(true, true);
+    closeSign(true, true);
+    buildVK();
+    VK.on = true; VK.el = el; VK.kbdNav = false;
+    const b = document.getElementById('vkBoard');
+    document.getElementById('vkField').textContent = fieldName(el);
+    renderVkCase();
+    // không để bàn phím của điện thoại bật lên đè bàn phím trợ năng
+    const ae = document.activeElement; if(ae && ae !== document.body && /^(INPUT|TEXTAREA)$/.test(ae.tagName)) try{ ae.blur(); }catch(e){}
+    if(api.spellStart) api.spellStart(el, {silent:true, noFocus:true});
+    b.classList.remove('hidden');
+    document.body.classList.add('vk-open');
+    updatePreview();
+    const t = 'Bàn phím trợ năng đã mở, cho ô ' + fieldName(el) + '. Màn hình có các chữ cái từ A đến Z. Có nút chữ hoa hoặc chữ thường, nút 1 2 3 để gõ số, nút Cách để thêm khoảng trắng, Xóa một ký tự, Xóa hết, Xong và Thoát. Chạm vào chữ để gõ, mình đọc lại chữ vừa gõ.';
+    say(t, {interrupt:true}); live('Bàn phím trợ năng đã mở.');
+  }
+  function closeVK(silent, keepSpell){
+    if(!VK.on) return;
+    VK.on = false;
+    const b = document.getElementById('vkBoard'); if(b) b.classList.add('hidden');
+    document.body.classList.remove('vk-open');
+    if(!keepSpell){ const api = A(); if(api.spellCancel) api.spellCancel(true); }
+  }
+  /** Lệnh giọng nói khi bảng ký hiệu tay / bàn phím trợ năng đang mở (voice-robot.js gọi trước khi đánh vần) */
+  function voiceCmd(n){
+    if(!SG.on && !VK.on) return false;
+    const is = (...k) => k.includes(n);
+    if(is('chu hoa', 'viet hoa', 'chu in hoa', 'bat chu hoa', 'go chu hoa')){ setSignCase('upper'); return true; }
+    if(is('chu thuong', 'viet thuong', 'chu in thuong', 'tat chu hoa', 'go chu thuong')){ setSignCase('lower'); return true; }
+    if(SG.on && is('che do dieu khien', 'dieu khien', 'chuyen sang dieu khien')){ setSignMode('command'); return true; }
+    if(SG.on && is('che do go chu', 'go chu', 'quay lai go chu', 'chuyen sang go chu')){ setSignMode('typing'); return true; }
+    if(VK.on && is('so', 'go so', 'ban phim so', 'chu cai', 'go chu cai')){ if((n.indexOf('so') !== -1) !== VK.nums) vkAction('nums'); return true; }
+    return false;
+  }
+  /* Vẽ khung xương bàn tay lên hình camera để học sinh / thầy cô thấy máy đang "nhìn" tay thế nào */
+  const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+  function drawSkeleton(lm){
+    const c = F.skel; if(!c) return;
+    const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height);
+    if(!lm) return;
+    g.lineWidth = 3; g.strokeStyle = '#7FE0C9'; g.fillStyle = '#FFD54F';
+    g.beginPath(); BONES.forEach(([a, b]) => { g.moveTo(lm[a].x * c.width, lm[a].y * c.height); g.lineTo(lm[b].x * c.width, lm[b].y * c.height); }); g.stroke();
+    lm.forEach((p, i) => { g.beginPath(); g.arc(p.x * c.width, p.y * c.height, [4, 8, 12, 16, 20].includes(i) ? 5 : 3, 0, 7); g.fill(); });
+  }
+
+  /* Tương thích: các lệnh cũ "đóng bàn phím" → đóng gõ ký hiệu tay */
+  function closeKeyboard(silent){ closeSign(silent); closeVK(silent); }
+  function updatePreview(){
+    const api = A(); const st = api.spellState ? api.spellState() : null;
+    ['fsPreview', 'vkPreview'].forEach(id => {
+      const p = document.getElementById(id); if(!p) return;
+      const el = st && st.el;
+      const t = st ? (el && el.type === 'password' ? '•'.repeat((st.text || '').length) : st.text) : '';
+      p.textContent = t || '\u00a0';
+    });
+  }
+  function resetInputState(el){
+    if(el && SG.el !== el) return;
+    SG.block = SG.cand || SG.last; SG.hist = []; SG.cand = null; SG.last = null; SG.since = performance.now();
+  }
+  window.FingerNav = {start, stop, resetInputState, openKeyboard:openVK, openVK, closeVK, closeKeyboard, openSign, closeSign, updatePreview, runFn, helpText, SELECT_MS,
+    voice:voiceCmd, setCase:setSignCase, setMode:setSignMode, get signMode(){ return SG.mode; }, get caseMode(){ return SG.caseMode; }, get vkOpen(){ return VK.on; },
+    _build:build, _classify:(lm) => classifySign(handModel(lm)), _model:handModel, get signOpen(){ return SG.on; }, get on(){ return F.on; }, get keyboardOpen(){ return SG.on; }, _feed:feed, _state:F};
+})();
+
+
+
+/* ============================================================================
+ * MỤC JS-14 · HIỆU ỨNG GIAO DIỆN
+ * Hiện dần thẻ khi cuộn, ánh sáng theo chuột, hiệu ứng nút, bộ đếm và thanh tiến độ cuộn.
+ * Theo dõi nội dung tạo mới; tôn trọng thiết lập giảm chuyển động của thiết bị.
+ * ========================================================================== */
+
+/* =====================================================================
+   AI HealthPulse — HIỆU ỨNG CHUYỂN ĐỘNG (animations.js)
+   Nạp SAU Ai-healthpulse-script.js (trước hoặc sau voice-robot.js đều được)
+   ===================================================================== */
+(function(){
+  'use strict';
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const root = document.documentElement;
+  const byId = id => document.getElementById(id);
+
+  /* ---------- 1. Hiện dần khi cuộn tới ---------- */
+  const REVEAL = [
+    ['.stat', 'up'], ['.intro-card', 'up'], ['.future-head', 'left'], ['.future-card', 'up'], ['.future-note', 'up'],
+    ['.lib-card', 'up'], ['.stat-card', 'zoom'], ['.panel-card', 'up'], ['.conversation-panel', 'left'], ['.chat-main', 'up'],
+    ['.auth-shell > *', 'up'], ['.lib-wrap > h2', 'left'], ['.lib-wrap > p', 'up'], ['.admin-header', 'left'], ['.admin-tabs', 'up'],
+    ['.survey-note', 'up'], ['.bmi-head', 'left'], ['.bmi-form-card', 'left'], ['.bmi-result-card', 'up'], ['.bmi-disclaimer', 'up']
+  ];
+  const GLOW = '.intro-card, .future-card, .lib-card, .stat-card';
+  let io = null;
+  if(!reduce && 'IntersectionObserver' in window){
+    root.classList.add('hp-anim');
+    io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if(!en.isIntersecting) return;
+        const el = en.target;
+        io.unobserve(el);
+        el.classList.add('is-in');
+        // Xong hiệu ứng thì gỡ thuộc tính để hover của thẻ hoạt động bình thường
+        setTimeout(() => { el.removeAttribute('data-reveal'); el.classList.remove('is-in'); el.style.removeProperty('--d'); }, 1400);
+      });
+    }, {threshold: 0.12, rootMargin: '0px 0px -30px 0px'});
+  }
+  function tag(scope){
+    if(!io) return;
+    REVEAL.forEach(([sel, kind]) => {
+      (scope.matches && scope.matches(sel) ? [scope] : []).concat([...scope.querySelectorAll(sel)]).forEach(el => {
+        if(el.dataset.hpSeen) return;
+        el.dataset.hpSeen = '1';
+        el.setAttribute('data-reveal', kind);
+        const sibs = el.parentElement ? [...el.parentElement.children].filter(c => c.matches(sel)) : [el];
+        el.style.setProperty('--d', Math.min(sibs.indexOf(el), 8));
+        io.observe(el);
+      });
+    });
+  }
+  function glow(scope){
+    if(reduce || !fine) return;
+    (scope.matches && scope.matches(GLOW) ? [scope] : []).concat([...scope.querySelectorAll(GLOW)]).forEach(el => el.classList.add('hp-glow'));
+  }
+
+  /* ---------- 2. Tiêu đề trang chủ bay lên từng chữ ---------- */
+  function splitHeading(){
+    const h = document.querySelector('.hero h1');
+    if(!h || reduce || h.dataset.hpSplit) return;
+    h.dataset.hpSplit = '1';
+    const words = h.textContent.trim().split(/\s+/);
+    h.setAttribute('aria-label', h.textContent.trim());
+    h.innerHTML = words.map((w, i) =>
+      '<span class="hp-word' + (i >= words.length - 2 ? ' hp-accent' : '') + '" aria-hidden="true" style="--i:' + i + '">' + w + '</span>'
+    ).join(' ');
+  }
+
+  /* ---------- 3. Đếm số ở hàng thống kê ---------- */
+  function countUp(el){
+    // trợ lý giọng nói đang bật → giữ số thật để không đọc nhầm số đang chạy
+    if(document.body.classList.contains('vr-blind') || document.body.classList.contains('vr-robot-on')) return;
+    const raw = el.textContent.trim();
+    const m = raw.match(/^([\d.,]+)(.*)$/);
+    if(!m) return;
+    const decimals = (m[1].split(',')[1] || '').length;
+    const target = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
+    if(!isFinite(target)) return;
+    const suffix = m[2];
+    const t0 = performance.now(), dur = 1400;
+    (function frame(now){
+      const p = Math.min(1, (now - t0) / dur);
+      const v = target * (1 - Math.pow(1 - p, 3));
+      el.textContent = v.toFixed(decimals).replace('.', ',') + suffix;
+      if(p < 1) requestAnimationFrame(frame); else el.textContent = raw;
+    })(t0);
+  }
+  function setupCounters(){
+    if(reduce || !('IntersectionObserver' in window)) return;
+    const cio = new IntersectionObserver(es => es.forEach(en => {
+      if(en.isIntersecting){ cio.unobserve(en.target); setTimeout(() => countUp(en.target), 200); }
+    }), {threshold: 0.6});
+    document.querySelectorAll('.stat .num').forEach(el => cio.observe(el));
+  }
+
+  /* ---------- 4. Gợn sóng khi bấm nút ---------- */
+  document.addEventListener('pointerdown', e => {
+    if(reduce) return;
+    const btn = e.target.closest && e.target.closest('.btn, .send-btn, .vr-choice, .atab2');
+    if(!btn || btn.disabled) return;
+    const r = btn.getBoundingClientRect();
+    const size = Math.max(r.width, r.height) * 2.2;
+    const s = document.createElement('span');
+    s.className = 'hp-ripple';
+    s.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + (e.clientX - r.left - size / 2) + 'px;top:' + (e.clientY - r.top - size / 2) + 'px;';
+    btn.appendChild(s);
+    setTimeout(() => s.remove(), 650);
+  }, true);
+
+  /* ---------- 5. Ánh sáng theo chuột trên thẻ ---------- */
+  document.addEventListener('pointermove', e => {
+    const card = e.target.closest && e.target.closest('.hp-glow');
+    if(!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  }, {passive: true});
+
+  /* ---------- 6. Pháo giấy khi bấm "Mình đã thử" ---------- */
+  function confetti(x, y){
+    const colors = ['#FF5D5D', '#FFB74D', '#2F8F7D', '#7FE0C9', '#123C3B'];
+    for(let i = 0; i < 26; i++){
+      const c = document.createElement('span');
+      c.className = 'hp-confetti';
+      const ang = Math.random() * Math.PI * 2, dist = 70 + Math.random() * 130;
+      c.style.cssText = 'left:' + x + 'px;top:' + y + 'px;background:' + colors[i % colors.length] +
+        ';--x:' + Math.cos(ang) * dist + 'px;--y:' + (Math.sin(ang) * dist - 60) + 'px;--r:' + (Math.random() * 720 - 360) + 'deg;' +
+        'animation-delay:' + (Math.random() * 80) + 'ms;';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 1300);
+    }
+  }
+  document.addEventListener('click', e => {
+    if(reduce) return;
+    const b = e.target.closest && e.target.closest('[data-summary-action]');
+    if(!b || b.disabled) return;
+    const r = b.getBoundingClientRect();
+    confetti(r.left + r.width / 2, r.top + r.height / 2);
+  }, true);
+
+  /* ---------- 7. Thanh tiến độ cuộn + thanh trên cùng ---------- */
+  const bar = document.createElement('div');
+  bar.className = 'hp-progress';
+  document.body.appendChild(bar);
+  const topbar = document.querySelector('.topbar');
+  let ticking = false;
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, window.scrollY / max) : 0) + ')';
+      if(topbar) topbar.classList.toggle('hp-scrolled', window.scrollY > 8);
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive: true});
+  window.addEventListener('resize', onScroll);
+
+  /* ---------- 8. Theo dõi nội dung mới (thẻ tư liệu, dashboard, chat…) ---------- */
+  const app = byId('app');
+  if(app){
+    new MutationObserver(muts => {
+      muts.forEach(m => m.addedNodes.forEach(n => { if(n.nodeType === 1){ tag(n); glow(n); } }));
+    }).observe(app, {childList: true, subtree: true});
+  }
+
+  splitHeading();
+  tag(document);
+  glow(document);
+  setupCounters();
+  onScroll();
+})();
+
